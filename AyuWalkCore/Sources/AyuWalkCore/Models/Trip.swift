@@ -179,20 +179,20 @@ public struct ImportedSource: Equatable, Identifiable, Sendable {
     public var kind: ImportedSourceKind
     public var title: String
     public var url: URL?
-    public var rawText: String?
+    public var extractedText: String?
 
     public init(
         id: UUID,
         kind: ImportedSourceKind,
         title: String,
         url: URL?,
-        rawText: String?
+        extractedText: String?
     ) {
         self.id = id
         self.kind = kind
         self.title = title
         self.url = url
-        self.rawText = rawText
+        self.extractedText = extractedText
     }
 }
 

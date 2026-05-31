@@ -19,7 +19,7 @@ public struct MockPlanningEngine: Sendable {
                 kind: .pastedText,
                 title: "用户想法",
                 url: nil,
-                rawText: notes
+                extractedText: notes
             )
         ]
         return trip

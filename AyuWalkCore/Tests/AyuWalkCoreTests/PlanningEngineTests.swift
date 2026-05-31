@@ -116,7 +116,12 @@ final class PlanningEngineTests: XCTestCase {
 
         XCTAssertEqual(trip.destination, "东京")
         XCTAssertEqual(trip.duration, .dayCount(5))
+        XCTAssertEqual(trip.purpose, [.cityWalk, .food])
         XCTAssertEqual(trip.days.first?.activities.first?.routeOrder, 1)
         XCTAssertTrue(trip.planningScripts.contains { $0.name == "编号路线点" })
+        XCTAssertEqual(trip.importedSources.count, 1)
+        XCTAssertEqual(trip.importedSources.first?.kind, .pastedText)
+        XCTAssertEqual(trip.importedSources.first?.title, "用户想法")
+        XCTAssertEqual(trip.importedSources.first?.extractedText, "想要轻松一点，适合发小红书")
     }
 }
