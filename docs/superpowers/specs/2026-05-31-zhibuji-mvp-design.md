@@ -2,7 +2,7 @@
 
 Date: 2026-05-31
 Status: Draft for user review
-English name: Not selected yet; MVP uses the Chinese name 织步记.
+English name: Ayu Walk.
 
 ## Product Positioning
 
@@ -68,6 +68,7 @@ Import material:
 
 - Screenshot import, including travel guides, flights, hotels, chat screenshots, or booking screenshots.
 - Text import, including copied guides, memo content, chat content, or existing itinerary drafts.
+- Imported material also needs AI assistance: AI should identify places, dates, times, tickets, hotels, notes, and uncertain details, then turn them into an editable trip draft.
 
 Link import is reserved for later because some content platforms have unstable access, login restrictions, or anti-scraping controls.
 
@@ -98,6 +99,8 @@ The planning workspace has two linked surfaces:
 MVP behavior:
 
 - Show all activity places on the map.
+- Show itinerary route lines on the map so users can see the travel order visually.
+- Label route points with ordered numbers such as 1, 2, 3, 4, and 5.
 - Let users drag or reorder places at a lightweight level.
 - Let users edit activities in the timeline.
 - Let AI assist with reordering, time conflicts, route efficiency, and missing meal/rest gaps.
@@ -114,6 +117,8 @@ The journal is a core feature, not an add-on. The MVP can keep editing simple, b
 Journal creation:
 
 - One-tap generation from trip data.
+- Page-turning UI that simulates a real book, journal, or diary.
+- Daily pages as the main reading structure so users can flip through the trip by day.
 - Cover page.
 - Trip overview page.
 - Daily pages.
@@ -137,13 +142,16 @@ Editing model:
 - Automatic layout first.
 - Modular light editing.
 - Users can reorder journal modules.
+- Users can choose which modules to show for each itinerary item.
+- Default selected modules: title, date and location, photo block, and text notes.
+- Optional modules include map snapshot, route summary, timeline, place highlights, budget summary, packing summary, mood tags, and stickers.
 - Users can edit titles, text, notes, photos, and mood tags.
 - Users can choose a small number of templates or themes.
 - Users cannot freely edit every font, spacing, layer, or layout property in MVP.
 
 Sticker system:
 
-- Built-in sticker categories: weather, transport, food, sights, mood, flights, hotels, shopping, concerts, and travel labels.
+- Built-in sticker categories: weather, transport, food, sights, mood, hotels, shopping, and concerts.
 - Stickers can be placed on cover pages, daily pages, photo areas, timeline nodes, or note areas.
 - MVP supports simple move, scale, rotate, and delete.
 - MVP does not include advanced layer management, blend modes, alignment tools, custom sticker upload, or a sticker marketplace.
@@ -181,6 +189,13 @@ Markdown export should include:
 - Packing list.
 
 MVP sharing should include light branding or watermarking that does not damage the visual quality.
+
+AI SNS copy:
+
+- During export, AI can generate editable titles, body copy, and hashtags for Xiaohongshu or other SNS platforms.
+- Copy should be based on the real itinerary and avoid exaggerated claims.
+- Default copy should include product promotion tags such as `#织步记`; `#AyuWalk` can also be added when appropriate.
+- Users can edit the generated copy before copying or sharing.
 
 Future sharing:
 
@@ -229,6 +244,21 @@ Future behavior:
 - Reusable templates.
 - Smart reminders.
 
+## Reminders And Departure Countdown
+
+Reminders are a future enhancement, but the model should reserve room for them.
+
+Future reminders include:
+
+- Departure countdown reminders.
+- In-app alert popups.
+- Lock-screen or widget countdown to departure.
+- Restaurant reservation reminders.
+- Key ticket, hotel check-in, transport departure, and activity start reminders.
+- Holiday, peak-season, or major local event warnings during itinerary planning.
+
+MVP does not need to implement the full reminder system, but `Trip`, `Activity`, and `Place` should reserve reminder and important-time fields.
+
 ## Technical Stack
 
 Recommended MVP stack:
@@ -242,6 +272,7 @@ Recommended MVP stack:
 - Text model API for itinerary generation, question answering, and itinerary optimization.
 - SwiftUI-rendered export components for image and PDF output.
 - Markdown export generated from structured trip and journal data.
+- taste-skill for early visual design calibration, especially visual language, share cards, journal templates, and marketing presentation checks.
 
 Backend strategy:
 
@@ -265,6 +296,7 @@ Core layers:
 - AIService: wraps text generation, multimodal recognition, itinerary optimization, and structured JSON validation.
 - MapProvider: abstracts map operations; MVP implementation uses MapKit.
 - PlanningEngine: turns user input, imported material, AI output, places, time constraints, and budget constraints into editable plans.
+- PlanningScriptEngine: records and executes reusable route-planning scripts, rules, and heuristics to reduce repeated AI calls over time.
 - JournalEngine: turns trip data into journal pages and modules.
 - ExportService: generates image, PDF, and Markdown outputs.
 - EntitlementProvider: reserved for future subscription, AI credits, paid templates, and sticker packs.
@@ -290,6 +322,8 @@ Initial entities:
 - StickerAsset: built-in sticker resource.
 - StickerPlacement: position and transform of a sticker on a journal page or block.
 - ShareExport: exported image, PDF, or Markdown record.
+- Reminder: departure countdown, reservation, transport, check-in, or activity-start reminder record.
+- PlanningScript: reusable planning steps, ordering rules, and validation logic generated by AI or extracted from repeated system behavior.
 
 Future-reserved fields:
 
@@ -315,8 +349,16 @@ MVP AI tasks:
 - Suggest route and time adjustments.
 - Generate packing list suggestions.
 - Generate journal drafts from itinerary data.
+- Generate editable SNS sharing copy and hashtags for Xiaohongshu or other SNS platforms.
 
 AI output should include assumptions and uncertainty markers so the UI can show warnings instead of silently treating guesses as facts.
+
+Route planning should use AI and deterministic scripts in parallel:
+
+- AI handles user intent, ambiguous information, initial route generation, and explanations for adjustments.
+- Scripts handle repeatable checks such as route order, time conflicts, meal gaps, budget categories, reminder triggers, and numbered map labels.
+- Each AI route-planning run should record inputs, outputs, assumptions, adjustment reasons, and reusable rules so the product can gradually build PlanningScript assets.
+- Over time, stable logic should run through scripts first, and AI should be called only when understanding, generation, tradeoff reasoning, or explanation is needed. This reduces AI cost and instability.
 
 ## Map Strategy
 
@@ -332,6 +374,7 @@ MapKit is acceptable for:
 - Route overlays.
 - Map snapshots.
 - App-layer visual design.
+- Numbered route points such as 1, 2, 3, 4, and 5.
 
 MapKit is limited for deep base-map styling. If the product later needs full custom road, water, label, and brand map styling, Mapbox should be evaluated.
 
@@ -345,6 +388,12 @@ MVP visual style:
 - Soft journal accents without making the planning workflow decorative or slow.
 
 The planning workspace should feel clear and efficient. The journal output can carry more personality through templates, stickers, cover pages, and export cards.
+
+Design process:
+
+- Use taste-skill in the early design phase for visual taste calibration.
+- taste-skill is more useful for visual and frontend taste than for iOS product interaction architecture, so it should not replace native iOS UX design judgment.
+- For 织步记/Ayu Walk, use it mainly to check minimal journal style, share cards, journal templates, page hierarchy, typography, spacing, restrained motion, and avoidance of generic templated visuals.
 
 ## Monetization Reserved
 
@@ -360,6 +409,7 @@ Future paid features may include:
 - More trip plans.
 - Collaboration.
 - Online share pages.
+- Advanced reminder widgets and lock-screen countdown styles.
 
 Use Apple In-App Purchase first for iOS monetization unless cross-platform account features become necessary.
 
@@ -377,6 +427,9 @@ Mitigation: Local-first MVP, shared data contracts, mock JSON before backend imp
 Risk: journal editor becomes too complex.
 Mitigation: Modular light editing, limited templates, limited sticker controls, no free-canvas editor in MVP.
 
+Risk: AI route-planning costs grow too quickly.
+Mitigation: Record AI planning paths as reusable PlanningScript rules and run deterministic scripts before calling AI.
+
 Risk: MapKit styling is not enough.
 Mitigation: Keep MapProvider abstraction and move custom visual identity to annotations, overlays, cards, journal templates, and export layouts first.
 
@@ -390,19 +443,21 @@ Mitigation: MVP supports screenshots and pasted text first; link parsing is futu
 3. Build AI text itinerary generation with structured output.
 4. Build screenshot/text import pipeline with MiniMax multimodal API.
 5. Build itinerary timeline editor.
-6. Build MapKit place display and basic drag/reorder behavior.
+6. Build MapKit place display, route lines, numbered labels, and basic drag/reorder behavior.
 7. Build budget planner.
 8. Build AA calculator.
 9. Build packing list.
-10. Build journal generation engine.
-11. Build modular journal editor with stickers.
-12. Build image, PDF, and Markdown export.
-13. Add light share branding.
-14. Prepare iCloud/sync/account interfaces without implementing full backend.
+10. Build AI+script parallel planning logs and reusable rule mechanism.
+11. Build journal generation engine.
+12. Build page-turning journal preview.
+13. Build modular journal editor with stickers and module selection.
+14. Build image, PDF, and Markdown export.
+15. Add light share branding and AI SNS copy generation.
+16. Prepare reminder, iCloud/sync, and account interfaces without implementing full backend.
 
 ## Implementation Defaults To Confirm
 
-- English product name can remain unselected during MVP planning.
+- English product name is Ayu Walk.
 - Minimum iOS version should be chosen during implementation planning after checking required MapKit, SwiftData, export, and photo features.
 - SwiftData is the default persistence choice unless prototype testing shows migration, query, or sync risk that justifies Core Data.
 - Text model provider should be selected during implementation planning; the interface must not be tied to one provider.
