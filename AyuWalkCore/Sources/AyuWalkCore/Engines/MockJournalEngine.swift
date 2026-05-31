@@ -15,7 +15,7 @@ public struct MockJournalEngine: Sendable {
     private func coverPage(for trip: Trip) -> JournalPage {
         let pageSeed = "trip:\(trip.id.uuidString):cover"
 
-        JournalPage(
+        return JournalPage(
             id: stableID(pageSeed),
             kind: .cover,
             title: trip.title,
@@ -30,7 +30,7 @@ public struct MockJournalEngine: Sendable {
     private func overviewPage(for trip: Trip) -> JournalPage {
         let pageSeed = "trip:\(trip.id.uuidString):overview"
 
-        JournalPage(
+        return JournalPage(
             id: stableID(pageSeed),
             kind: .overview,
             title: "行程总览",
