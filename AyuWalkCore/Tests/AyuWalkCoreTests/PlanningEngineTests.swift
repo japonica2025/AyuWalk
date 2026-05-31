@@ -53,4 +53,42 @@ final class PlanningEngineTests: XCTestCase {
         XCTAssertEqual(trip.days.first?.activities.first?.routeOrder, 1)
         XCTAssertEqual(trip.days.first?.activities.first?.place?.providerIDs[.mapKit], "mock-shibuya")
     }
+
+    func testCoreEnumsExposeStableRawValues() {
+        XCTAssertEqual(TravelPurpose.cityWalk.rawValue, "cityWalk")
+        XCTAssertEqual(ActivityKind.freeTime.rawValue, "freeTime")
+        XCTAssertEqual(MapProviderKind.mapKit.rawValue, "mapKit")
+        XCTAssertEqual(JournalBlockKind.dateLocation.rawValue, "dateLocation")
+    }
+
+    func testTripDurationDateRangeStoresDates() {
+        let start = Date(timeIntervalSince1970: 0)
+        let end = Date(timeIntervalSince1970: 86400)
+        let duration = TripDuration.dateRange(start: start, end: end)
+
+        guard case let .dateRange(actualStart, actualEnd) = duration else {
+            return XCTFail("Expected date range duration")
+        }
+
+        XCTAssertEqual(actualStart, start)
+        XCTAssertEqual(actualEnd, end)
+    }
+
+    func testBudgetPackingAndPlanningExposeStableFieldNames() {
+        let budgetPlan = BudgetPlan(total: 12000, currencyCode: "CNY")
+        let packingList = PackingList(items: [
+            PackingItem(id: UUID(), title: "护照", isPacked: false, notes: nil)
+        ])
+        let planningScript = PlanningScript(
+            id: UUID(),
+            name: "Day planner",
+            summary: "Builds a simple daily outline"
+        )
+
+        XCTAssertEqual(budgetPlan.total, 12000)
+        XCTAssertEqual(budgetPlan.currencyCode, "CNY")
+        XCTAssertEqual(packingList.items.count, 1)
+        XCTAssertEqual(planningScript.name, "Day planner")
+        XCTAssertEqual(planningScript.summary, "Builds a simple daily outline")
+    }
 }

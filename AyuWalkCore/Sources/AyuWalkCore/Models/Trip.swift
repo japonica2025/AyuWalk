@@ -46,23 +46,19 @@ public struct Trip: Equatable, Identifiable, Sendable {
     }
 }
 
-public enum TravelPurpose: Equatable, Sendable {
-    case cityWalk
-    case food
-    case culture
-    case nature
-    case shopping
+public enum TravelPurpose: String, CaseIterable, Codable, Equatable, Sendable {
+    case concert
+    case honeymoon
     case family
-    case relaxation
-    case business
-    case photography
-    case other(String)
+    case friends
+    case cityWalk
+    case shopping
+    case food
 }
 
 public enum TripDuration: Equatable, Sendable {
     case dayCount(Int)
-    case dateRange(startDate: String, endDate: String)
-    case openEnded
+    case dateRange(start: Date, end: Date)
 }
 
 public struct TripDay: Equatable, Identifiable, Sendable {
@@ -124,15 +120,15 @@ public struct Activity: Equatable, Identifiable, Sendable {
     }
 }
 
-public enum ActivityKind: Equatable, Sendable {
+public enum ActivityKind: String, Codable, Equatable, Sendable {
     case sight
     case meal
-    case transport
     case hotel
+    case transport
     case shopping
-    case experience
-    case rest
-    case custom(String)
+    case concert
+    case freeTime
+    case note
 }
 
 public struct Place: Equatable, Identifiable, Sendable {
@@ -160,11 +156,10 @@ public struct Place: Equatable, Identifiable, Sendable {
     }
 }
 
-public enum MapProviderKind: Equatable, Hashable, Sendable {
+public enum MapProviderKind: String, Codable, Hashable, Sendable {
     case mapKit
-    case googleMaps
-    case amap
-    case custom(String)
+    case google
+    case mapbox
 }
 
 public struct Participant: Equatable, Identifiable, Sendable {
@@ -201,41 +196,26 @@ public struct ImportedSource: Equatable, Identifiable, Sendable {
     }
 }
 
-public enum ImportedSourceKind: Equatable, Sendable {
-    case url
-    case document
-    case image
-    case note
-    case custom(String)
+public enum ImportedSourceKind: String, Codable, Equatable, Sendable {
+    case screenshot
+    case pastedText
+    case futureLink
 }
 
-public struct BudgetPlan: Equatable, Identifiable, Sendable {
-    public let id: UUID
+public struct BudgetPlan: Equatable, Sendable {
+    public var total: Decimal
     public var currencyCode: String
-    public var totalBudget: Decimal?
-    public var categoryBudgets: [String: Decimal]
 
-    public init(
-        id: UUID,
-        currencyCode: String,
-        totalBudget: Decimal?,
-        categoryBudgets: [String: Decimal]
-    ) {
-        self.id = id
+    public init(total: Decimal, currencyCode: String) {
+        self.total = total
         self.currencyCode = currencyCode
-        self.totalBudget = totalBudget
-        self.categoryBudgets = categoryBudgets
     }
 }
 
-public struct PackingList: Equatable, Identifiable, Sendable {
-    public let id: UUID
-    public var title: String
+public struct PackingList: Equatable, Sendable {
     public var items: [PackingItem]
 
-    public init(id: UUID, title: String, items: [PackingItem]) {
-        self.id = id
-        self.title = title
+    public init(items: [PackingItem]) {
         self.items = items
     }
 }
@@ -276,11 +256,11 @@ public struct JournalPage: Equatable, Identifiable, Sendable {
     }
 }
 
-public enum JournalPageKind: Equatable, Sendable {
+public enum JournalPageKind: String, Codable, Equatable, Sendable {
     case cover
-    case daily
+    case overview
+    case day
     case summary
-    case custom(String)
 }
 
 public struct JournalBlock: Equatable, Identifiable, Sendable {
@@ -305,7 +285,7 @@ public struct JournalBlock: Equatable, Identifiable, Sendable {
     }
 }
 
-public enum JournalBlockKind: Equatable, Sendable {
+public enum JournalBlockKind: String, Codable, Equatable, Sendable {
     case title
     case dateLocation
     case photo
@@ -318,7 +298,6 @@ public enum JournalBlockKind: Equatable, Sendable {
     case packingSummary
     case mood
     case sticker
-    case custom(String)
 }
 
 public struct Reminder: Equatable, Identifiable, Sendable {
@@ -335,14 +314,12 @@ public struct Reminder: Equatable, Identifiable, Sendable {
 
 public struct PlanningScript: Equatable, Identifiable, Sendable {
     public let id: UUID
-    public var title: String
-    public var prompt: String
-    public var output: String?
+    public var name: String
+    public var summary: String
 
-    public init(id: UUID, title: String, prompt: String, output: String?) {
+    public init(id: UUID, name: String, summary: String) {
         self.id = id
-        self.title = title
-        self.prompt = prompt
-        self.output = output
+        self.name = name
+        self.summary = summary
     }
 }
