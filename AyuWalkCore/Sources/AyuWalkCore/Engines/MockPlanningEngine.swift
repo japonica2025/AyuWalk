@@ -15,7 +15,7 @@ public struct MockPlanningEngine: Sendable {
         trip.purpose = purpose
         trip.importedSources = [
             ImportedSource(
-                id: UUID(),
+                id: UUID(uuidString: "00000000-0000-0000-0000-000000000701")!,
                 kind: .pastedText,
                 title: "用户想法",
                 url: nil,

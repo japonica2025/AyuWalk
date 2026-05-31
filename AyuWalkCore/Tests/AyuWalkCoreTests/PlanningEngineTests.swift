@@ -124,4 +124,24 @@ final class PlanningEngineTests: XCTestCase {
         XCTAssertEqual(trip.importedSources.first?.title, "用户想法")
         XCTAssertEqual(trip.importedSources.first?.extractedText, "想要轻松一点，适合发小红书")
     }
+
+    func testMockPlanningEngineIsDeterministicForSameInput() {
+        let engine = MockPlanningEngine()
+
+        let first = engine.generateTrip(
+            destination: "东京",
+            dayCount: 5,
+            purpose: [.cityWalk, .food],
+            notes: "想要轻松一点，适合发小红书"
+        )
+
+        let second = engine.generateTrip(
+            destination: "东京",
+            dayCount: 5,
+            purpose: [.cityWalk, .food],
+            notes: "想要轻松一点，适合发小红书"
+        )
+
+        XCTAssertEqual(first, second)
+    }
 }
