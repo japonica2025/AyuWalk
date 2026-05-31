@@ -104,4 +104,19 @@ final class PlanningEngineTests: XCTestCase {
         XCTAssertEqual(routeOrders.min(), 1)
         XCTAssertTrue(trip.days.allSatisfy { !$0.activities.isEmpty })
     }
+
+    func testMockPlanningEngineBuildsStructuredTripFromPrompt() {
+        let engine = MockPlanningEngine()
+        let trip = engine.generateTrip(
+            destination: "东京",
+            dayCount: 5,
+            purpose: [.cityWalk, .food],
+            notes: "想要轻松一点，适合发小红书"
+        )
+
+        XCTAssertEqual(trip.destination, "东京")
+        XCTAssertEqual(trip.duration, .dayCount(5))
+        XCTAssertEqual(trip.days.first?.activities.first?.routeOrder, 1)
+        XCTAssertTrue(trip.planningScripts.contains { $0.name == "编号路线点" })
+    }
 }
