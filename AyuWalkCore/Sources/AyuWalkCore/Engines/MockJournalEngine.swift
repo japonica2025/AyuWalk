@@ -7,67 +7,70 @@ public struct MockJournalEngine: Sendable {
         [
             coverPage(for: trip),
             overviewPage(for: trip)
-        ] + trip.days.enumerated().map { index, day in
-            dailyPage(for: day, pageIndex: index)
+        ] + trip.days.map { day in
+            dailyPage(for: day)
         }
     }
 
     private func coverPage(for trip: Trip) -> JournalPage {
+        let pageSeed = "trip:\(trip.id.uuidString):cover"
+
         JournalPage(
-            id: uuid(namespace: 1, index: 1),
+            id: stableID(pageSeed),
             kind: .cover,
             title: trip.title,
             dayID: nil,
             blocks: [
-                block(.title, pageIndex: 1, blockIndex: 1, title: trip.title, text: trip.destination),
-                block(.dateLocation, pageIndex: 1, blockIndex: 2, title: "旅行信息", text: "\(trip.destination) · \(durationText(for: trip.duration))")
+                block(.title, parentSeed: pageSeed, title: trip.title, text: trip.destination),
+                block(.dateLocation, parentSeed: pageSeed, title: "旅行信息", text: "\(trip.destination) · \(durationText(for: trip.duration))")
             ]
         )
     }
 
     private func overviewPage(for trip: Trip) -> JournalPage {
+        let pageSeed = "trip:\(trip.id.uuidString):overview"
+
         JournalPage(
-            id: uuid(namespace: 1, index: 2),
+            id: stableID(pageSeed),
             kind: .overview,
             title: "行程总览",
             dayID: nil,
             blocks: [
-                block(.routeSummary, pageIndex: 2, blockIndex: 1, title: "路线概览", text: routeSummary(for: trip)),
-                block(.budgetSummary, pageIndex: 2, blockIndex: 2, title: "预算概览", text: budgetSummary(for: trip.budgetPlan)),
-                block(.packingSummary, pageIndex: 2, blockIndex: 3, title: "行李概览", text: packingSummary(for: trip.packingList))
+                block(.routeSummary, parentSeed: pageSeed, title: "路线概览", text: routeSummary(for: trip)),
+                block(.budgetSummary, parentSeed: pageSeed, title: "预算概览", text: budgetSummary(for: trip.budgetPlan)),
+                block(.packingSummary, parentSeed: pageSeed, title: "行李概览", text: packingSummary(for: trip.packingList))
             ]
         )
     }
 
-    private func dailyPage(for day: TripDay, pageIndex: Int) -> JournalPage {
-        let stablePageIndex = pageIndex + 3
+    private func dailyPage(for day: TripDay) -> JournalPage {
+        let pageSeed = "day:\(day.id.uuidString):day"
 
         return JournalPage(
-            id: uuid(namespace: 1, index: stablePageIndex),
+            id: stableID(pageSeed),
             kind: .day,
             title: day.title,
             dayID: day.id,
             blocks: [
-                block(.title, pageIndex: stablePageIndex, blockIndex: 1, title: day.title, text: "第 \(day.dayNumber) 天"),
-                block(.dateLocation, pageIndex: stablePageIndex, blockIndex: 2, title: day.dateLabel, text: dayLocationSummary(for: day)),
-                block(.photo, pageIndex: stablePageIndex, blockIndex: 3, title: "照片", text: "为今天的代表照片预留版位"),
-                block(.text, pageIndex: stablePageIndex, blockIndex: 4, title: "旅行手记", text: "记录今天最想保存的瞬间。"),
-                block(.timeline, pageIndex: stablePageIndex, blockIndex: 5, title: "时间线", text: timelineSummary(for: day)),
-                block(.mapSnapshot, pageIndex: stablePageIndex, blockIndex: 6, title: "地图快照", text: mapSummary(for: day)),
-                block(.sticker, pageIndex: stablePageIndex, blockIndex: 7, title: "贴纸", text: "天气、交通、美食、景点、心情、酒店、购物、演唱会")
+                block(.title, parentSeed: pageSeed, title: day.title, text: "第 \(day.dayNumber) 天"),
+                block(.dateLocation, parentSeed: pageSeed, title: day.dateLabel, text: dayLocationSummary(for: day)),
+                block(.photo, parentSeed: pageSeed, title: "照片", text: "为今天的代表照片预留版位"),
+                block(.text, parentSeed: pageSeed, title: "旅行手记", text: "记录今天最想保存的瞬间。"),
+                block(.timeline, parentSeed: pageSeed, title: "时间线", text: timelineSummary(for: day)),
+                block(.mapSnapshot, parentSeed: pageSeed, title: "地图快照", text: mapSummary(for: day)),
+                block(.sticker, parentSeed: pageSeed, title: "贴纸", text: "天气、交通、美食、景点、心情、酒店、购物、演唱会")
             ]
         )
     }
 
     private func block(
         _ kind: JournalBlockKind,
-        pageIndex: Int,
-        blockIndex: Int,
+        parentSeed: String,
         title: String?,
         text: String?
     ) -> JournalBlock {
         JournalBlock(
-            id: uuid(namespace: 2, index: pageIndex * 100 + blockIndex),
+            id: stableID("\(parentSeed):block:\(kind.rawValue)"),
             kind: kind,
             title: title,
             text: text,
@@ -155,12 +158,44 @@ public struct MockJournalEngine: Sendable {
         return orderedPlaces.isEmpty ? "暂无地图点位" : orderedPlaces.joined(separator: " → ")
     }
 
-    private func uuid(namespace: Int, index: Int) -> UUID {
-        UUID(uuidString: String(format: "00000000-0000-0000-%04x-%012x", namespace, index))!
+    private func stableID(_ seed: String) -> UUID {
+        let bytes = Array(seed.utf8)
+        let first = fnv1a64(bytes, offsetBasis: 0xcbf29ce484222325)
+        let second = fnv1a64(bytes, offsetBasis: 0x84222325cbf29ce4)
+        let uuidBytes = (0..<16).map { index -> UInt8 in
+            let value = index < 8 ? first : second
+            return UInt8((value >> ((index % 8) * 8)) & 0xff)
+        }
+
+        return UUID(uuid: (
+            uuidBytes[0],
+            uuidBytes[1],
+            uuidBytes[2],
+            uuidBytes[3],
+            uuidBytes[4],
+            uuidBytes[5],
+            uuidBytes[6],
+            uuidBytes[7],
+            uuidBytes[8],
+            uuidBytes[9],
+            uuidBytes[10],
+            uuidBytes[11],
+            uuidBytes[12],
+            uuidBytes[13],
+            uuidBytes[14],
+            uuidBytes[15]
+        ))
+    }
+
+    private func fnv1a64(_ bytes: [UInt8], offsetBasis: UInt64) -> UInt64 {
+        bytes.reduce(offsetBasis) { hash, byte in
+            (hash ^ UInt64(byte)) &* 0x00000100000001b3
+        }
     }
 }
 
 public extension JournalBlock {
+    /// Initial module default policy for mock journal generation, not persisted user selection state.
     var isDefaultSelected: Bool {
         [.title, .dateLocation, .photo, .text].contains(kind)
     }
