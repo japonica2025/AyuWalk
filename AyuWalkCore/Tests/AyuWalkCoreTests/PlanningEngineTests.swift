@@ -91,4 +91,17 @@ final class PlanningEngineTests: XCTestCase {
         XCTAssertEqual(planningScript.name, "Day planner")
         XCTAssertEqual(planningScript.summary, "Builds a simple daily outline")
     }
+
+    func testSampleTripHasOrderedMapReadyActivities() {
+        let trip = SampleTripFactory.tokyoFiveDayTrip()
+
+        let routeOrders = trip.days.flatMap { day in
+            day.activities.compactMap(\.routeOrder)
+        }
+
+        XCTAssertEqual(trip.englishProductName, "Ayu Walk")
+        XCTAssertFalse(routeOrders.isEmpty)
+        XCTAssertEqual(routeOrders.min(), 1)
+        XCTAssertTrue(trip.days.allSatisfy { !$0.activities.isEmpty })
+    }
 }
