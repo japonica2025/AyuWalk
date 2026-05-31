@@ -8,18 +8,22 @@
 
 /* Begin PBXBuildFile section */
 		3385EA4894780EB2F243EC50 /* AyuWalkCore in Frameworks */ = {isa = PBXBuildFile; productRef = B77D53584ACDC39808ACC607 /* AyuWalkCore */; };
+		9E36F96D849DD2537C07861F /* PlanHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B652B36108C1B3E2E39F99A3 /* PlanHomeView.swift */; };
 		A3B5067DCC2D466E01D5A971 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50FD91B1655CCC4E024A73E4 /* RootView.swift */; };
 		BE03E366A56093E733A83013 /* AyuWalkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC6CBC0C8F9C2116FA50D4 /* AyuWalkApp.swift */; };
 		D0A61B3FC1582BC9B28A3F77 /* AyuWalkTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAD4F7F9DCA3DE5BAFF91F /* AyuWalkTheme.swift */; };
+		E28A2E3E381213F428285F53 /* ItineraryTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48EA9DE844C169E06B423CC3 /* ItineraryTimelineView.swift */; };
 		F250D3644A1CAB3826FF1910 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EBFC112A9D4E7BB82163E7D /* AppState.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		10A16320665CF6ABFF6A700F /* AyuWalkApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AyuWalkApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		48EA9DE844C169E06B423CC3 /* ItineraryTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItineraryTimelineView.swift; sourceTree = "<group>"; };
 		50FD91B1655CCC4E024A73E4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		54CAD4F7F9DCA3DE5BAFF91F /* AyuWalkTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AyuWalkTheme.swift; sourceTree = "<group>"; };
 		9EBFC112A9D4E7BB82163E7D /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		B1A210826D6B3401B171A923 /* AyuWalkCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AyuWalkCore; path = AyuWalkCore; sourceTree = SOURCE_ROOT; };
+		B652B36108C1B3E2E39F99A3 /* PlanHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanHomeView.swift; sourceTree = "<group>"; };
 		B6AC6CBC0C8F9C2116FA50D4 /* AyuWalkApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AyuWalkApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -55,6 +59,15 @@
 			);
 			sourceTree = "<group>";
 		};
+		330A9AE78280E90D0E556F7E /* Plan */ = {
+			isa = PBXGroup;
+			children = (
+				48EA9DE844C169E06B423CC3 /* ItineraryTimelineView.swift */,
+				B652B36108C1B3E2E39F99A3 /* PlanHomeView.swift */,
+			);
+			path = Plan;
+			sourceTree = "<group>";
+		};
 		7503131776FAEB991D0DFF85 /* Design */ = {
 			isa = PBXGroup;
 			children = (
@@ -83,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				50FD91B1655CCC4E024A73E4 /* RootView.swift */,
+				330A9AE78280E90D0E556F7E /* Plan */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -150,6 +164,8 @@
 				F250D3644A1CAB3826FF1910 /* AppState.swift in Sources */,
 				BE03E366A56093E733A83013 /* AyuWalkApp.swift in Sources */,
 				D0A61B3FC1582BC9B28A3F77 /* AyuWalkTheme.swift in Sources */,
+				E28A2E3E381213F428285F53 /* ItineraryTimelineView.swift in Sources */,
+				9E36F96D849DD2537C07861F /* PlanHomeView.swift in Sources */,
 				A3B5067DCC2D466E01D5A971 /* RootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
