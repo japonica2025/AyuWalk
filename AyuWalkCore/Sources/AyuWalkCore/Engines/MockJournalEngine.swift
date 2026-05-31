@@ -21,8 +21,8 @@ public struct MockJournalEngine: Sendable {
             title: trip.title,
             dayID: nil,
             blocks: [
-                block(.title, parentSeed: pageSeed, title: trip.title, text: trip.destination),
-                block(.dateLocation, parentSeed: pageSeed, title: "旅行信息", text: "\(trip.destination) · \(durationText(for: trip.duration))")
+                block(.title, parentSeed: pageSeed, title: trip.title, text: trip.destination, isDefaultSelected: true),
+                block(.dateLocation, parentSeed: pageSeed, title: "旅行信息", text: "\(trip.destination) · \(durationText(for: trip.duration))", isDefaultSelected: true)
             ]
         )
     }
@@ -36,9 +36,9 @@ public struct MockJournalEngine: Sendable {
             title: "行程总览",
             dayID: nil,
             blocks: [
-                block(.routeSummary, parentSeed: pageSeed, title: "路线概览", text: routeSummary(for: trip)),
-                block(.budgetSummary, parentSeed: pageSeed, title: "预算概览", text: budgetSummary(for: trip.budgetPlan)),
-                block(.packingSummary, parentSeed: pageSeed, title: "行李概览", text: packingSummary(for: trip.packingList))
+                block(.routeSummary, parentSeed: pageSeed, title: "路线概览", text: routeSummary(for: trip), isDefaultSelected: false),
+                block(.budgetSummary, parentSeed: pageSeed, title: "预算概览", text: budgetSummary(for: trip.budgetPlan), isDefaultSelected: false),
+                block(.packingSummary, parentSeed: pageSeed, title: "行李概览", text: packingSummary(for: trip.packingList), isDefaultSelected: false)
             ]
         )
     }
@@ -52,13 +52,13 @@ public struct MockJournalEngine: Sendable {
             title: day.title,
             dayID: day.id,
             blocks: [
-                block(.title, parentSeed: pageSeed, title: day.title, text: "第 \(day.dayNumber) 天"),
-                block(.dateLocation, parentSeed: pageSeed, title: day.dateLabel, text: dayLocationSummary(for: day)),
-                block(.photo, parentSeed: pageSeed, title: "照片", text: "为今天的代表照片预留版位"),
-                block(.text, parentSeed: pageSeed, title: "旅行手记", text: "记录今天最想保存的瞬间。"),
-                block(.timeline, parentSeed: pageSeed, title: "时间线", text: timelineSummary(for: day)),
-                block(.mapSnapshot, parentSeed: pageSeed, title: "地图快照", text: mapSummary(for: day)),
-                block(.sticker, parentSeed: pageSeed, title: "贴纸", text: "天气、交通、美食、景点、心情、酒店、购物、演唱会")
+                block(.title, parentSeed: pageSeed, title: day.title, text: "第 \(day.dayNumber) 天", isDefaultSelected: true),
+                block(.dateLocation, parentSeed: pageSeed, title: day.dateLabel, text: dayLocationSummary(for: day), isDefaultSelected: true),
+                block(.photo, parentSeed: pageSeed, title: "照片", text: "为今天的代表照片预留版位", isDefaultSelected: true),
+                block(.text, parentSeed: pageSeed, title: "旅行手记", text: "记录今天最想保存的瞬间。", isDefaultSelected: true),
+                block(.timeline, parentSeed: pageSeed, title: "时间线", text: timelineSummary(for: day), isDefaultSelected: false),
+                block(.mapSnapshot, parentSeed: pageSeed, title: "地图快照", text: mapSummary(for: day), isDefaultSelected: false),
+                block(.sticker, parentSeed: pageSeed, title: "贴纸", text: "天气、交通、美食、景点、心情、酒店、购物、演唱会", isDefaultSelected: false)
             ]
         )
     }
@@ -67,14 +67,16 @@ public struct MockJournalEngine: Sendable {
         _ kind: JournalBlockKind,
         parentSeed: String,
         title: String?,
-        text: String?
+        text: String?,
+        isDefaultSelected: Bool
     ) -> JournalBlock {
         JournalBlock(
             id: stableID("\(parentSeed):block:\(kind.rawValue)"),
             kind: kind,
             title: title,
             text: text,
-            assetReference: nil
+            assetReference: nil,
+            isDefaultSelected: isDefaultSelected
         )
     }
 
@@ -90,7 +92,7 @@ public struct MockJournalEngine: Sendable {
     private func routeSummary(for trip: Trip) -> String {
         let daySummaries = trip.days.map { day in
             let places = day.activities
-                .sorted { $0.routeOrder < $1.routeOrder }
+                .sorted(by: routeOrderPrecedes)
                 .map(\.title)
                 .joined(separator: " → ")
             return "\(day.dateLabel)：\(places)"
@@ -125,7 +127,7 @@ public struct MockJournalEngine: Sendable {
 
     private func timelineSummary(for day: TripDay) -> String {
         let entries = day.activities
-            .sorted { $0.routeOrder < $1.routeOrder }
+            .sorted(by: routeOrderPrecedes)
             .map { activity in
                 if let timeLabel = timeLabel(for: activity) {
                     return "\(timeLabel) \(activity.title)"
@@ -152,10 +154,23 @@ public struct MockJournalEngine: Sendable {
 
     private func mapSummary(for day: TripDay) -> String {
         let orderedPlaces = day.activities
-            .sorted { $0.routeOrder < $1.routeOrder }
+            .sorted(by: routeOrderPrecedes)
             .compactMap(\.place?.name)
 
         return orderedPlaces.isEmpty ? "暂无地图点位" : orderedPlaces.joined(separator: " → ")
+    }
+
+    private func routeOrderPrecedes(_ lhs: Activity, _ rhs: Activity) -> Bool {
+        switch (lhs.routeOrder, rhs.routeOrder) {
+        case let (lhsOrder?, rhsOrder?):
+            return lhsOrder < rhsOrder
+        case (_?, nil):
+            return true
+        case (nil, _?):
+            return false
+        case (nil, nil):
+            return lhs.title < rhs.title
+        }
     }
 
     private func stableID(_ seed: String) -> UUID {
@@ -191,12 +206,5 @@ public struct MockJournalEngine: Sendable {
         bytes.reduce(offsetBasis) { hash, byte in
             (hash ^ UInt64(byte)) &* 0x00000100000001b3
         }
-    }
-}
-
-public extension JournalBlock {
-    /// Initial module default policy for mock journal generation, not persisted user selection state.
-    var isDefaultSelected: Bool {
-        [.title, .dateLocation, .photo, .text].contains(kind)
     }
 }

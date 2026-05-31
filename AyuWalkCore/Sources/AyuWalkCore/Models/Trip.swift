@@ -92,7 +92,7 @@ public struct Activity: Equatable, Identifiable, Sendable {
     public var endTime: String?
     public var notes: String?
     public var estimatedCost: Decimal?
-    public var routeOrder: Int
+    public var routeOrder: Int?
     public var reminder: Reminder?
 
     public init(
@@ -104,7 +104,7 @@ public struct Activity: Equatable, Identifiable, Sendable {
         endTime: String?,
         notes: String?,
         estimatedCost: Decimal?,
-        routeOrder: Int,
+        routeOrder: Int?,
         reminder: Reminder?
     ) {
         self.id = id
@@ -269,19 +269,22 @@ public struct JournalBlock: Equatable, Identifiable, Sendable {
     public var title: String?
     public var text: String?
     public var assetReference: String?
+    public var isDefaultSelected: Bool
 
     public init(
         id: UUID,
         kind: JournalBlockKind,
         title: String?,
         text: String?,
-        assetReference: String?
+        assetReference: String?,
+        isDefaultSelected: Bool
     ) {
         self.id = id
         self.kind = kind
         self.title = title
         self.text = text
         self.assetReference = assetReference
+        self.isDefaultSelected = isDefaultSelected
     }
 }
 

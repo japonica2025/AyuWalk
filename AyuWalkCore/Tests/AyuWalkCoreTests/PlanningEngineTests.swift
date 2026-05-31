@@ -74,6 +74,23 @@ final class PlanningEngineTests: XCTestCase {
         XCTAssertEqual(actualEnd, end)
     }
 
+    func testActivityAllowsMissingRouteOrder() {
+        let activity = Activity(
+            id: UUID(),
+            title: "自由记录",
+            kind: .note,
+            place: nil,
+            startTime: nil,
+            endTime: nil,
+            notes: "不参与路线排序",
+            estimatedCost: nil,
+            routeOrder: nil,
+            reminder: nil
+        )
+
+        XCTAssertNil(activity.routeOrder)
+    }
+
     func testBudgetPackingAndPlanningExposeStableFieldNames() {
         let budgetPlan = BudgetPlan(total: 12000, currencyCode: "CNY")
         let packingList = PackingList(items: [

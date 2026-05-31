@@ -22,6 +22,28 @@ final class JournalEngineTests: XCTestCase {
         XCTAssertEqual(defaultKinds, [.title, .dateLocation, .photo, .text])
     }
 
+    func testJournalBlocksStoreDefaultSelectionPerBlock() {
+        let selectedText = JournalBlock(
+            id: UUID(),
+            kind: .text,
+            title: "旅行手记",
+            text: "已选",
+            assetReference: nil,
+            isDefaultSelected: true
+        )
+        let unselectedText = JournalBlock(
+            id: UUID(),
+            kind: .text,
+            title: "备用文本",
+            text: "未选",
+            assetReference: nil,
+            isDefaultSelected: false
+        )
+
+        XCTAssertTrue(selectedText.isDefaultSelected)
+        XCTAssertFalse(unselectedText.isDefaultSelected)
+    }
+
     func testGeneratingPagesTwiceForSameTripProducesEqualPages() {
         let trip = SampleTripFactory.tokyoFiveDayTrip()
         let engine = MockJournalEngine()
