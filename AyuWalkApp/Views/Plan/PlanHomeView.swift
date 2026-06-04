@@ -88,13 +88,19 @@ struct PlanHomeView: View {
                 case .budget:
                     BudgetPlannerView(
                         trip: appState.trip,
-                        onAdjustBudget: appState.adjustBudget
+                        onUpdateBudget: appState.updateBudgetTotal,
+                        onAddParticipant: appState.addParticipant,
+                        onUpdateParticipant: appState.updateParticipant,
+                        onDeleteParticipant: appState.deleteParticipant
                     )
                     .presentationDetents([.medium, .large])
                 case .packing:
                     PackingListView(
                         items: appState.trip.packingList?.items ?? [],
-                        onToggleItem: appState.togglePackingItem
+                        onToggleItem: appState.togglePackingItem,
+                        onAddItem: appState.addPackingItem,
+                        onUpdateItem: appState.updatePackingItem,
+                        onDeleteItem: appState.deletePackingItem
                     )
                     .presentationDetents([.medium, .large])
                 case .activity(let target):

@@ -203,6 +203,38 @@ final class AppState {
         persist()
     }
 
+    func updateBudgetTotal(_ total: Decimal) {
+        var budget = trip.budgetPlan ?? BudgetPlan(total: 0, currencyCode: DestinationResolver.currencyCode(forCountryCode: nil))
+        budget.total = total < 0 ? 0 : total
+        trip.budgetPlan = budget
+        persist()
+    }
+
+    func addParticipant(name: String) {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else {
+            return
+        }
+
+        trip.participants.append(Participant(id: UUID(), name: trimmedName, role: nil))
+        persist()
+    }
+
+    func updateParticipant(id: UUID, name: String) {
+        guard let index = trip.participants.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        trip.participants[index].name = trimmedName.isEmpty ? "未命名" : trimmedName
+        persist()
+    }
+
+    func deleteParticipant(id: UUID) {
+        trip.participants.removeAll { $0.id == id }
+        persist()
+    }
+
     func togglePackingItem(id: UUID) {
         guard var packingList = trip.packingList,
               let index = packingList.items.firstIndex(where: { $0.id == id }) else {
@@ -210,6 +242,50 @@ final class AppState {
         }
 
         packingList.items[index].isPacked.toggle()
+        trip.packingList = packingList
+        persist()
+    }
+
+    func addPackingItem(title: String, notes: String?) {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else {
+            return
+        }
+
+        var packingList = trip.packingList ?? PackingList(items: [])
+        let normalizedNotes = notes?.trimmingCharacters(in: .whitespacesAndNewlines)
+        packingList.items.append(
+            PackingItem(
+                id: UUID(),
+                title: trimmedTitle,
+                isPacked: false,
+                notes: normalizedNotes?.isEmpty == false ? normalizedNotes : nil
+            )
+        )
+        trip.packingList = packingList
+        persist()
+    }
+
+    func updatePackingItem(id: UUID, title: String, notes: String?) {
+        guard var packingList = trip.packingList,
+              let index = packingList.items.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedNotes = notes?.trimmingCharacters(in: .whitespacesAndNewlines)
+        packingList.items[index].title = trimmedTitle.isEmpty ? "未命名物品" : trimmedTitle
+        packingList.items[index].notes = trimmedNotes?.isEmpty == false ? trimmedNotes : nil
+        trip.packingList = packingList
+        persist()
+    }
+
+    func deletePackingItem(id: UUID) {
+        guard var packingList = trip.packingList else {
+            return
+        }
+
+        packingList.items.removeAll { $0.id == id }
         trip.packingList = packingList
         persist()
     }

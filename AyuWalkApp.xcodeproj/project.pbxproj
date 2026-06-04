@@ -19,7 +19,15 @@
 		867E98218DC92BC1761B1940 /* RouteMapPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D215303CEB1E58B096AA5E /* RouteMapPreviewView.swift */; };
 		8F4A61D047F14B4FAF9400C1 /* RouteMapDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4A61CF47F14B4FAF9400C1 /* RouteMapDetailView.swift */; };
 		8F93B01D4D6E4F82A7C42001 /* AyuWalkComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F93B01C4D6E4F82A7C42001 /* AyuWalkComponents.swift */; };
-		8F93B0224D6E4F82A7C42001 /* AWJournalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F93B0214D6E4F82A7C42001 /* AWJournalComponents.swift */; };
+		A50000000000000000000003 /* AWButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000002 /* AWButton.swift */; };
+		A50000000000000000000005 /* AWCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000004 /* AWCard.swift */; };
+		A50000000000000000000007 /* AWChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000006 /* AWChip.swift */; };
+		A50000000000000000000009 /* AWTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000008 /* AWTextField.swift */; };
+		A5000000000000000000000B /* AWFloatingTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5000000000000000000000A /* AWFloatingTabBar.swift */; };
+		A5000000000000000000000E /* AWPageScaffold.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5000000000000000000000D /* AWPageScaffold.swift */; };
+		A50000000000000000000012 /* AWJournalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000011 /* AWJournalComponents.swift */; };
+		A50000000000000000000016 /* AWBudgetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000015 /* AWBudgetComponents.swift */; };
+		A50000000000000000000019 /* AWPackingComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000018 /* AWPackingComponents.swift */; };
 		93AB1CD143FB63B93BEDF6DD /* JournalPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8A90D49A0F90CE3E981578 /* JournalPreviewView.swift */; };
 		9E36F96D849DD2537C07861F /* PlanHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B652B36108C1B3E2E39F99A3 /* PlanHomeView.swift */; };
 		A18FBC3652D9696F0EE6CE59 /* PackingListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D52EAE7983E1632B12CF82 /* PackingListView.swift */; };
@@ -55,6 +63,15 @@
 		8F4A61CF47F14B4FAF9400C1 /* RouteMapDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteMapDetailView.swift; sourceTree = "<group>"; };
 		8F93B01C4D6E4F82A7C42001 /* AyuWalkComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AyuWalkComponents.swift; sourceTree = "<group>"; };
 		8F93B0214D6E4F82A7C42001 /* AWJournalComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWJournalComponents.swift; sourceTree = "<group>"; };
+		A50000000000000000000002 /* AWButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWButton.swift; sourceTree = "<group>"; };
+		A50000000000000000000004 /* AWCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWCard.swift; sourceTree = "<group>"; };
+		A50000000000000000000006 /* AWChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWChip.swift; sourceTree = "<group>"; };
+		A50000000000000000000008 /* AWTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWTextField.swift; sourceTree = "<group>"; };
+		A5000000000000000000000A /* AWFloatingTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWFloatingTabBar.swift; sourceTree = "<group>"; };
+		A5000000000000000000000D /* AWPageScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWPageScaffold.swift; sourceTree = "<group>"; };
+		A50000000000000000000011 /* AWJournalComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWJournalComponents.swift; sourceTree = "<group>"; };
+		A50000000000000000000015 /* AWBudgetComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWBudgetComponents.swift; sourceTree = "<group>"; };
+		A50000000000000000000018 /* AWPackingComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWPackingComponents.swift; sourceTree = "<group>"; };
 		94CD86CA241A290EB5AEA9A7 /* StickerPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerPickerView.swift; sourceTree = "<group>"; };
 		96841A45869C8496DBA976F2 /* JournalModulePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalModulePickerView.swift; sourceTree = "<group>"; };
 		9EBFC112A9D4E7BB82163E7D /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -147,6 +164,60 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		A50000000000000000000001 /* Primitives */ = {
+			isa = PBXGroup;
+			children = (
+				A50000000000000000000002 /* AWButton.swift */,
+				A50000000000000000000004 /* AWCard.swift */,
+				A50000000000000000000006 /* AWChip.swift */,
+				A50000000000000000000008 /* AWTextField.swift */,
+				A5000000000000000000000A /* AWFloatingTabBar.swift */,
+			);
+			path = Primitives;
+			sourceTree = "<group>";
+		};
+		A5000000000000000000000C /* Scenes */ = {
+			isa = PBXGroup;
+			children = (
+				A5000000000000000000000D /* AWPageScaffold.swift */,
+			);
+			path = Scenes;
+			sourceTree = "<group>";
+		};
+		A5000000000000000000000F /* Patterns */ = {
+			isa = PBXGroup;
+			children = (
+				A50000000000000000000014 /* Budget */,
+				A50000000000000000000010 /* Journal */,
+				A50000000000000000000017 /* Packing */,
+			);
+			path = Patterns;
+			sourceTree = "<group>";
+		};
+		A50000000000000000000014 /* Budget */ = {
+			isa = PBXGroup;
+			children = (
+				A50000000000000000000015 /* AWBudgetComponents.swift */,
+			);
+			path = Budget;
+			sourceTree = "<group>";
+		};
+		A50000000000000000000010 /* Journal */ = {
+			isa = PBXGroup;
+			children = (
+				A50000000000000000000011 /* AWJournalComponents.swift */,
+			);
+			path = Journal;
+			sourceTree = "<group>";
+		};
+		A50000000000000000000017 /* Packing */ = {
+			isa = PBXGroup;
+			children = (
+				A50000000000000000000018 /* AWPackingComponents.swift */,
+			);
+			path = Packing;
+			sourceTree = "<group>";
+		};
 		619A8E69708B10C8BBBC9962 /* AI */ = {
 			isa = PBXGroup;
 			children = (
@@ -204,6 +275,9 @@
 				CA55DD20C8736E755A8D508F /* Create */,
 				FCF7DDD6B13E625A1F1F2AD3 /* Journal */,
 				330A9AE78280E90D0E556F7E /* Plan */,
+				A5000000000000000000000F /* Patterns */,
+				A50000000000000000000001 /* Primitives */,
+				A5000000000000000000000C /* Scenes */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -282,7 +356,15 @@
 				BE03E366A56093E733A83013 /* AyuWalkApp.swift in Sources */,
 				D0A61B3FC1582BC9B28A3F77 /* AyuWalkTheme.swift in Sources */,
 				8F93B01D4D6E4F82A7C42001 /* AyuWalkComponents.swift in Sources */,
-				8F93B0224D6E4F82A7C42001 /* AWJournalComponents.swift in Sources */,
+				A50000000000000000000003 /* AWButton.swift in Sources */,
+				A50000000000000000000005 /* AWCard.swift in Sources */,
+				A50000000000000000000007 /* AWChip.swift in Sources */,
+				A50000000000000000000009 /* AWTextField.swift in Sources */,
+				A5000000000000000000000B /* AWFloatingTabBar.swift in Sources */,
+				A5000000000000000000000E /* AWPageScaffold.swift in Sources */,
+				A50000000000000000000012 /* AWJournalComponents.swift in Sources */,
+				A50000000000000000000016 /* AWBudgetComponents.swift in Sources */,
+				A50000000000000000000019 /* AWPackingComponents.swift in Sources */,
 				DB8DC0F6258C1BFFC150887B /* BudgetPlannerView.swift in Sources */,
 				D030934DA888A33234CF985A /* CreateTripView.swift in Sources */,
 				626D0C263A625DF0B946BE6F /* DestinationGeocoder.swift in Sources */,

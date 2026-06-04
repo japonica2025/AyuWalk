@@ -12,6 +12,7 @@ struct JournalPreviewView: View {
     @State private var isExporting = false
     @State private var selectedStickerPhotoItem: PhotosPickerItem?
     @State private var pageFrames: [UUID: CGRect] = [:]
+    @State private var isStickerInteracting = false
 
     var body: some View {
         NavigationStack {
@@ -61,6 +62,9 @@ struct JournalPreviewView: View {
                                                     scale: scale,
                                                     rotationDegrees: rotationDegrees
                                                 )
+                                            },
+                                            onStickerInteractionChanged: { isInteracting in
+                                                isStickerInteracting = isInteracting
                                             }
                                         )
                                         .containerRelativeFrame(.horizontal, count: 1, span: 1, spacing: 18)
@@ -83,6 +87,7 @@ struct JournalPreviewView: View {
                             }
                             .contentMargins(.horizontal, 18, for: .scrollContent)
                             .scrollTargetBehavior(.viewAligned)
+                            .scrollDisabled(isStickerInteracting)
                             .onChange(of: selectedPageID) { _, newValue in
                                 guard let newValue else { return }
 

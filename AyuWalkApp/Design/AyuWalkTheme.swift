@@ -45,6 +45,22 @@ enum AyuWalkShadow {
     static let journal = AyuWalkTheme.ink.opacity(0.10)
 }
 
+enum AyuWalkSize {
+    static let iconButton: CGFloat = 40
+    static let compactIconButton: CGFloat = 34
+    static let largeIconButton: CGFloat = 44
+    static let floatingTabWidth: CGFloat = 72
+    static let floatingTabHeight: CGFloat = 35
+    static let formControlHeight: CGFloat = 44
+    static let stickerControl: CGFloat = 22
+    static let stickerHandle: CGFloat = 18
+}
+
+enum AyuWalkMotion {
+    static let quick = Animation.spring(response: 0.28, dampingFraction: 0.88)
+    static let standard = Animation.spring(response: 0.45, dampingFraction: 0.88)
+}
+
 enum AyuWalkTypography {
     static let brand = Font.caption2.weight(.heavy)
     static let eyebrow = Font.caption.weight(.bold)

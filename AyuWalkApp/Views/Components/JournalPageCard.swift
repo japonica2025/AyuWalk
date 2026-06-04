@@ -9,6 +9,7 @@ struct JournalPageCard: View {
     var onRemoveSticker: (UUID) -> Void = { _ in }
     var onMoveSticker: (UUID, Double, Double) -> Void = { _, _, _ in }
     var onTransformSticker: (UUID, Double, Double) -> Void = { _, _, _ in }
+    var onStickerInteractionChanged: (Bool) -> Void = { _ in }
 
     var body: some View {
         AWJournalBookFrame {
@@ -49,7 +50,8 @@ struct JournalPageCard: View {
                                     placedStickers: placedStickers,
                                     onRemove: onRemoveSticker,
                                     onMove: onMoveSticker,
-                                    onTransform: onTransformSticker
+                                    onTransform: onTransformSticker,
+                                    onInteractionChanged: onStickerInteractionChanged
                                 )
                             }
                             .dropDestination(for: String.self) { items, location in
