@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Trip: Equatable, Identifiable, Sendable {
+public struct Trip: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var title: String
     public var englishProductName: String
@@ -56,12 +56,54 @@ public enum TravelPurpose: String, CaseIterable, Codable, Equatable, Sendable {
     case food
 }
 
-public enum TripDuration: Equatable, Sendable {
+public enum TripDuration: Codable, Equatable, Sendable {
     case dayCount(Int)
     case dateRange(start: Date, end: Date)
 }
 
-public struct TripDay: Equatable, Identifiable, Sendable {
+public enum TripPlanningLimits {
+    public static let minimumDayCount = 1
+    public static let maximumDayCount = 14
+
+    public static func normalizedDayCount(_ dayCount: Int) -> Int {
+        min(max(dayCount, minimumDayCount), maximumDayCount)
+    }
+}
+
+public struct DestinationLocation: Codable, Equatable, Sendable {
+    public var latitude: Double
+    public var longitude: Double
+    public var displayName: String
+    public var countryCode: String?
+    public var currencyCode: String
+    public var administrativeLevel: DestinationAdministrativeLevel
+
+    public init(
+        latitude: Double,
+        longitude: Double,
+        displayName: String,
+        countryCode: String? = nil,
+        currencyCode: String = "CNY",
+        administrativeLevel: DestinationAdministrativeLevel = .city
+    ) {
+        self.latitude = latitude
+        self.longitude = longitude
+        self.displayName = displayName
+        self.countryCode = countryCode
+        self.currencyCode = currencyCode
+        self.administrativeLevel = administrativeLevel
+    }
+}
+
+public enum DestinationAdministrativeLevel: String, Codable, Equatable, Sendable {
+    case country
+    case province
+    case city
+    case region
+    case unknown
+}
+
+public struct TripDay: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var dayNumber: Int
     public var dateLabel: String
@@ -83,7 +125,7 @@ public struct TripDay: Equatable, Identifiable, Sendable {
     }
 }
 
-public struct Activity: Equatable, Identifiable, Sendable {
+public struct Activity: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var title: String
     public var kind: ActivityKind
@@ -131,7 +173,7 @@ public enum ActivityKind: String, Codable, Equatable, Sendable {
     case note
 }
 
-public struct Place: Equatable, Identifiable, Sendable {
+public struct Place: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var name: String
     public var address: String?
@@ -162,7 +204,7 @@ public enum MapProviderKind: String, Codable, Hashable, Sendable {
     case mapbox
 }
 
-public struct Participant: Equatable, Identifiable, Sendable {
+public struct Participant: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var name: String
     public var role: String?
@@ -174,7 +216,7 @@ public struct Participant: Equatable, Identifiable, Sendable {
     }
 }
 
-public struct ImportedSource: Equatable, Identifiable, Sendable {
+public struct ImportedSource: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var kind: ImportedSourceKind
     public var title: String
@@ -202,7 +244,7 @@ public enum ImportedSourceKind: String, Codable, Equatable, Sendable {
     case futureLink
 }
 
-public struct BudgetPlan: Equatable, Sendable {
+public struct BudgetPlan: Codable, Equatable, Sendable {
     public var total: Decimal
     public var currencyCode: String
 
@@ -212,7 +254,7 @@ public struct BudgetPlan: Equatable, Sendable {
     }
 }
 
-public struct PackingList: Equatable, Sendable {
+public struct PackingList: Codable, Equatable, Sendable {
     public var items: [PackingItem]
 
     public init(items: [PackingItem]) {
@@ -220,7 +262,7 @@ public struct PackingList: Equatable, Sendable {
     }
 }
 
-public struct PackingItem: Equatable, Identifiable, Sendable {
+public struct PackingItem: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var title: String
     public var isPacked: Bool
@@ -234,7 +276,7 @@ public struct PackingItem: Equatable, Identifiable, Sendable {
     }
 }
 
-public struct JournalPage: Equatable, Identifiable, Sendable {
+public struct JournalPage: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var kind: JournalPageKind
     public var title: String
@@ -263,7 +305,7 @@ public enum JournalPageKind: String, Codable, Equatable, Sendable {
     case summary
 }
 
-public struct JournalBlock: Equatable, Identifiable, Sendable {
+public struct JournalBlock: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var kind: JournalBlockKind
     public var title: String?
@@ -303,7 +345,7 @@ public enum JournalBlockKind: String, Codable, Equatable, Sendable {
     case sticker
 }
 
-public struct Reminder: Equatable, Identifiable, Sendable {
+public struct Reminder: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var fireTime: String
     public var note: String?
@@ -315,7 +357,7 @@ public struct Reminder: Equatable, Identifiable, Sendable {
     }
 }
 
-public struct PlanningScript: Equatable, Identifiable, Sendable {
+public struct PlanningScript: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public var name: String
     public var summary: String

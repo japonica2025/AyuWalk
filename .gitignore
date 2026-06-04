@@ -4,3 +4,10 @@ DerivedData/
 .build/
 .swiftpm/
 xcuserdata/
+
+# Local secrets. Never commit API keys or private runtime configuration.
+.env
+.env.*
+!.env.example
+Config/Secrets.xcconfig
+Config/*.local.xcconfig

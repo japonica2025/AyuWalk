@@ -7,28 +7,70 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		09B0C246FD7C518E09DBDEC6 /* PlanQuickActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DBDE90EB94B281DBE7FFB9 /* PlanQuickActionsView.swift */; };
+		1A36F7C9910C11801DB2A937 /* ShareExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00DE3B901FF3E980ECFA8D02 /* ShareExportView.swift */; };
+		2AE8C3F4F8484ED7120F1E9C /* StickerPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CD86CA241A290EB5AEA9A7 /* StickerPickerView.swift */; };
+		2DA958F2F38C0E20CE791CBE /* ShareExportBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9E80E54D7D1F7D02CF2905 /* ShareExportBuilder.swift */; };
 		3385EA4894780EB2F243EC50 /* AyuWalkCore in Frameworks */ = {isa = PBXBuildFile; productRef = B77D53584ACDC39808ACC607 /* AyuWalkCore */; };
+		48A5C243E7FE5F3CDB7B0E2A /* LocalAppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF42B065C5C62BC39662EE23 /* LocalAppStore.swift */; };
+		626D0C263A625DF0B946BE6F /* DestinationGeocoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93B4FAA48DC107F55B70D08 /* DestinationGeocoder.swift */; };
+		768AF1CF14C6D64C9CC518EB /* JournalModulePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96841A45869C8496DBA976F2 /* JournalModulePickerView.swift */; };
+		7991D5B1062E94946EC17BAD /* ActivityEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1437ECC84C344F3A33EC2DFB /* ActivityEditorView.swift */; };
+		867E98218DC92BC1761B1940 /* RouteMapPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D215303CEB1E58B096AA5E /* RouteMapPreviewView.swift */; };
+		8F4A61D047F14B4FAF9400C1 /* RouteMapDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4A61CF47F14B4FAF9400C1 /* RouteMapDetailView.swift */; };
+		8F93B01D4D6E4F82A7C42001 /* AyuWalkComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F93B01C4D6E4F82A7C42001 /* AyuWalkComponents.swift */; };
+		8F93B0224D6E4F82A7C42001 /* AWJournalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F93B0214D6E4F82A7C42001 /* AWJournalComponents.swift */; };
 		93AB1CD143FB63B93BEDF6DD /* JournalPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8A90D49A0F90CE3E981578 /* JournalPreviewView.swift */; };
 		9E36F96D849DD2537C07861F /* PlanHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B652B36108C1B3E2E39F99A3 /* PlanHomeView.swift */; };
+		A18FBC3652D9696F0EE6CE59 /* PackingListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D52EAE7983E1632B12CF82 /* PackingListView.swift */; };
 		A3B5067DCC2D466E01D5A971 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50FD91B1655CCC4E024A73E4 /* RootView.swift */; };
+		A3E15B3C08E940CDB2859509 /* MapKitFixedNodePlaceResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346E15E07B954EA2868EAD98 /* MapKitFixedNodePlaceResolver.swift */; };
+		A422EAC29FF32C1F8D9A314A /* MapKitPlaceResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE72685A8B8E10448CD206EE /* MapKitPlaceResolver.swift */; };
+		A88B3A0D8BE344A08C3EB4F6 /* MapKitTravelTimeResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E00E3875E34C9A9F4DDF94 /* MapKitTravelTimeResolver.swift */; };
+		AE02136F5A417B832F582359 /* MiniMaxItineraryPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C413C6FBC50756AFAE632C /* MiniMaxItineraryPlanner.swift */; };
 		B0C3E6758B3E1D7D20081300 /* JournalPageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92935F5A0F09732F47EA0B5 /* JournalPageCard.swift */; };
 		BE03E366A56093E733A83013 /* AyuWalkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC6CBC0C8F9C2116FA50D4 /* AyuWalkApp.swift */; };
+		CA9EEC1C9DFDA6C04ABBD0E1 /* MiniMaxConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C0325C1CC4810150561C95 /* MiniMaxConfiguration.swift */; };
+		D030934DA888A33234CF985A /* CreateTripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB43A0F9DB8A8EA6D1C289DF /* CreateTripView.swift */; };
 		D0A61B3FC1582BC9B28A3F77 /* AyuWalkTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CAD4F7F9DCA3DE5BAFF91F /* AyuWalkTheme.swift */; };
+		DB8DC0F6258C1BFFC150887B /* BudgetPlannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDEE48EC543840D2C60A90C4 /* BudgetPlannerView.swift */; };
 		E28A2E3E381213F428285F53 /* ItineraryTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48EA9DE844C169E06B423CC3 /* ItineraryTimelineView.swift */; };
 		F250D3644A1CAB3826FF1910 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EBFC112A9D4E7BB82163E7D /* AppState.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		10A16320665CF6ABFF6A700F /* AyuWalkApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AyuWalkApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		00DE3B901FF3E980ECFA8D02 /* ShareExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareExportView.swift; sourceTree = "<group>"; };
+		10A16320665CF6ABFF6A700F /* AyuWalkApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AyuWalkApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1437ECC84C344F3A33EC2DFB /* ActivityEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityEditorView.swift; sourceTree = "<group>"; };
+		2A209DBA2B63A9D2F9857CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		346E15E07B954EA2868EAD98 /* MapKitFixedNodePlaceResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapKitFixedNodePlaceResolver.swift; sourceTree = "<group>"; };
+		47C0325C1CC4810150561C95 /* MiniMaxConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniMaxConfiguration.swift; sourceTree = "<group>"; };
+		47C413C6FBC50756AFAE632C /* MiniMaxItineraryPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniMaxItineraryPlanner.swift; sourceTree = "<group>"; };
 		48EA9DE844C169E06B423CC3 /* ItineraryTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItineraryTimelineView.swift; sourceTree = "<group>"; };
+		4B9D4B71A7FFE23BE583A12A /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		4D8A90D49A0F90CE3E981578 /* JournalPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalPreviewView.swift; sourceTree = "<group>"; };
 		50FD91B1655CCC4E024A73E4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		54CAD4F7F9DCA3DE5BAFF91F /* AyuWalkTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AyuWalkTheme.swift; sourceTree = "<group>"; };
+		88D52EAE7983E1632B12CF82 /* PackingListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackingListView.swift; sourceTree = "<group>"; };
+		8F4A61CF47F14B4FAF9400C1 /* RouteMapDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteMapDetailView.swift; sourceTree = "<group>"; };
+		8F93B01C4D6E4F82A7C42001 /* AyuWalkComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AyuWalkComponents.swift; sourceTree = "<group>"; };
+		8F93B0214D6E4F82A7C42001 /* AWJournalComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWJournalComponents.swift; sourceTree = "<group>"; };
+		94CD86CA241A290EB5AEA9A7 /* StickerPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerPickerView.swift; sourceTree = "<group>"; };
+		96841A45869C8496DBA976F2 /* JournalModulePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalModulePickerView.swift; sourceTree = "<group>"; };
 		9EBFC112A9D4E7BB82163E7D /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
-		B1A210826D6B3401B171A923 /* AyuWalkCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AyuWalkCore; path = AyuWalkCore; sourceTree = SOURCE_ROOT; };
+		A0D215303CEB1E58B096AA5E /* RouteMapPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteMapPreviewView.swift; sourceTree = "<group>"; };
+		B1A210826D6B3401B171A923 /* AyuWalkCore */ = {isa = PBXFileReference; lastKnownFileType = folder; path = AyuWalkCore; sourceTree = SOURCE_ROOT; };
 		B652B36108C1B3E2E39F99A3 /* PlanHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanHomeView.swift; sourceTree = "<group>"; };
 		B6AC6CBC0C8F9C2116FA50D4 /* AyuWalkApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AyuWalkApp.swift; sourceTree = "<group>"; };
+		BA9E80E54D7D1F7D02CF2905 /* ShareExportBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareExportBuilder.swift; sourceTree = "<group>"; };
+		BB43A0F9DB8A8EA6D1C289DF /* CreateTripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTripView.swift; sourceTree = "<group>"; };
+		BE72685A8B8E10448CD206EE /* MapKitPlaceResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapKitPlaceResolver.swift; sourceTree = "<group>"; };
 		C92935F5A0F09732F47EA0B5 /* JournalPageCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalPageCard.swift; sourceTree = "<group>"; };
+		D4E00E3875E34C9A9F4DDF94 /* MapKitTravelTimeResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapKitTravelTimeResolver.swift; sourceTree = "<group>"; };
+		DDEE48EC543840D2C60A90C4 /* BudgetPlannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetPlannerView.swift; sourceTree = "<group>"; };
+		E2DBDE90EB94B281DBE7FFB9 /* PlanQuickActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanQuickActionsView.swift; sourceTree = "<group>"; };
+		F93B4FAA48DC107F55B70D08 /* DestinationGeocoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationGeocoder.swift; sourceTree = "<group>"; };
+		FF42B065C5C62BC39662EE23 /* LocalAppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAppStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,7 +90,15 @@
 			children = (
 				9EBFC112A9D4E7BB82163E7D /* AppState.swift */,
 				B6AC6CBC0C8F9C2116FA50D4 /* AyuWalkApp.swift */,
+				F93B4FAA48DC107F55B70D08 /* DestinationGeocoder.swift */,
+				2A209DBA2B63A9D2F9857CC5 /* Info.plist */,
+				FF42B065C5C62BC39662EE23 /* LocalAppStore.swift */,
+				346E15E07B954EA2868EAD98 /* MapKitFixedNodePlaceResolver.swift */,
+				BE72685A8B8E10448CD206EE /* MapKitPlaceResolver.swift */,
+				D4E00E3875E34C9A9F4DDF94 /* MapKitTravelTimeResolver.swift */,
+				619A8E69708B10C8BBBC9962 /* AI */,
 				7503131776FAEB991D0DFF85 /* Design */,
+				5F5A52B49A6172F2787F8E3C /* Export */,
 				D8A36064A9D89FAA2644A6B8 /* Views */,
 			);
 			path = AyuWalkApp;
@@ -58,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				120F4D5DC132AA7088FE0052 /* AyuWalkApp */,
+				BA7537F9EF03637561ED123E /* Config */,
 				8EC92E6E9D12B54DAFFC8C57 /* Packages */,
 				AF68724D28D0932A4120F866 /* Products */,
 			);
@@ -66,18 +117,43 @@
 		330A9AE78280E90D0E556F7E /* Plan */ = {
 			isa = PBXGroup;
 			children = (
+				1437ECC84C344F3A33EC2DFB /* ActivityEditorView.swift */,
+				DDEE48EC543840D2C60A90C4 /* BudgetPlannerView.swift */,
 				48EA9DE844C169E06B423CC3 /* ItineraryTimelineView.swift */,
+				88D52EAE7983E1632B12CF82 /* PackingListView.swift */,
 				B652B36108C1B3E2E39F99A3 /* PlanHomeView.swift */,
+				E2DBDE90EB94B281DBE7FFB9 /* PlanQuickActionsView.swift */,
+				8F4A61CF47F14B4FAF9400C1 /* RouteMapDetailView.swift */,
+				A0D215303CEB1E58B096AA5E /* RouteMapPreviewView.swift */,
 			);
 			path = Plan;
+			sourceTree = "<group>";
+		};
+		5F5A52B49A6172F2787F8E3C /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				BA9E80E54D7D1F7D02CF2905 /* ShareExportBuilder.swift */,
+			);
+			path = Export;
 			sourceTree = "<group>";
 		};
 		6057690D037C78A15705354F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				8F93B01C4D6E4F82A7C42001 /* AyuWalkComponents.swift */,
+				8F93B0214D6E4F82A7C42001 /* AWJournalComponents.swift */,
 				C92935F5A0F09732F47EA0B5 /* JournalPageCard.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		619A8E69708B10C8BBBC9962 /* AI */ = {
+			isa = PBXGroup;
+			children = (
+				47C0325C1CC4810150561C95 /* MiniMaxConfiguration.swift */,
+				47C413C6FBC50756AFAE632C /* MiniMaxItineraryPlanner.swift */,
+			);
+			path = AI;
 			sourceTree = "<group>";
 		};
 		7503131776FAEB991D0DFF85 /* Design */ = {
@@ -104,11 +180,28 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		BA7537F9EF03637561ED123E /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				4B9D4B71A7FFE23BE583A12A /* Secrets.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		CA55DD20C8736E755A8D508F /* Create */ = {
+			isa = PBXGroup;
+			children = (
+				BB43A0F9DB8A8EA6D1C289DF /* CreateTripView.swift */,
+			);
+			path = Create;
+			sourceTree = "<group>";
+		};
 		D8A36064A9D89FAA2644A6B8 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				50FD91B1655CCC4E024A73E4 /* RootView.swift */,
 				6057690D037C78A15705354F /* Components */,
+				CA55DD20C8736E755A8D508F /* Create */,
 				FCF7DDD6B13E625A1F1F2AD3 /* Journal */,
 				330A9AE78280E90D0E556F7E /* Plan */,
 			);
@@ -118,7 +211,10 @@
 		FCF7DDD6B13E625A1F1F2AD3 /* Journal */ = {
 			isa = PBXGroup;
 			children = (
+				96841A45869C8496DBA976F2 /* JournalModulePickerView.swift */,
 				4D8A90D49A0F90CE3E981578 /* JournalPreviewView.swift */,
+				00DE3B901FF3E980ECFA8D02 /* ShareExportView.swift */,
+				94CD86CA241A290EB5AEA9A7 /* StickerPickerView.swift */,
 			);
 			path = Journal;
 			sourceTree = "<group>";
@@ -153,8 +249,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 50CD19B6C9703C0D655CC4CF /* Build configuration list for PBXProject "AyuWalkApp" */;
 			developmentRegion = en;
@@ -183,14 +277,34 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7991D5B1062E94946EC17BAD /* ActivityEditorView.swift in Sources */,
 				F250D3644A1CAB3826FF1910 /* AppState.swift in Sources */,
 				BE03E366A56093E733A83013 /* AyuWalkApp.swift in Sources */,
 				D0A61B3FC1582BC9B28A3F77 /* AyuWalkTheme.swift in Sources */,
+				8F93B01D4D6E4F82A7C42001 /* AyuWalkComponents.swift in Sources */,
+				8F93B0224D6E4F82A7C42001 /* AWJournalComponents.swift in Sources */,
+				DB8DC0F6258C1BFFC150887B /* BudgetPlannerView.swift in Sources */,
+				D030934DA888A33234CF985A /* CreateTripView.swift in Sources */,
+				626D0C263A625DF0B946BE6F /* DestinationGeocoder.swift in Sources */,
 				E28A2E3E381213F428285F53 /* ItineraryTimelineView.swift in Sources */,
+				768AF1CF14C6D64C9CC518EB /* JournalModulePickerView.swift in Sources */,
 				B0C3E6758B3E1D7D20081300 /* JournalPageCard.swift in Sources */,
 				93AB1CD143FB63B93BEDF6DD /* JournalPreviewView.swift in Sources */,
+				48A5C243E7FE5F3CDB7B0E2A /* LocalAppStore.swift in Sources */,
+				A3E15B3C08E940CDB2859509 /* MapKitFixedNodePlaceResolver.swift in Sources */,
+				A422EAC29FF32C1F8D9A314A /* MapKitPlaceResolver.swift in Sources */,
+				A88B3A0D8BE344A08C3EB4F6 /* MapKitTravelTimeResolver.swift in Sources */,
+				CA9EEC1C9DFDA6C04ABBD0E1 /* MiniMaxConfiguration.swift in Sources */,
+				AE02136F5A417B832F582359 /* MiniMaxItineraryPlanner.swift in Sources */,
+				A18FBC3652D9696F0EE6CE59 /* PackingListView.swift in Sources */,
 				9E36F96D849DD2537C07861F /* PlanHomeView.swift in Sources */,
+				09B0C246FD7C518E09DBDEC6 /* PlanQuickActionsView.swift in Sources */,
 				A3B5067DCC2D466E01D5A971 /* RootView.swift in Sources */,
+				8F4A61D047F14B4FAF9400C1 /* RouteMapDetailView.swift in Sources */,
+				867E98218DC92BC1761B1940 /* RouteMapPreviewView.swift in Sources */,
+				2DA958F2F38C0E20CE791CBE /* ShareExportBuilder.swift in Sources */,
+				1A36F7C9910C11801DB2A937 /* ShareExportView.swift in Sources */,
+				2AE8C3F4F8484ED7120F1E9C /* StickerPickerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -321,10 +435,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Ayu Walk";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				DEVELOPMENT_TEAM = RZYM56XV77;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AyuWalkApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -339,13 +452,13 @@
 		};
 		C782F09EA5C2ADE5D04AF999 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4B9D4B71A7FFE23BE583A12A /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Ayu Walk";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				DEVELOPMENT_TEAM = RZYM56XV77;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AyuWalkApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

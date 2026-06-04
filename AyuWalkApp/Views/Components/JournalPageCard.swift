@@ -3,50 +3,89 @@ import SwiftUI
 
 struct JournalPageCard: View {
     let page: JournalPage
+    var visibleBlocks: [JournalBlock]? = nil
+    var placedStickers: [PlacedJournalSticker] = []
+    var onDropSticker: (UUID, Double, Double) -> Void = { _, _, _ in }
+    var onRemoveSticker: (UUID) -> Void = { _ in }
+    var onMoveSticker: (UUID, Double, Double) -> Void = { _, _, _ in }
+    var onTransformSticker: (UUID, Double, Double) -> Void = { _, _, _ in }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(page.title)
-                .font(.system(.title2, design: .rounded, weight: .bold))
-                .foregroundStyle(AyuWalkTheme.ink)
+        AWJournalBookFrame {
+            AWJournalPageSurface {
+                ScrollView(.vertical, showsIndicators: true) {
+                    ZStack(alignment: .topLeading) {
+                        GeometryReader { proxy in
+                            ZStack(alignment: .topLeading) {
+                                VStack(alignment: .leading, spacing: 14) {
+                                    HStack {
+                                        Text(page.kind.displayName)
+                                            .font(AyuWalkTypography.captionStrong)
+                                            .foregroundStyle(AyuWalkTheme.accent)
 
-            ForEach(page.blocks) { block in
-                blockView(block)
+                                        Spacer()
+
+                                        Text("Ayu Walk")
+                                            .font(AyuWalkTypography.microStrong)
+                                            .foregroundStyle(AyuWalkTheme.mutedInk)
+                                    }
+
+                                    Text(page.title)
+                                        .font(AyuWalkTypography.pageTitle)
+                                        .foregroundStyle(AyuWalkTheme.ink)
+                                        .fixedSize(horizontal: false, vertical: true)
+
+                                    ForEach(visibleBlocks ?? page.blocks) { block in
+                                        AWJournalBlockCard(block: block)
+                                    }
+
+                                    Spacer(minLength: 24)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.trailing, 4)
+                                .padding(.bottom, 72)
+
+                                AWStickerLayer(
+                                    placedStickers: placedStickers,
+                                    onRemove: onRemoveSticker,
+                                    onMove: onMoveSticker,
+                                    onTransform: onTransformSticker
+                                )
+                            }
+                            .dropDestination(for: String.self) { items, location in
+                                guard let firstItem = items.first,
+                                      let stickerID = UUID(uuidString: firstItem) else {
+                                    return false
+                                }
+
+                                onDropSticker(
+                                    stickerID,
+                                    location.x / max(proxy.size.width, 1),
+                                    location.y / max(proxy.size.height, 1)
+                                )
+                                return true
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 560, alignment: .topLeading)
+                }
+                .frame(maxWidth: .infinity, minHeight: 430, maxHeight: 560, alignment: .topLeading)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(AyuWalkTheme.paper)
-        .clipShape(RoundedRectangle(cornerRadius: AyuWalkTheme.cardRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: AyuWalkTheme.cardRadius)
-                .stroke(AyuWalkTheme.border)
-        )
     }
+}
 
-    private func blockView(_ block: JournalBlock) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            if let title = block.title {
-                HStack {
-                    Text(title)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(AyuWalkTheme.accent)
-
-                    if block.isDefaultSelected {
-                        Text("默认")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(AyuWalkTheme.accent)
-                            .clipShape(Capsule())
-                    }
-                }
-            }
-
-            Text(block.text ?? "")
-                .font(.callout)
-                .foregroundStyle(AyuWalkTheme.mutedInk)
+private extension JournalPageKind {
+    var displayName: String {
+        switch self {
+        case .cover:
+            return "封面"
+        case .overview:
+            return "总览"
+        case .day:
+            return "每日页面"
+        case .summary:
+            return "总结"
         }
     }
 }
