@@ -4,6 +4,41 @@ import Foundation
 import MapKit
 
 struct MapKitPlaceResolver {
+    func searchPlaces(query: String, destination: String, limit: Int = 8) async -> [Place] {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedQuery.isEmpty else {
+            return []
+        }
+
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = "\(trimmedQuery) \(destination)"
+        request.resultTypes = [.pointOfInterest, .address]
+
+        guard let response = try? await search(request: request) else {
+            return []
+        }
+
+        var seenNames: Set<String> = []
+        return response.mapItems.compactMap { item in
+            guard let name = item.name?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !name.isEmpty,
+                  seenNames.insert(name.localizedLowercase).inserted else {
+                return nil
+            }
+            let coordinate = item.placemark.coordinate
+            return Place(
+                id: UUID(),
+                name: name,
+                address: formattedAddress(for: item.placemark),
+                latitude: coordinate.latitude,
+                longitude: coordinate.longitude,
+                providerIDs: [.mapKit: "mapkit-\(name)"]
+            )
+        }
+        .prefix(limit)
+        .map { $0 }
+    }
+
     func resolvePlaces(
         suggestions: [MiniMaxPlaceSuggestion],
         destination: String,

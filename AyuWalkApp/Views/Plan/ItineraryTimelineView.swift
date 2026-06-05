@@ -11,7 +11,12 @@ struct ItineraryTimelineView: View {
     var highlightedActivityID: UUID?
     var onRescheduleDay: (TripDay) -> Void = { _ in }
     var onEnableReminder: (TripDay, Activity) -> Void = { _, _ in }
+    var onAddActivity: (TripDay) -> Void = { _ in }
     var onEditActivity: (TripDay, Activity) -> Void = { _, _ in }
+    var onDuplicateActivity: (TripDay, Activity) -> Void = { _, _ in }
+    var onDeleteActivity: (TripDay, Activity) -> Void = { _, _ in }
+    var onMoveActivity: (TripDay, Activity, TripDay) -> Void = { _, _, _ in }
+    var onToggleRouteInclusion: (TripDay, Activity) -> Void = { _, _ in }
     var onToggleCompletion: (TripDay, Activity) -> Void = { _, _ in }
     var onReorderRouteActivities: (TripDay, [UUID]) -> Void = { _, _ in }
 
@@ -40,6 +45,19 @@ struct ItineraryTimelineView: View {
             if isExpanded {
                 HStack {
                     Spacer()
+
+                    Button {
+                        onAddActivity(day)
+                    } label: {
+                        Label("新增", systemImage: "plus")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(AyuWalkTheme.secondaryAccent)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 7)
+                            .background(AyuWalkTheme.pageBackground)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
 
                     Button {
                         onRescheduleDay(day)
@@ -157,6 +175,8 @@ struct ItineraryTimelineView: View {
         return HStack(alignment: .top, spacing: 12) {
             if ScheduleConflictDetector.isLockedFixedNode(activity) {
                 lockedBadge
+            } else if activity.routeOrder == nil {
+                unroutedBadge
             } else {
                 routeBadge(routeIndex(for: activity, in: day) ?? 1)
             }
@@ -237,7 +257,7 @@ struct ItineraryTimelineView: View {
                         .buttonStyle(.plain)
                         .accessibilityLabel(
                             enabledReminderActivityIDs.contains(activity.id)
-                                ? "已开启\(activity.title)提醒"
+                                ? "关闭\(activity.title)提醒"
                                 : "开启\(activity.title)提醒"
                         )
                     }
@@ -286,6 +306,47 @@ struct ItineraryTimelineView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("编辑\(activity.title)")
+
+                Menu {
+                    Button {
+                        onDuplicateActivity(day, activity)
+                    } label: {
+                        Label("复制", systemImage: "doc.on.doc")
+                    }
+
+                    if !activity.isFixedNode {
+                        Button {
+                            onToggleRouteInclusion(day, activity)
+                        } label: {
+                            Label(
+                                activity.routeOrder == nil ? "加入路线" : "移出路线",
+                                systemImage: activity.routeOrder == nil ? "point.topleft.down.to.point.bottomright.curvepath" : "point.3.filled.connected.trianglepath.dotted"
+                            )
+                        }
+                    }
+
+                    Menu("移动到其他天") {
+                        ForEach(days.filter { $0.id != day.id }) { destinationDay in
+                            Button("\(destinationDay.dateLabel) · \(destinationDay.title)") {
+                                onMoveActivity(day, activity, destinationDay)
+                            }
+                        }
+                    }
+
+                    Button(role: .destructive) {
+                        onDeleteActivity(day, activity)
+                    } label: {
+                        Label("删除", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(AyuWalkTheme.ink)
+                        .frame(width: 32, height: 32)
+                        .background(AyuWalkTheme.pageBackground)
+                        .clipShape(Circle())
+                }
+                .accessibilityLabel("管理\(activity.title)")
             }
         }
         .padding(10)
@@ -355,6 +416,15 @@ struct ItineraryTimelineView: View {
             .foregroundStyle(.white)
             .frame(width: 26, height: 26)
             .background(AyuWalkTheme.accent)
+            .clipShape(Circle())
+    }
+
+    private var unroutedBadge: some View {
+        Image(systemName: "minus")
+            .font(.caption.weight(.bold))
+            .foregroundStyle(AyuWalkTheme.mutedInk)
+            .frame(width: 26, height: 26)
+            .background(AyuWalkTheme.pageBackground)
             .clipShape(Circle())
     }
 

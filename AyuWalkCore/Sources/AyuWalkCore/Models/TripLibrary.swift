@@ -301,7 +301,8 @@ private struct TripWorkspaceDuplicator {
             routeOrder: source.routeOrder,
             reminder: source.reminder.map {
                 Reminder(id: remap($0.id), fireTime: $0.fireTime, note: $0.note)
-            }
+            },
+            isFixedNode: source.isFixedNode
         )
     }
 

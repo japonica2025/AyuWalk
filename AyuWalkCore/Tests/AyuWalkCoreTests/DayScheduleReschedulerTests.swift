@@ -2,6 +2,41 @@ import XCTest
 @testable import AyuWalkCore
 
 final class DayScheduleReschedulerTests: XCTestCase {
+    func testKeepsOrdinaryActivityThatIsNotInRoute() {
+        let routeActivity = routeActivity(
+            id: "00000000-0000-0000-0000-00000000C000",
+            title: "Route",
+            kind: .sight,
+            startTime: "09:00",
+            endTime: "10:30",
+            routeOrder: 1
+        )
+        let unroutedActivity = Activity(
+            id: UUID(),
+            title: "Unrouted note",
+            kind: .note,
+            place: nil,
+            startTime: nil,
+            endTime: nil,
+            notes: nil,
+            estimatedCost: nil,
+            routeOrder: nil,
+            reminder: nil
+        )
+        let day = TripDay(
+            id: UUID(),
+            dayNumber: 1,
+            dateLabel: "Day 1",
+            title: "Day",
+            activities: [routeActivity, unroutedActivity]
+        )
+
+        let rescheduledDay = DayScheduleRescheduler.reschedule(day)
+
+        XCTAssertTrue(rescheduledDay.activities.contains(where: { $0.id == unroutedActivity.id }))
+        XCTAssertNil(rescheduledDay.activities.first(where: { $0.id == unroutedActivity.id })?.routeOrder)
+    }
+
     func testMovesRouteActivitiesAfterEarlyLockedNode() {
         let lockedNode = Activity(
             id: UUID(uuidString: "00000000-0000-0000-0000-00000000C001")!,

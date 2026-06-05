@@ -39,4 +39,25 @@ final class PersistenceCodingTests: XCTestCase {
         XCTAssertEqual(budget.currencyCode, "JPY")
         XCTAssertEqual(budget.expenses, [])
     }
+
+    func testActivityDecodesLegacyFixedNodeState() throws {
+        let json = """
+        {
+          "id": "00000000-0000-0000-0000-00000000C001",
+          "title": "Fixed transport",
+          "kind": "transport",
+          "startTime": "09:00",
+          "routeOrder": null,
+          "reminder": {
+            "id": "00000000-0000-0000-0000-00000000D001",
+            "fireTime": "09:00"
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+
+        let activity = try JSONDecoder().decode(Activity.self, from: data)
+
+        XCTAssertTrue(activity.isFixedNode)
+    }
 }

@@ -7,6 +7,7 @@ struct PlanHomeView: View {
     @State private var isShowingRouteMap = false
     @State private var highlightedActivityID: UUID?
     @State private var createsTripAfterSheetDismiss = false
+    @State private var deleteActivityTarget: ActivityEditTarget?
 
     var onOpenJournal: () -> Void = {}
     var onCreateTrip: () -> Void = {}
@@ -24,6 +25,22 @@ struct PlanHomeView: View {
                             accessory: durationLabel
                         )
 
+                        if let undoMessage = appState.itineraryUndoMessage {
+                            AWCardChrome(background: AyuWalkTheme.elevated) {
+                                HStack(spacing: AyuWalkSpacing.md) {
+                                    Text(undoMessage)
+                                        .font(AyuWalkTypography.bodyStrong)
+                                        .foregroundStyle(AyuWalkTheme.ink)
+                                    Spacer()
+                                    Button("撤销") {
+                                        appState.undoLastItineraryEdit()
+                                    }
+                                    .font(AyuWalkTypography.button)
+                                    .foregroundStyle(AyuWalkTheme.accent)
+                                }
+                            }
+                        }
+
                         ItineraryTimelineView(
                             days: appState.trip.days,
                             duration: appState.trip.duration,
@@ -39,11 +56,34 @@ struct PlanHomeView: View {
                             },
                             onEnableReminder: { day, activity in
                                 Task {
-                                    await appState.enableReminder(dayID: day.id, activityID: activity.id)
+                                    await appState.toggleReminder(dayID: day.id, activityID: activity.id)
                                 }
                             },
+                            onAddActivity: { day in
+                                activeSheet = .activity(.new(day: day))
+                            },
                             onEditActivity: { day, activity in
-                                activeSheet = .activity(ActivityEditTarget(day: day, activity: activity))
+                                activeSheet = .activity(.existing(day: day, activity: activity))
+                            },
+                            onDuplicateActivity: { day, activity in
+                                appState.duplicateActivity(dayID: day.id, activityID: activity.id)
+                            },
+                            onDeleteActivity: { day, activity in
+                                deleteActivityTarget = .existing(day: day, activity: activity)
+                            },
+                            onMoveActivity: { sourceDay, activity, destinationDay in
+                                appState.moveActivity(
+                                    activityID: activity.id,
+                                    from: sourceDay.id,
+                                    to: destinationDay.id
+                                )
+                            },
+                            onToggleRouteInclusion: { day, activity in
+                                appState.setActivityRouteInclusion(
+                                    dayID: day.id,
+                                    activityID: activity.id,
+                                    isIncluded: activity.routeOrder == nil
+                                )
                             },
                             onToggleCompletion: { _, activity in
                                 appState.toggleActivityCompletion(activityID: activity.id)
@@ -131,21 +171,79 @@ struct PlanHomeView: View {
                     )
                     .presentationDetents([.medium, .large])
                 case .activity(let target):
-                    ActivityEditorView(day: target.day, activity: target.activity) { draft in
-                        appState.updateActivity(
-                            dayID: target.day.id,
-                            activityID: target.activity.id,
-                            title: draft.title.trimmingCharacters(in: .whitespacesAndNewlines),
-                            startTime: draft.normalizedStartTime,
-                            endTime: draft.normalizedEndTime,
-                            notes: draft.normalizedNotes,
-                            reminder: draft.reminder
-                        )
+                    ActivityEditorView(
+                        days: appState.trip.days,
+                        day: target.day,
+                        activity: target.activity,
+                        isCreating: target.isCreating,
+                        onSearchPlaces: appState.searchPlaces
+                    ) { draft in
+                        let title = draft.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if target.isCreating {
+                            let newActivity = Activity(
+                                id: UUID(),
+                                title: title,
+                                kind: draft.kind,
+                                place: draft.place,
+                                startTime: draft.normalizedStartTime,
+                                endTime: draft.normalizedEndTime,
+                                notes: draft.normalizedNotes,
+                                estimatedCost: nil,
+                                routeOrder: nil,
+                                reminder: draft.reminder,
+                                isFixedNode: draft.isFixedNode
+                            )
+                            appState.addActivity(
+                                newActivity,
+                                to: draft.targetDayID,
+                                includeInRoute: draft.isIncludedInRoute,
+                                enableReminder: draft.isReminderEnabled
+                            )
+                        } else {
+                            appState.updateActivity(
+                                dayID: target.day.id,
+                                activityID: target.activity.id,
+                                targetDayID: draft.targetDayID,
+                                title: title,
+                                kind: draft.kind,
+                                place: draft.place,
+                                startTime: draft.normalizedStartTime,
+                                endTime: draft.normalizedEndTime,
+                                notes: draft.normalizedNotes,
+                                reminder: draft.reminder,
+                                isFixedNode: draft.isFixedNode,
+                                includeInRoute: draft.isIncludedInRoute,
+                                enableReminder: draft.isReminderEnabled
+                            )
+                        }
                     }
                     .presentationDetents([.medium, .large])
                 }
             }
+            .confirmationDialog(
+                "确定删除“\(deleteActivityTarget?.activity.title ?? "")”吗？",
+                isPresented: deleteActivityDialogBinding,
+                titleVisibility: .visible
+            ) {
+                Button("删除项目", role: .destructive) {
+                    guard let target = deleteActivityTarget else { return }
+                    appState.deleteActivity(dayID: target.day.id, activityID: target.activity.id)
+                    deleteActivityTarget = nil
+                }
+                Button("取消", role: .cancel) {
+                    deleteActivityTarget = nil
+                }
+            } message: {
+                Text("删除后可在行程页撤销一次。")
+            }
         }
+    }
+
+    private var deleteActivityDialogBinding: Binding<Bool> {
+        Binding(
+            get: { deleteActivityTarget != nil },
+            set: { if !$0 { deleteActivityTarget = nil } }
+        )
     }
 
     private func tripCover(scrollProxy: ScrollViewProxy) -> some View {
@@ -446,6 +544,31 @@ struct PlanHomeView: View {
 private struct ActivityEditTarget: Identifiable {
     let day: TripDay
     let activity: Activity
+    let isCreating: Bool
+
+    static func existing(day: TripDay, activity: Activity) -> ActivityEditTarget {
+        ActivityEditTarget(day: day, activity: activity, isCreating: false)
+    }
+
+    static func new(day: TripDay) -> ActivityEditTarget {
+        ActivityEditTarget(
+            day: day,
+            activity: Activity(
+                id: UUID(),
+                title: "",
+                kind: .sight,
+                place: nil,
+                startTime: nil,
+                endTime: nil,
+                notes: nil,
+                estimatedCost: nil,
+                routeOrder: nil,
+                reminder: nil,
+                isFixedNode: false
+            ),
+            isCreating: true
+        )
+    }
 
     var id: UUID {
         activity.id

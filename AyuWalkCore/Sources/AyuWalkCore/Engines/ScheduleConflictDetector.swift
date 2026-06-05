@@ -38,7 +38,7 @@ public enum ScheduleConflictDetector {
     }
 
     public static func isLockedFixedNode(_ activity: Activity) -> Bool {
-        activity.reminder != nil && activity.routeOrder == nil
+        activity.isFixedNode
     }
 
     private static func activityTimeRange(_ activity: Activity, contains minute: Int) -> Bool {

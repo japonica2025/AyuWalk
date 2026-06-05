@@ -136,6 +136,7 @@ public struct Activity: Codable, Equatable, Identifiable, Sendable {
     public var estimatedCost: Decimal?
     public var routeOrder: Int?
     public var reminder: Reminder?
+    public var isFixedNode: Bool
 
     public init(
         id: UUID,
@@ -147,7 +148,8 @@ public struct Activity: Codable, Equatable, Identifiable, Sendable {
         notes: String?,
         estimatedCost: Decimal?,
         routeOrder: Int?,
-        reminder: Reminder?
+        reminder: Reminder?,
+        isFixedNode: Bool? = nil
     ) {
         self.id = id
         self.title = title
@@ -159,6 +161,37 @@ public struct Activity: Codable, Equatable, Identifiable, Sendable {
         self.estimatedCost = estimatedCost
         self.routeOrder = routeOrder
         self.reminder = reminder
+        self.isFixedNode = isFixedNode ?? (reminder != nil && routeOrder == nil)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case kind
+        case place
+        case startTime
+        case endTime
+        case notes
+        case estimatedCost
+        case routeOrder
+        case reminder
+        case isFixedNode
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        kind = try container.decode(ActivityKind.self, forKey: .kind)
+        place = try container.decodeIfPresent(Place.self, forKey: .place)
+        startTime = try container.decodeIfPresent(String.self, forKey: .startTime)
+        endTime = try container.decodeIfPresent(String.self, forKey: .endTime)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+        estimatedCost = try container.decodeIfPresent(Decimal.self, forKey: .estimatedCost)
+        routeOrder = try container.decodeIfPresent(Int.self, forKey: .routeOrder)
+        reminder = try container.decodeIfPresent(Reminder.self, forKey: .reminder)
+        isFixedNode = try container.decodeIfPresent(Bool.self, forKey: .isFixedNode)
+            ?? (reminder != nil && routeOrder == nil)
     }
 }
 

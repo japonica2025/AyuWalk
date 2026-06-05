@@ -17,6 +17,7 @@ final class AppState {
     var travelMinutesBeforeActivityID: [UUID: Int]
     var enabledReminderActivityIDs: Set<UUID>
     var completedActivityIDs: Set<UUID>
+    var itineraryUndoMessage: String?
 
     @ObservationIgnored private let planningEngine: MockPlanningEngine
     @ObservationIgnored private let journalEngine: MockJournalEngine
@@ -26,6 +27,9 @@ final class AppState {
     @ObservationIgnored private let placeResolver: MapKitPlaceResolver
     @ObservationIgnored private let travelTimeResolver: MapKitTravelTimeResolver
     @ObservationIgnored private let fixedNodePlaceResolver: MapKitFixedNodePlaceResolver
+    @ObservationIgnored private var itineraryUndoSnapshot: ItineraryMutationSnapshot?
+    @ObservationIgnored private var itineraryMutationRevision: UInt = 0
+    @ObservationIgnored private var reminderActivityIDsInFlight: Set<UUID> = []
     @ObservationIgnored private static let customStickerCategoryID = UUID(
         uuidString: "00000000-0000-0000-0000-000000000706"
     )!
@@ -53,6 +57,8 @@ final class AppState {
         self.travelMinutesBeforeActivityID = [:]
         self.enabledReminderActivityIDs = []
         self.completedActivityIDs = []
+        self.itineraryUndoMessage = nil
+        self.itineraryUndoSnapshot = nil
 
         if let snapshot = localStore.load() {
             var library = snapshot.tripLibrary
@@ -147,6 +153,7 @@ final class AppState {
             return
         }
         load(workspace)
+        clearItineraryUndo()
         persist()
     }
 
@@ -158,6 +165,7 @@ final class AppState {
             return nil
         }
         load(workspace)
+        clearItineraryUndo()
         persist()
         return duplicateID
     }
@@ -482,35 +490,172 @@ final class AppState {
     func updateActivity(
         dayID: UUID,
         activityID: UUID,
+        targetDayID: UUID,
         title: String,
+        kind: ActivityKind,
+        place: Place?,
         startTime: String?,
         endTime: String?,
         notes: String?,
-        reminder: Reminder?
+        reminder: Reminder?,
+        isFixedNode: Bool,
+        includeInRoute: Bool,
+        enableReminder: Bool
     ) {
         guard let dayIndex = trip.days.firstIndex(where: { $0.id == dayID }),
               let activityIndex = trip.days[dayIndex].activities.firstIndex(where: { $0.id == activityID }) else {
             return
         }
 
-        let previousReminder = trip.days[dayIndex].activities[activityIndex].reminder
-        trip.days[dayIndex].activities[activityIndex].title = title
-        trip.days[dayIndex].activities[activityIndex].startTime = startTime
-        trip.days[dayIndex].activities[activityIndex].endTime = endTime
-        trip.days[dayIndex].activities[activityIndex].notes = notes
-        trip.days[dayIndex].activities[activityIndex].reminder = reminder
-
-        if let previousReminder, previousReminder.id != reminder?.id {
-            Self.cancelScheduledReminder(previousReminder)
-            enabledReminderActivityIDs.remove(activityID)
+        let previousActivity = trip.days[dayIndex].activities[activityIndex]
+        let updatedActivity = Activity(
+            id: activityID,
+            title: title,
+            kind: kind,
+            place: place,
+            startTime: startTime,
+            endTime: endTime,
+            notes: notes,
+            estimatedCost: previousActivity.estimatedCost,
+            routeOrder: previousActivity.routeOrder,
+            reminder: reminder,
+            isFixedNode: isFixedNode
+        )
+        guard let edit = ItineraryEditor.updating(
+            activityID: activityID,
+            from: dayID,
+            to: targetDayID,
+            with: updatedActivity,
+            includeInRoute: includeInRoute,
+            in: trip.days
+        ) else {
+            return
         }
-        persist()
+        applyItineraryEdit(
+            edit,
+            undoMessage: "已更新 \(title)",
+            reminderEnabledOverrides: [activityID: enableReminder && reminder != nil]
+        )
     }
 
-    func enableReminder(dayID: UUID, activityID: UUID) async {
+    func searchPlaces(query: String) async -> [Place] {
+        await placeResolver.searchPlaces(query: query, destination: trip.destination)
+    }
+
+    func addActivity(
+        _ activity: Activity,
+        to dayID: UUID,
+        includeInRoute: Bool,
+        enableReminder: Bool
+    ) {
+        guard let edit = ItineraryEditor.adding(
+            activity,
+            to: dayID,
+            includeInRoute: includeInRoute,
+            in: trip.days
+        ) else {
+            return
+        }
+        applyItineraryEdit(
+            edit,
+            undoMessage: "已新增 \(activity.title)",
+            reminderEnabledOverrides: [activity.id: enableReminder && activity.reminder != nil]
+        )
+    }
+
+    func deleteActivity(dayID: UUID, activityID: UUID) {
+        guard let activity = activity(dayID: dayID, activityID: activityID),
+              let edit = ItineraryEditor.deleting(activityID: activityID, from: dayID, in: trip.days) else {
+            return
+        }
+        applyItineraryEdit(edit, undoMessage: "已删除 \(activity.title)")
+    }
+
+    func duplicateActivity(dayID: UUID, activityID: UUID) {
+        guard let activity = activity(dayID: dayID, activityID: activityID),
+              let edit = ItineraryEditor.duplicating(activityID: activityID, in: dayID, days: trip.days) else {
+            return
+        }
+        applyItineraryEdit(edit, undoMessage: "已复制 \(activity.title)")
+    }
+
+    func moveActivity(activityID: UUID, from sourceDayID: UUID, to destinationDayID: UUID) {
+        guard let activity = activity(dayID: sourceDayID, activityID: activityID),
+              let edit = ItineraryEditor.moving(
+                activityID: activityID,
+                from: sourceDayID,
+                to: destinationDayID,
+                in: trip.days
+              ) else {
+            return
+        }
+        applyItineraryEdit(edit, undoMessage: "已移动 \(activity.title)")
+    }
+
+    func setActivityRouteInclusion(dayID: UUID, activityID: UUID, isIncluded: Bool) {
+        guard let activity = activity(dayID: dayID, activityID: activityID),
+              !activity.isFixedNode,
+              let edit = ItineraryEditor.settingRouteInclusion(
+                isIncluded,
+                activityID: activityID,
+                dayID: dayID,
+                in: trip.days
+              ) else {
+            return
+        }
+        applyItineraryEdit(
+            edit,
+            undoMessage: isIncluded ? "已加入路线" : "已移出路线"
+        )
+    }
+
+    func undoLastItineraryEdit() {
+        guard let snapshot = itineraryUndoSnapshot else {
+            return
+        }
+
+        Self.cancelScheduledReminders(in: trip)
+        trip.days = snapshot.days
+        completedActivityIDs = snapshot.completedActivityIDs
+        travelMinutesBeforeActivityID = snapshot.travelMinutesBeforeActivityID
+        enabledReminderActivityIDs = snapshot.enabledReminderActivityIDs
+        clearItineraryUndo()
+        persist()
+        let restoredTripID = trip.id
+        itineraryMutationRevision &+= 1
+        let restoredRevision = itineraryMutationRevision
+        Task {
+            await syncEnabledReminders(
+                activityIDs: enabledReminderActivityIDs,
+                for: restoredTripID,
+                revision: restoredRevision
+            )
+        }
+    }
+
+    func toggleReminder(dayID: UUID, activityID: UUID) async {
         guard let day = trip.days.first(where: { $0.id == dayID }),
               let activity = day.activities.first(where: { $0.id == activityID }) else {
             return
+        }
+
+        itineraryMutationRevision &+= 1
+        let initiatingRevision = itineraryMutationRevision
+        if enabledReminderActivityIDs.contains(activityID) {
+            if let reminder = activity.reminder {
+                Self.cancelScheduledReminder(reminder)
+            }
+            enabledReminderActivityIDs.remove(activityID)
+            aiPlanningMessage = "已关闭固定时间提醒。"
+            persist()
+            return
+        }
+
+        guard reminderActivityIDsInFlight.insert(activityID).inserted else {
+            return
+        }
+        defer {
+            reminderActivityIDsInFlight.remove(activityID)
         }
 
         let initiatingTripID = trip.id
@@ -519,9 +664,16 @@ final class AppState {
             day: day,
             duration: trip.duration
         )
-        guard trip.id == initiatingTripID else {
+        guard trip.id == initiatingTripID, itineraryMutationRevision == initiatingRevision else {
             if isScheduled, let reminder = activity.reminder {
                 Self.cancelScheduledReminder(reminder)
+            }
+            if trip.id == initiatingTripID, enabledReminderActivityIDs.contains(activityID) {
+                await syncEnabledReminders(
+                    activityIDs: [activityID],
+                    for: initiatingTripID,
+                    revision: itineraryMutationRevision
+                )
             }
             return
         }
@@ -605,6 +757,10 @@ final class AppState {
             return
         }
 
+        let dayActivityIDs = Set(trip.days[latestDayIndex].activities.map(\.id))
+        travelMinutesBeforeActivityID = travelMinutesBeforeActivityID.filter {
+            !dayActivityIDs.contains($0.key)
+        }
         travelMinutesBeforeActivityID.merge(travelMinutes) { _, new in new }
         trip.days[latestDayIndex] = DayScheduleRescheduler.reschedule(
             trip.days[latestDayIndex],
@@ -1091,6 +1247,123 @@ final class AppState {
         completedActivityIDs = workspace.completedActivityIDs
         travelMinutesBeforeActivityID = workspace.travelMinutesBeforeActivityID
         enabledReminderActivityIDs = workspace.enabledReminderActivityIDs
+        clearItineraryUndo()
+    }
+
+    private func applyItineraryEdit(
+        _ edit: ItineraryEdit,
+        undoMessage: String,
+        reminderEnabledOverrides: [UUID: Bool] = [:]
+    ) {
+        itineraryUndoSnapshot = ItineraryMutationSnapshot(
+            days: trip.days,
+            completedActivityIDs: completedActivityIDs,
+            travelMinutesBeforeActivityID: travelMinutesBeforeActivityID,
+            enabledReminderActivityIDs: enabledReminderActivityIDs
+        )
+        itineraryUndoMessage = undoMessage
+        itineraryMutationRevision &+= 1
+
+        let previousActivities = trip.days.flatMap(\.activities)
+        previousActivities
+            .filter { edit.affectedActivityIDs.contains($0.id) }
+            .compactMap(\.reminder)
+            .forEach(Self.cancelScheduledReminder)
+
+        trip.days = edit.days
+        let validActivityIDs = Set(trip.days.flatMap(\.activities).map(\.id))
+        completedActivityIDs.formIntersection(validActivityIDs)
+        enabledReminderActivityIDs.formIntersection(validActivityIDs)
+        for (activityID, isEnabled) in reminderEnabledOverrides {
+            if isEnabled {
+                enabledReminderActivityIDs.insert(activityID)
+            } else {
+                enabledReminderActivityIDs.remove(activityID)
+            }
+        }
+        travelMinutesBeforeActivityID = travelMinutesBeforeActivityID.filter {
+            validActivityIDs.contains($0.key) && !edit.affectedActivityIDs.contains($0.key)
+        }
+        persist(preservingItineraryUndo: true)
+
+        let remindersToRestore = enabledReminderActivityIDs.intersection(edit.affectedActivityIDs)
+        let editedTripID = trip.id
+        let editedRevision = itineraryMutationRevision
+        Task {
+            await syncEnabledReminders(
+                activityIDs: remindersToRestore,
+                for: editedTripID,
+                revision: editedRevision
+            )
+        }
+    }
+
+    private func syncEnabledReminders(activityIDs: Set<UUID>, for tripID: UUID, revision: UInt) async {
+        var expectedRevision = revision
+        for activityID in activityIDs {
+            while trip.id == tripID {
+                if expectedRevision != itineraryMutationRevision {
+                    expectedRevision = itineraryMutationRevision
+                }
+                guard enabledReminderActivityIDs.contains(activityID) else {
+                    if let reminder = activity(dayIDForActivity: activityID)?.reminder {
+                        Self.cancelScheduledReminder(reminder)
+                    }
+                    break
+                }
+                guard let day = trip.days.first(where: { day in
+                    day.activities.contains(where: { $0.id == activityID })
+                }),
+                      let activity = day.activities.first(where: { $0.id == activityID }) else {
+                    enabledReminderActivityIDs.remove(activityID)
+                    break
+                }
+
+                let isScheduled = await Self.syncScheduledReminder(
+                    activity: activity,
+                    day: day,
+                    duration: trip.duration
+                )
+                guard trip.id == tripID else {
+                    if let reminder = activity.reminder {
+                        Self.cancelScheduledReminder(reminder)
+                    }
+                    return
+                }
+                guard expectedRevision == itineraryMutationRevision else {
+                    if let reminder = activity.reminder {
+                        Self.cancelScheduledReminder(reminder)
+                    }
+                    continue
+                }
+                if !isScheduled {
+                    enabledReminderActivityIDs.remove(activityID)
+                }
+                break
+            }
+        }
+        if trip.id == tripID {
+            persist(preservingItineraryUndo: true)
+        }
+    }
+
+    private func activity(dayID: UUID, activityID: UUID) -> Activity? {
+        trip.days
+            .first(where: { $0.id == dayID })?
+            .activities
+            .first(where: { $0.id == activityID })
+    }
+
+    private func activity(dayIDForActivity activityID: UUID) -> Activity? {
+        trip.days
+            .lazy
+            .flatMap(\.activities)
+            .first(where: { $0.id == activityID })
+    }
+
+    private func clearItineraryUndo() {
+        itineraryUndoSnapshot = nil
+        itineraryUndoMessage = nil
     }
 
     private func syncActiveWorkspace() {
@@ -1106,7 +1379,10 @@ final class AppState {
         }
     }
 
-    private func persist() {
+    private func persist(preservingItineraryUndo: Bool = false) {
+        if !preservingItineraryUndo {
+            clearItineraryUndo()
+        }
         syncActiveWorkspace()
         localStore.save(AppPersistenceSnapshot(tripLibrary: tripLibrary))
     }
@@ -1217,4 +1493,11 @@ struct PlacedJournalSticker: Identifiable, Equatable {
     var id: UUID {
         placement.id
     }
+}
+
+private struct ItineraryMutationSnapshot {
+    let days: [TripDay]
+    let completedActivityIDs: Set<UUID>
+    let travelMinutesBeforeActivityID: [UUID: Int]
+    let enabledReminderActivityIDs: Set<UUID>
 }

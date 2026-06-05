@@ -9,8 +9,10 @@ public enum DayScheduleRescheduler {
             .filter(ScheduleConflictDetector.isLockedFixedNode)
             .sorted(by: timePrecedes)
         let routeActivities = day.activities
-            .filter { $0.routeOrder != nil }
+            .filter { $0.routeOrder != nil && !ScheduleConflictDetector.isLockedFixedNode($0) }
             .sorted { ($0.routeOrder ?? 0) < ($1.routeOrder ?? 0) }
+        let unroutedActivities = day.activities
+            .filter { $0.routeOrder == nil && !ScheduleConflictDetector.isLockedFixedNode($0) }
         let hasReturnTransport = lockedNodes.contains(where: isReturnTransport)
 
         var rescheduledRouteActivities: [Activity] = []
@@ -62,6 +64,7 @@ public enum DayScheduleRescheduler {
 
         var rescheduledActivities = lockedNodes + rescheduledRouteActivities
         rescheduledActivities.sort(by: timePrecedes)
+        rescheduledActivities.append(contentsOf: unroutedActivities)
 
         var nextDay = day
         nextDay.activities = rescheduledActivities
