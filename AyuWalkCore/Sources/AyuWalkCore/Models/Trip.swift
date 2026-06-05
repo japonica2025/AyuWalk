@@ -247,10 +247,93 @@ public enum ImportedSourceKind: String, Codable, Equatable, Sendable {
 public struct BudgetPlan: Codable, Equatable, Sendable {
     public var total: Decimal
     public var currencyCode: String
+    public var expenses: [BudgetExpense]
 
-    public init(total: Decimal, currencyCode: String) {
+    public init(total: Decimal, currencyCode: String, expenses: [BudgetExpense] = []) {
         self.total = total
         self.currencyCode = currencyCode
+        self.expenses = expenses
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case total
+        case currencyCode
+        case expenses
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        total = try container.decode(Decimal.self, forKey: .total)
+        currencyCode = try container.decode(String.self, forKey: .currencyCode)
+        expenses = try container.decodeIfPresent([BudgetExpense].self, forKey: .expenses) ?? []
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(total, forKey: .total)
+        try container.encode(currencyCode, forKey: .currencyCode)
+        try container.encode(expenses, forKey: .expenses)
+    }
+}
+
+public struct BudgetExpense: Codable, Equatable, Identifiable, Sendable {
+    public let id: UUID
+    public var title: String
+    public var amount: Decimal
+    public var category: BudgetCategory
+    public var participantIDs: [UUID]
+    public var notes: String?
+
+    public init(
+        id: UUID,
+        title: String,
+        amount: Decimal,
+        category: BudgetCategory,
+        participantIDs: [UUID],
+        notes: String?
+    ) {
+        self.id = id
+        self.title = title
+        self.amount = amount
+        self.category = category
+        self.participantIDs = participantIDs
+        self.notes = notes
+    }
+}
+
+public enum BudgetCategory: String, Codable, CaseIterable, Equatable, Sendable {
+    case transport
+    case lodging
+    case food
+    case shopping
+    case ticket
+    case other
+
+    public var displayName: String {
+        switch self {
+        case .transport:
+            return "交通"
+        case .lodging:
+            return "住宿"
+        case .food:
+            return "餐饮"
+        case .shopping:
+            return "购物"
+        case .ticket:
+            return "门票"
+        case .other:
+            return "其他"
+        }
+    }
+}
+
+public struct BudgetParticipantShare: Equatable, Sendable {
+    public var participantID: UUID
+    public var amount: Decimal
+
+    public init(participantID: UUID, amount: Decimal) {
+        self.participantID = participantID
+        self.amount = amount
     }
 }
 

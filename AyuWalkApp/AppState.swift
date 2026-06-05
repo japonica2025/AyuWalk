@@ -210,6 +210,76 @@ final class AppState {
         persist()
     }
 
+    func addBudgetExpense(title: String, amount: Decimal, category: BudgetCategory, notes: String?) {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty, amount > 0 else {
+            return
+        }
+
+        var budget = trip.budgetPlan ?? BudgetPlan(total: 0, currencyCode: DestinationResolver.currencyCode(forCountryCode: nil))
+        let trimmedNotes = notes?.trimmingCharacters(in: .whitespacesAndNewlines)
+        budget.expenses.insert(
+            BudgetExpense(
+                id: UUID(),
+                title: trimmedTitle,
+                amount: amount,
+                category: category,
+                participantIDs: trip.participants.map(\.id),
+                notes: trimmedNotes?.isEmpty == false ? trimmedNotes : nil
+            ),
+            at: 0
+        )
+        trip.budgetPlan = budget
+        persist()
+    }
+
+    func updateBudgetExpense(
+        id: UUID,
+        title: String,
+        amount: Decimal,
+        category: BudgetCategory,
+        notes: String?
+    ) {
+        guard var budget = trip.budgetPlan,
+              let index = budget.expenses.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedNotes = notes?.trimmingCharacters(in: .whitespacesAndNewlines)
+        budget.expenses[index].title = trimmedTitle.isEmpty ? "未命名支出" : trimmedTitle
+        budget.expenses[index].amount = amount < 0 ? 0 : amount
+        budget.expenses[index].category = category
+        budget.expenses[index].notes = trimmedNotes?.isEmpty == false ? trimmedNotes : nil
+        trip.budgetPlan = budget
+        persist()
+    }
+
+    func deleteBudgetExpense(id: UUID) {
+        guard var budget = trip.budgetPlan else {
+            return
+        }
+
+        budget.expenses.removeAll { $0.id == id }
+        trip.budgetPlan = budget
+        persist()
+    }
+
+    func toggleBudgetExpenseParticipant(expenseID: UUID, participantID: UUID) {
+        guard var budget = trip.budgetPlan,
+              let index = budget.expenses.firstIndex(where: { $0.id == expenseID }) else {
+            return
+        }
+
+        if budget.expenses[index].participantIDs.contains(participantID) {
+            budget.expenses[index].participantIDs.removeAll { $0 == participantID }
+        } else {
+            budget.expenses[index].participantIDs.append(participantID)
+        }
+        trip.budgetPlan = budget
+        persist()
+    }
+
     func addParticipant(name: String) {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
@@ -232,6 +302,12 @@ final class AppState {
 
     func deleteParticipant(id: UUID) {
         trip.participants.removeAll { $0.id == id }
+        if var budget = trip.budgetPlan {
+            for index in budget.expenses.indices {
+                budget.expenses[index].participantIDs.removeAll { $0 == id }
+            }
+            trip.budgetPlan = budget
+        }
         persist()
     }
 
@@ -281,12 +357,26 @@ final class AppState {
     }
 
     func deletePackingItem(id: UUID) {
+        deletePackingItems(ids: [id])
+    }
+
+    func deletePackingItems(ids: Set<UUID>) {
         guard var packingList = trip.packingList else {
             return
         }
 
-        packingList.items.removeAll { $0.id == id }
+        packingList.items.removeAll { ids.contains($0.id) }
         trip.packingList = packingList
+        persist()
+    }
+
+    func applyPackingTemplate(_ template: PackingTemplate) {
+        applyPackingTemplates([template])
+    }
+
+    func applyPackingTemplates(_ templates: [PackingTemplate]) {
+        let packingList = trip.packingList ?? PackingList(items: [])
+        trip.packingList = PackingTemplateLibrary.applying(templates, to: packingList)
         persist()
     }
 

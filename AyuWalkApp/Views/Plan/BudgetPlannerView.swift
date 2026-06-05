@@ -7,9 +7,17 @@ struct BudgetPlannerView: View {
     let onAddParticipant: (String) -> Void
     let onUpdateParticipant: (UUID, String) -> Void
     let onDeleteParticipant: (UUID) -> Void
+    let onAddExpense: (String, Decimal, BudgetCategory, String?) -> Void
+    let onUpdateExpense: (UUID, String, Decimal, BudgetCategory, String?) -> Void
+    let onDeleteExpense: (UUID) -> Void
+    let onToggleExpenseParticipant: (UUID, UUID) -> Void
 
     @State private var budgetText = ""
     @State private var newParticipantName = ""
+    @State private var newExpenseTitle = ""
+    @State private var newExpenseAmountText = ""
+    @State private var newExpenseCategory: BudgetCategory = .food
+    @State private var newExpenseNotes = ""
 
     private var budget: BudgetPlan {
         trip.budgetPlan ?? BudgetPlan(total: 0, currencyCode: "CNY")
@@ -22,34 +30,72 @@ struct BudgetPlannerView: View {
         )
     }
 
+    private var recordedTotal: Decimal {
+        budget.expenses.reduce(0) { $0 + $1.amount }
+    }
+
+    private var participantTotals: [UUID: Decimal] {
+        BudgetSplitCalculator.participantTotals(for: budget.expenses)
+    }
+
     var body: some View {
         AWSheetScaffold(title: "预算规划") {
             AWBudgetTotalCard(
                 currencyCode: budget.currencyCode,
-                budgetText: $budgetText
-            ) {
-                guard let amount = decimal(from: budgetText) else {
-                    budgetText = plainAmount(budget.total)
-                    return
-                }
-                onUpdateBudget(amount)
-            }
-
-            AWBudgetSplitCard(
-                perPersonText: format(amount: split.perPerson, currencyCode: split.currencyCode),
-                participantCount: trip.participants.count
-            )
-
-            AWParticipantEditorCard(
                 participants: trip.participants,
-                perPersonText: format(amount: split.perPerson, currencyCode: split.currencyCode),
+                budgetText: $budgetText,
                 newParticipantName: $newParticipantName,
-                onAdd: {
+                onSave: {
+                    guard let amount = decimal(from: budgetText) else {
+                        budgetText = plainAmount(budget.total)
+                        return
+                    }
+                    onUpdateBudget(amount)
+                },
+                onAddParticipant: {
                     onAddParticipant(newParticipantName)
                     newParticipantName = ""
                 },
-                onUpdate: onUpdateParticipant,
-                onDelete: onDeleteParticipant
+                onUpdateParticipant: onUpdateParticipant,
+                onDeleteParticipant: onDeleteParticipant
+            )
+
+            AWBudgetSplitCard(
+                perPersonText: format(amount: split.perPerson, currencyCode: split.currencyCode),
+                participantCount: trip.participants.count,
+                recordedTotalText: format(amount: recordedTotal, currencyCode: budget.currencyCode)
+            )
+
+            AWBudgetExpenseEntryCard(
+                title: $newExpenseTitle,
+                amountText: $newExpenseAmountText,
+                category: $newExpenseCategory,
+                notes: $newExpenseNotes,
+                currencyCode: budget.currencyCode
+            ) {
+                guard let amount = decimal(from: newExpenseAmountText), amount > 0 else {
+                    return
+                }
+                onAddExpense(
+                    newExpenseTitle,
+                    amount,
+                    newExpenseCategory,
+                    newExpenseNotes
+                )
+                newExpenseTitle = ""
+                newExpenseAmountText = ""
+                newExpenseCategory = .food
+                newExpenseNotes = ""
+            }
+
+            AWBudgetExpenseListCard(
+                expenses: budget.expenses,
+                participants: trip.participants,
+                currencyCode: budget.currencyCode,
+                participantTotals: participantTotals,
+                onUpdate: onUpdateExpense,
+                onDelete: onDeleteExpense,
+                onToggleParticipant: onToggleExpenseParticipant
             )
         }
         .onAppear {
@@ -87,6 +133,10 @@ struct BudgetPlannerView: View {
         onUpdateBudget: { _ in },
         onAddParticipant: { _ in },
         onUpdateParticipant: { _, _ in },
-        onDeleteParticipant: { _ in }
+        onDeleteParticipant: { _ in },
+        onAddExpense: { _, _, _, _ in },
+        onUpdateExpense: { _, _, _, _, _ in },
+        onDeleteExpense: { _ in },
+        onToggleExpenseParticipant: { _, _ in }
     )
 }

@@ -11,6 +11,26 @@ public enum BudgetSplitCalculator {
             currencyCode: budget.currencyCode
         )
     }
+
+    public static func expenseShares(_ expense: BudgetExpense) -> [BudgetParticipantShare] {
+        let participantIDs = expense.participantIDs
+        guard !participantIDs.isEmpty else {
+            return []
+        }
+
+        let perPersonAmount = expense.amount / Decimal(participantIDs.count)
+        return participantIDs.map { participantID in
+            BudgetParticipantShare(participantID: participantID, amount: perPersonAmount)
+        }
+    }
+
+    public static func participantTotals(for expenses: [BudgetExpense]) -> [UUID: Decimal] {
+        expenses.reduce(into: [:]) { totals, expense in
+            for share in expenseShares(expense) {
+                totals[share.participantID, default: 0] += share.amount
+            }
+        }
+    }
 }
 
 public struct BudgetSplit: Equatable, Sendable {

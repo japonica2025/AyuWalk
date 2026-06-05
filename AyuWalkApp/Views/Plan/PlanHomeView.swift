@@ -91,7 +91,11 @@ struct PlanHomeView: View {
                         onUpdateBudget: appState.updateBudgetTotal,
                         onAddParticipant: appState.addParticipant,
                         onUpdateParticipant: appState.updateParticipant,
-                        onDeleteParticipant: appState.deleteParticipant
+                        onDeleteParticipant: appState.deleteParticipant,
+                        onAddExpense: appState.addBudgetExpense,
+                        onUpdateExpense: appState.updateBudgetExpense,
+                        onDeleteExpense: appState.deleteBudgetExpense,
+                        onToggleExpenseParticipant: appState.toggleBudgetExpenseParticipant
                     )
                     .presentationDetents([.medium, .large])
                 case .packing:
@@ -100,7 +104,8 @@ struct PlanHomeView: View {
                         onToggleItem: appState.togglePackingItem,
                         onAddItem: appState.addPackingItem,
                         onUpdateItem: appState.updatePackingItem,
-                        onDeleteItem: appState.deletePackingItem
+                        onDeleteItems: appState.deletePackingItems,
+                        onApplyTemplates: appState.applyPackingTemplates
                     )
                     .presentationDetents([.medium, .large])
                 case .activity(let target):

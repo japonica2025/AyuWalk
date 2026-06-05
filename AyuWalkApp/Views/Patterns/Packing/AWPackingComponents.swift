@@ -4,13 +4,25 @@ import SwiftUI
 struct AWPackingProgressCard: View {
     let packedCount: Int
     let itemCount: Int
+    var onOpenTemplates: () -> Void
 
     var body: some View {
         AWCardChrome(cornerRadius: AyuWalkRadii.panel) {
             VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
-                Text("打包进度")
-                    .font(AyuWalkTypography.eyebrow)
-                    .foregroundStyle(AyuWalkTheme.secondaryAccent)
+                HStack {
+                    Text("打包进度")
+                        .font(AyuWalkTypography.eyebrow)
+                        .foregroundStyle(AyuWalkTheme.secondaryAccent)
+
+                    Spacer()
+
+                    Button(action: onOpenTemplates) {
+                        Label("模板清单", systemImage: "square.grid.2x2")
+                            .font(AyuWalkTypography.captionStrong)
+                            .foregroundStyle(AyuWalkTheme.accent)
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 Text("\(packedCount)/\(itemCount) 已完成")
                     .font(.system(size: 34, weight: .bold, design: .rounded))
@@ -19,10 +31,100 @@ struct AWPackingProgressCard: View {
                 ProgressView(value: itemCount == 0 ? 0 : Double(packedCount), total: Double(max(itemCount, 1)))
                     .tint(AyuWalkTheme.secondaryAccent)
 
-                Text("当前先生成基础清单，后续可以按目的地、天气和行程类型自动补充。")
+                Text("可以应用场景模板补充物品，也可以继续手动添加和编辑。")
                     .font(AyuWalkTypography.body)
                     .foregroundStyle(AyuWalkTheme.mutedInk)
             }
+        }
+    }
+}
+
+struct AWPackingTemplatePicker: View {
+    let templates: [PackingTemplate]
+    @Binding var selectedTemplateIDs: Set<PackingTemplateID>
+    var onAddSelected: () -> Void
+
+    var body: some View {
+        AWSheetScaffold(title: "模板清单") {
+            Text("选择本次需要补充的模板，添加后已有物品不会重复。")
+                .font(AyuWalkTypography.body)
+                .foregroundStyle(AyuWalkTheme.mutedInk)
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AyuWalkSpacing.sm) {
+                ForEach(templates) { template in
+                    Button {
+                        if selectedTemplateIDs.contains(template.id) {
+                            selectedTemplateIDs.remove(template.id)
+                        } else {
+                            selectedTemplateIDs.insert(template.id)
+                        }
+                    } label: {
+                        AWPackingTemplateTile(
+                            template: template,
+                            isSelected: selectedTemplateIDs.contains(template.id)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(selectedTemplateIDs.contains(template.id) ? "取消选择" : "选择")\(template.title)模板")
+                }
+            }
+
+            Button(action: onAddSelected) {
+                Label("添加所选模板", systemImage: "plus.circle.fill")
+                    .font(AyuWalkTypography.metric)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, AyuWalkSpacing.md)
+                    .background(selectedTemplateIDs.isEmpty ? AyuWalkTheme.mutedInk : AyuWalkTheme.secondaryAccent)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .disabled(selectedTemplateIDs.isEmpty)
+        }
+    }
+}
+
+private struct AWPackingTemplateTile: View {
+    let template: PackingTemplate
+    let isSelected: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AyuWalkSpacing.sm) {
+            HStack {
+                AWIconBadge(
+                    systemImage: template.systemImage,
+                    tint: isSelected ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.accent,
+                    size: AyuWalkSize.largeIconButton
+                )
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(AyuWalkTheme.secondaryAccent)
+                }
+            }
+
+            Text(template.title)
+                .font(AyuWalkTypography.bodyStrong)
+                .foregroundStyle(AyuWalkTheme.ink)
+
+            Text(template.subtitle)
+                .font(AyuWalkTypography.caption)
+                .foregroundStyle(AyuWalkTheme.mutedInk)
+                .lineLimit(2)
+
+            Text("\(template.items.count) 项")
+                .font(AyuWalkTypography.captionStrong)
+                .foregroundStyle(AyuWalkTheme.secondaryAccent)
+        }
+        .frame(maxWidth: .infinity, minHeight: 138, alignment: .topLeading)
+        .padding(AyuWalkSpacing.md)
+        .background(isSelected ? AyuWalkTheme.elevated : AyuWalkTheme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
+                .stroke(isSelected ? AyuWalkTheme.secondaryAccent.opacity(0.35) : AyuWalkTheme.border, lineWidth: 1)
         }
     }
 }
@@ -59,16 +161,42 @@ struct AWPackingAddItemCard: View {
 
 struct AWPackingChecklistCard: View {
     let items: [PackingItem]
+    @Binding var selectedItemIDs: Set<UUID>
+    @Binding var isManaging: Bool
     var onToggleItem: (UUID) -> Void
     var onUpdateItem: (UUID, String, String?) -> Void
-    var onDeleteItem: (UUID) -> Void
+    var onRequestDeleteItem: (UUID) -> Void
+    var onRequestDeleteSelected: () -> Void
 
     var body: some View {
         AWCardChrome(cornerRadius: AyuWalkRadii.panel) {
             VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
-                Text("清单")
-                    .font(AyuWalkTypography.sectionTitle)
-                    .foregroundStyle(AyuWalkTheme.ink)
+                HStack {
+                    Text(isManaging ? "已选择 \(selectedItemIDs.count) 项" : "清单")
+                        .font(AyuWalkTypography.sectionTitle)
+                        .foregroundStyle(AyuWalkTheme.ink)
+
+                    Spacer()
+
+                    if isManaging && !selectedItemIDs.isEmpty {
+                        Button(action: onRequestDeleteSelected) {
+                            Image(systemName: "trash")
+                                .foregroundStyle(AyuWalkTheme.accent)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("删除所选物品")
+                    }
+
+                    Button {
+                        isManaging.toggle()
+                        selectedItemIDs.removeAll()
+                    } label: {
+                        Text(isManaging ? "完成" : "批量管理")
+                            .font(AyuWalkTypography.captionStrong)
+                            .foregroundStyle(AyuWalkTheme.secondaryAccent)
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 if items.isEmpty {
                     Text("暂无行李项目")
@@ -79,9 +207,18 @@ struct AWPackingChecklistCard: View {
                     ForEach(items) { item in
                         AWPackingItemRow(
                             item: item,
+                            isManaging: isManaging,
+                            isSelected: selectedItemIDs.contains(item.id),
+                            onSelect: {
+                                if selectedItemIDs.contains(item.id) {
+                                    selectedItemIDs.remove(item.id)
+                                } else {
+                                    selectedItemIDs.insert(item.id)
+                                }
+                            },
                             onToggle: onToggleItem,
                             onUpdate: onUpdateItem,
-                            onDelete: onDeleteItem
+                            onDelete: onRequestDeleteItem
                         )
 
                         if item.id != items.last?.id {
@@ -97,6 +234,9 @@ struct AWPackingChecklistCard: View {
 
 private struct AWPackingItemRow: View {
     let item: PackingItem
+    let isManaging: Bool
+    let isSelected: Bool
+    var onSelect: () -> Void
     var onToggle: (UUID) -> Void
     var onUpdate: (UUID, String, String?) -> Void
     var onDelete: (UUID) -> Void
@@ -104,15 +244,23 @@ private struct AWPackingItemRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: AyuWalkSpacing.md) {
             Button {
-                onToggle(item.id)
+                if isManaging {
+                    onSelect()
+                } else {
+                    onToggle(item.id)
+                }
             } label: {
-                Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
+                Image(systemName: (isManaging ? isSelected : item.isPacked) ? "checkmark.circle.fill" : "circle")
                     .font(AyuWalkTypography.icon(size: 23))
-                    .foregroundStyle(item.isPacked ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.mutedInk)
+                    .foregroundStyle((isManaging ? isSelected : item.isPacked) ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.mutedInk)
                     .frame(width: 32, height: 40)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(item.isPacked ? "取消打包" : "标记已打包")
+            .accessibilityLabel(
+                isManaging
+                    ? (isSelected ? "取消选择\(item.title)" : "选择\(item.title)")
+                    : (item.isPacked ? "取消打包\(item.title)" : "标记\(item.title)已打包")
+            )
 
             VStack(alignment: .leading, spacing: AyuWalkSpacing.xs) {
                 TextField(
@@ -125,6 +273,7 @@ private struct AWPackingItemRow: View {
                 .textFieldStyle(.plain)
                 .font(AyuWalkTypography.bodyStrong)
                 .foregroundStyle(AyuWalkTheme.ink)
+                .disabled(isManaging)
 
                 TextField(
                     "备注",
@@ -136,20 +285,23 @@ private struct AWPackingItemRow: View {
                 .textFieldStyle(.plain)
                 .font(AyuWalkTypography.caption)
                 .foregroundStyle(AyuWalkTheme.mutedInk)
+                .disabled(isManaging)
             }
 
-            Button {
-                onDelete(item.id)
-            } label: {
-                Image(systemName: "trash")
-                    .font(AyuWalkTypography.icon(size: 15, weight: .bold))
-                    .foregroundStyle(AyuWalkTheme.accent)
-                    .frame(width: AyuWalkSize.compactIconButton, height: AyuWalkSize.compactIconButton)
-                    .background(AyuWalkTheme.surface)
-                    .clipShape(Circle())
+            if !isManaging {
+                Button {
+                    onDelete(item.id)
+                } label: {
+                    Image(systemName: "trash")
+                        .font(AyuWalkTypography.icon(size: 15, weight: .bold))
+                        .foregroundStyle(AyuWalkTheme.accent)
+                        .frame(width: AyuWalkSize.compactIconButton, height: AyuWalkSize.compactIconButton)
+                        .background(AyuWalkTheme.surface)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("删除\(item.title)")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("删除物品")
         }
         .padding(.vertical, AyuWalkSpacing.xs)
     }

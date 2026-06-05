@@ -28,4 +28,15 @@ final class PersistenceCodingTests: XCTestCase {
         XCTAssertEqual(decodedJournal[pageID], journalSelection)
         XCTAssertEqual(decodedSticker[pageID], stickerSelection)
     }
+
+    func testBudgetPlanDecodesLegacyJSONWithoutExpenses() throws {
+        let json = #"{"total":12000,"currencyCode":"JPY"}"#
+        let data = try XCTUnwrap(json.data(using: .utf8))
+
+        let budget = try JSONDecoder().decode(BudgetPlan.self, from: data)
+
+        XCTAssertEqual(budget.total, 12000)
+        XCTAssertEqual(budget.currencyCode, "JPY")
+        XCTAssertEqual(budget.expenses, [])
+    }
 }
