@@ -2,30 +2,15 @@ import AyuWalkCore
 import Foundation
 
 struct AppPersistenceSnapshot: Codable, Equatable {
-    var trip: Trip
-    var journalPages: [JournalPage]
-    var journalSelections: [UUID: JournalModuleSelection]
-    var stickerSelections: [UUID: StickerSelection]
-    var customStickers: [Sticker]
-    var completedActivityIDs: Set<UUID>
+    var tripLibrary: TripLibrary
 
-    init(
-        trip: Trip,
-        journalPages: [JournalPage],
-        journalSelections: [UUID: JournalModuleSelection],
-        stickerSelections: [UUID: StickerSelection],
-        customStickers: [Sticker] = [],
-        completedActivityIDs: Set<UUID> = []
-    ) {
-        self.trip = trip
-        self.journalPages = journalPages
-        self.journalSelections = journalSelections
-        self.stickerSelections = stickerSelections
-        self.customStickers = customStickers
-        self.completedActivityIDs = completedActivityIDs
+    init(tripLibrary: TripLibrary) {
+        self.tripLibrary = tripLibrary
     }
 
     private enum CodingKeys: String, CodingKey {
+        case activeTripID
+        case workspaces
         case trip
         case journalPages
         case journalSelections
@@ -36,12 +21,30 @@ struct AppPersistenceSnapshot: Codable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        trip = try container.decode(Trip.self, forKey: .trip)
-        journalPages = try container.decode([JournalPage].self, forKey: .journalPages)
-        journalSelections = try container.decode([UUID: JournalModuleSelection].self, forKey: .journalSelections)
-        stickerSelections = try container.decode([UUID: StickerSelection].self, forKey: .stickerSelections)
-        customStickers = try container.decodeIfPresent([Sticker].self, forKey: .customStickers) ?? []
-        completedActivityIDs = try container.decodeIfPresent(Set<UUID>.self, forKey: .completedActivityIDs) ?? []
+        if let workspaces = try container.decodeIfPresent([TripWorkspace].self, forKey: .workspaces) {
+            tripLibrary = TripLibrary(
+                activeTripID: try container.decodeIfPresent(UUID.self, forKey: .activeTripID),
+                workspaces: workspaces
+            )
+            return
+        }
+
+        let trip = try container.decode(Trip.self, forKey: .trip)
+        let workspace = TripWorkspace(
+            trip: trip,
+            journalPages: try container.decodeIfPresent([JournalPage].self, forKey: .journalPages) ?? trip.journalPages,
+            journalSelections: try container.decodeIfPresent([UUID: JournalModuleSelection].self, forKey: .journalSelections) ?? [:],
+            stickerSelections: try container.decodeIfPresent([UUID: StickerSelection].self, forKey: .stickerSelections) ?? [:],
+            customStickers: try container.decodeIfPresent([Sticker].self, forKey: .customStickers) ?? [],
+            completedActivityIDs: try container.decodeIfPresent(Set<UUID>.self, forKey: .completedActivityIDs) ?? []
+        )
+        tripLibrary = TripLibrary(activeTripID: workspace.id, workspaces: [workspace])
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(tripLibrary.activeTripID, forKey: .activeTripID)
+        try container.encode(tripLibrary.workspaces, forKey: .workspaces)
     }
 }
 
@@ -62,7 +65,11 @@ struct LocalAppStore {
             return nil
         }
 
-        return try? JSONDecoder().decode(AppPersistenceSnapshot.self, from: data)
+        guard let snapshot = try? JSONDecoder().decode(AppPersistenceSnapshot.self, from: data) else {
+            return nil
+        }
+        save(snapshot)
+        return snapshot
     }
 
     func save(_ snapshot: AppPersistenceSnapshot) {

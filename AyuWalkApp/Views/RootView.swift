@@ -19,9 +19,14 @@ struct RootView: View {
                 Group {
                     switch selectedTab {
                     case .plan:
-                        PlanHomeView {
-                            selectedTab = .journal
-                        }
+                        PlanHomeView(
+                            onOpenJournal: {
+                                selectedTab = .journal
+                            },
+                            onCreateTrip: {
+                                isCreatingTrip = true
+                            }
+                        )
                     case .journal:
                         JournalPreviewView()
                     }

@@ -6,8 +6,10 @@ struct PlanHomeView: View {
     @State private var activeSheet: PlanSheet?
     @State private var isShowingRouteMap = false
     @State private var highlightedActivityID: UUID?
+    @State private var createsTripAfterSheetDismiss = false
 
     var onOpenJournal: () -> Void = {}
+    var onCreateTrip: () -> Void = {}
 
     var body: some View {
         NavigationStack {
@@ -83,8 +85,28 @@ struct PlanHomeView: View {
                     }
                 )
             }
-            .sheet(item: $activeSheet) { sheet in
+            .sheet(item: $activeSheet, onDismiss: {
+                guard createsTripAfterSheetDismiss else {
+                    return
+                }
+                createsTripAfterSheetDismiss = false
+                onCreateTrip()
+            }) { sheet in
                 switch sheet {
+                case .trips:
+                    TripLibrarySheetView(
+                        workspaces: appState.tripWorkspaces,
+                        activeTripID: appState.tripLibrary.activeTripID,
+                        onCreateTrip: {
+                            createsTripAfterSheetDismiss = true
+                        },
+                        onSelectTrip: appState.selectTrip,
+                        onDuplicateTrip: { appState.duplicateTrip(id: $0) },
+                        onRenameTrip: appState.renameTrip,
+                        onSetArchived: appState.setTripArchived,
+                        onDeleteTrip: appState.deleteTrip
+                    )
+                    .presentationDetents([.medium, .large])
                 case .budget:
                     BudgetPlannerView(
                         trip: appState.trip,
@@ -140,6 +162,14 @@ struct PlanHomeView: View {
                     }
 
                     Spacer()
+
+                    AWPlainIconButton(
+                        systemImage: "rectangle.stack.fill",
+                        label: "打开行程库",
+                        tint: AyuWalkTheme.secondaryAccent
+                    ) {
+                        activeSheet = .trips
+                    }
 
                     AWStatusPill(
                         text: appState.isGeneratingTrip ? "生成中" : "可编辑",
@@ -423,18 +453,177 @@ private struct ActivityEditTarget: Identifiable {
 }
 
 private enum PlanSheet: Identifiable {
+    case trips
     case budget
     case packing
     case activity(ActivityEditTarget)
 
     var id: String {
         switch self {
+        case .trips:
+            return "trips"
         case .budget:
             return "budget"
         case .packing:
             return "packing"
         case .activity(let target):
             return "activity-\(target.id.uuidString)"
+        }
+    }
+}
+
+private struct TripLibrarySheetView: View {
+    let workspaces: [TripWorkspace]
+    let activeTripID: UUID?
+    let onCreateTrip: () -> Void
+    let onSelectTrip: (UUID) -> Void
+    let onDuplicateTrip: (UUID) -> Void
+    let onRenameTrip: (UUID, String) -> Void
+    let onSetArchived: (Bool, UUID) -> Void
+    let onDeleteTrip: (UUID) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var renameTarget: TripWorkspace?
+    @State private var renameText = ""
+    @State private var deleteTarget: TripWorkspace?
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: AyuWalkSpacing.xl) {
+                    AWPrimaryButton(title: "新建行程", systemImage: "plus") {
+                        onCreateTrip()
+                        dismiss()
+                    }
+
+                    workspaceSection(title: "当前与进行中", workspaces: activeWorkspaces)
+
+                    if !archivedWorkspaces.isEmpty {
+                        workspaceSection(title: "已归档", workspaces: archivedWorkspaces)
+                    }
+                }
+                .padding(AyuWalkSpacing.pageInset)
+            }
+            .background(AyuWalkTheme.canvas)
+            .navigationTitle("行程库")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") {
+                        dismiss()
+                    }
+                }
+            }
+            .alert("重命名行程", isPresented: renameAlertBinding) {
+                TextField("行程名称", text: $renameText)
+                Button("取消", role: .cancel) {}
+                Button("保存") {
+                    guard let renameTarget else { return }
+                    onRenameTrip(renameTarget.id, renameText)
+                }
+            }
+            .confirmationDialog(
+                "确定删除“\(deleteTarget?.trip.title ?? "")”吗？",
+                isPresented: deleteDialogBinding,
+                titleVisibility: .visible
+            ) {
+                Button("删除行程", role: .destructive) {
+                    guard let deleteTarget else { return }
+                    onDeleteTrip(deleteTarget.id)
+                }
+                Button("取消", role: .cancel) {}
+            } message: {
+                Text("该行程中的路线、预算、行李和手帐内容都会被删除。")
+            }
+        }
+    }
+
+    private var activeWorkspaces: [TripWorkspace] {
+        workspaces.filter { !$0.isArchived }
+    }
+
+    private var archivedWorkspaces: [TripWorkspace] {
+        workspaces.filter(\.isArchived)
+    }
+
+    private var renameAlertBinding: Binding<Bool> {
+        Binding(
+            get: { renameTarget != nil },
+            set: { if !$0 { renameTarget = nil } }
+        )
+    }
+
+    private var deleteDialogBinding: Binding<Bool> {
+        Binding(
+            get: { deleteTarget != nil },
+            set: { if !$0 { deleteTarget = nil } }
+        )
+    }
+
+    @ViewBuilder
+    private func workspaceSection(title: String, workspaces: [TripWorkspace]) -> some View {
+        VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
+            AWSectionHeader(title: title, accessory: "\(workspaces.count)")
+
+            ForEach(workspaces) { workspace in
+                tripRow(workspace)
+            }
+        }
+    }
+
+    private func tripRow(_ workspace: TripWorkspace) -> some View {
+        AWCardChrome(background: workspace.id == activeTripID ? AyuWalkTheme.elevated : AyuWalkTheme.surface) {
+            HStack(spacing: AyuWalkSpacing.md) {
+                Button {
+                    onSelectTrip(workspace.id)
+                    dismiss()
+                } label: {
+                    AWInfoRow(
+                        title: workspace.trip.title,
+                        subtitle: "\(workspace.trip.destination) · \(workspace.trip.days.count) 天",
+                        systemImage: workspace.isArchived ? "archivebox.fill" : "map.fill",
+                        tint: workspace.id == activeTripID ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.accent,
+                        trailingSystemImage: workspace.id == activeTripID ? "checkmark.circle.fill" : nil
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(workspace.id == activeTripID)
+
+                Menu {
+                    Button {
+                        onDuplicateTrip(workspace.id)
+                        dismiss()
+                    } label: {
+                        Label("复制", systemImage: "doc.on.doc")
+                    }
+
+                    Button {
+                        renameText = workspace.trip.title
+                        renameTarget = workspace
+                    } label: {
+                        Label("重命名", systemImage: "pencil")
+                    }
+
+                    Button {
+                        onSetArchived(!workspace.isArchived, workspace.id)
+                    } label: {
+                        Label(workspace.isArchived ? "取消归档" : "归档", systemImage: workspace.isArchived ? "tray.and.arrow.up" : "archivebox")
+                    }
+
+                    Button(role: .destructive) {
+                        deleteTarget = workspace
+                    } label: {
+                        Label("删除", systemImage: "trash")
+                    }
+                    .disabled(self.workspaces.count == 1)
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(AyuWalkTypography.icon(size: 20))
+                        .foregroundStyle(AyuWalkTheme.ink)
+                        .frame(width: AyuWalkSize.iconButton, height: AyuWalkSize.iconButton)
+                }
+                .accessibilityLabel("管理 \(workspace.trip.title)")
+            }
         }
     }
 }

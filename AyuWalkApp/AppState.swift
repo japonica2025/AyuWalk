@@ -6,6 +6,7 @@ import UserNotifications
 @MainActor
 @Observable
 final class AppState {
+    var tripLibrary: TripLibrary
     var trip: Trip
     var journalPages: [JournalPage]
     var journalSelections: [UUID: JournalModuleSelection]
@@ -54,36 +55,52 @@ final class AppState {
         self.completedActivityIDs = []
 
         if let snapshot = localStore.load() {
-            if Self.needsRouteRepair(snapshot.trip) {
+            var library = snapshot.tripLibrary
+            if let activeWorkspace = library.activeWorkspace,
+               Self.needsRouteRepair(activeWorkspace.trip) {
                 let repairedTrip = planningEngine.generateTrip(
-                    destination: snapshot.trip.destination,
-                    dayCount: Self.dayCount(from: snapshot.trip.duration),
-                    purpose: snapshot.trip.purpose,
-                    notes: snapshot.trip.importedSources.first?.extractedText ?? "",
-                    importedSources: snapshot.trip.importedSources
+                    destination: activeWorkspace.trip.destination,
+                    dayCount: Self.dayCount(from: activeWorkspace.trip.duration),
+                    purpose: activeWorkspace.trip.purpose,
+                    notes: activeWorkspace.trip.importedSources.first?.extractedText ?? "",
+                    importedSources: activeWorkspace.trip.importedSources
                 )
                 let pages = journalEngine.generatePages(for: repairedTrip)
-                self.trip = repairedTrip
-                self.journalPages = pages
-                self.journalSelections = Self.defaultSelections(for: pages)
-                self.stickerSelections = [:]
-                self.customStickers = []
-                self.travelMinutesBeforeActivityID = [:]
-                self.enabledReminderActivityIDs = []
-                self.completedActivityIDs = []
+                library.deleteTrip(id: activeWorkspace.id)
+                let repairedWorkspaceID = library.appendNewWorkspace(
+                    TripWorkspace(
+                        trip: repairedTrip,
+                        journalPages: pages,
+                        journalSelections: Self.defaultSelections(for: pages),
+                        stickerSelections: [:],
+                        customStickers: [],
+                        completedActivityIDs: []
+                    )
+                )
+                let repairedWorkspace = library.workspaces.first { $0.id == repairedWorkspaceID }!
+                self.tripLibrary = library
+                self.trip = repairedWorkspace.trip
+                self.journalPages = repairedWorkspace.journalPages
+                self.journalSelections = repairedWorkspace.journalSelections
+                self.stickerSelections = repairedWorkspace.stickerSelections
+                self.customStickers = repairedWorkspace.customStickers
+                self.completedActivityIDs = repairedWorkspace.completedActivityIDs
                 persist()
                 return
             }
 
-            self.trip = snapshot.trip
-            self.journalPages = snapshot.journalPages
-            self.journalSelections = snapshot.journalSelections
-            self.stickerSelections = snapshot.stickerSelections
-            self.customStickers = snapshot.customStickers
-            self.travelMinutesBeforeActivityID = [:]
-            self.enabledReminderActivityIDs = []
-            self.completedActivityIDs = snapshot.completedActivityIDs
-            return
+            if let activeWorkspace = library.activeWorkspace {
+                self.tripLibrary = library
+                self.trip = activeWorkspace.trip
+                self.journalPages = activeWorkspace.journalPages
+                self.journalSelections = activeWorkspace.journalSelections
+                self.stickerSelections = activeWorkspace.stickerSelections
+                self.customStickers = activeWorkspace.customStickers
+                self.completedActivityIDs = activeWorkspace.completedActivityIDs
+                self.travelMinutesBeforeActivityID = activeWorkspace.travelMinutesBeforeActivityID
+                self.enabledReminderActivityIDs = activeWorkspace.enabledReminderActivityIDs
+                return
+            }
         }
 
         let trip = planningEngine.generateTrip(
@@ -94,18 +111,92 @@ final class AppState {
         )
         self.trip = trip
         let pages = journalEngine.generatePages(for: trip)
+        let selections = Self.defaultSelections(for: pages)
         self.journalPages = pages
-        self.journalSelections = Self.defaultSelections(for: pages)
+        self.journalSelections = selections
         self.stickerSelections = [:]
         self.customStickers = []
-        self.travelMinutesBeforeActivityID = [:]
-        self.enabledReminderActivityIDs = []
         self.completedActivityIDs = []
+        let workspace = TripWorkspace(
+            trip: trip,
+            journalPages: pages,
+            journalSelections: selections,
+            stickerSelections: [:],
+            customStickers: [],
+            completedActivityIDs: []
+        )
+        self.tripLibrary = TripLibrary(activeTripID: workspace.id, workspaces: [workspace])
         persist()
     }
 
     private var availableStickers: [Sticker] {
         StickerLibrary.default.categories.flatMap(\.stickers) + customStickers
+    }
+
+    var tripWorkspaces: [TripWorkspace] {
+        tripLibrary.workspaces
+    }
+
+    func selectTrip(id: UUID) {
+        guard id != tripLibrary.activeTripID else {
+            return
+        }
+        syncActiveWorkspace()
+        tripLibrary.selectTrip(id: id)
+        guard let workspace = tripLibrary.activeWorkspace else {
+            return
+        }
+        load(workspace)
+        persist()
+    }
+
+    @discardableResult
+    func duplicateTrip(id: UUID) -> UUID? {
+        syncActiveWorkspace()
+        guard let duplicateID = tripLibrary.duplicateTrip(id: id),
+              let workspace = tripLibrary.activeWorkspace else {
+            return nil
+        }
+        load(workspace)
+        persist()
+        return duplicateID
+    }
+
+    func renameTrip(id: UUID, title: String) {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else {
+            return
+        }
+        syncActiveWorkspace()
+        tripLibrary.renameTrip(id: id, title: trimmedTitle)
+        if id == tripLibrary.activeTripID, let workspace = tripLibrary.activeWorkspace {
+            load(workspace)
+        }
+        persist()
+    }
+
+    func setTripArchived(_ isArchived: Bool, id: UUID) {
+        syncActiveWorkspace()
+        tripLibrary.setArchived(isArchived, for: id)
+        if let workspace = tripLibrary.activeWorkspace {
+            load(workspace)
+        }
+        persist()
+    }
+
+    func deleteTrip(id: UUID) {
+        guard tripLibrary.workspaces.count > 1 else {
+            return
+        }
+        syncActiveWorkspace()
+        if let workspace = tripLibrary.workspaces.first(where: { $0.id == id }) {
+            Self.cancelScheduledReminders(in: workspace.trip)
+        }
+        tripLibrary.deleteTrip(id: id)
+        if let workspace = tripLibrary.activeWorkspace {
+            load(workspace)
+        }
+        persist()
     }
 
     func generateTrip(
@@ -168,13 +259,21 @@ final class AppState {
             destinationLocation: destinationLocation
         )
 
-        trip = scheduledTrip
         let pages = journalEngine.generatePages(for: scheduledTrip)
-        journalPages = pages
-        journalSelections = Self.defaultSelections(for: pages)
-        stickerSelections = [:]
+        syncActiveWorkspace()
+        let workspace = TripWorkspace(
+            trip: scheduledTrip,
+            journalPages: pages,
+            journalSelections: Self.defaultSelections(for: pages),
+            stickerSelections: [:],
+            customStickers: [],
+            completedActivityIDs: []
+        )
+        let workspaceID = tripLibrary.appendNewWorkspace(workspace)
+        if let workspace = tripLibrary.workspaces.first(where: { $0.id == workspaceID }) {
+            load(workspace)
+        }
         travelMinutesBeforeActivityID = [:]
-        completedActivityIDs = []
         let fixedNodeMessage = importedFixedCount > 0 ? " 已识别 \(importedFixedCount) 个固定时间节点。" : ""
         if resolvedPlaces.count >= 2 {
             aiPlanningMessage = "\(aiResult.statusMessage) 已匹配 \(resolvedPlaces.count) 个真实坐标。\(fixedNodeMessage)"
@@ -400,12 +499,12 @@ final class AppState {
         trip.days[dayIndex].activities[activityIndex].endTime = endTime
         trip.days[dayIndex].activities[activityIndex].notes = notes
         trip.days[dayIndex].activities[activityIndex].reminder = reminder
-        persist()
 
         if let previousReminder, previousReminder.id != reminder?.id {
             Self.cancelScheduledReminder(previousReminder)
             enabledReminderActivityIDs.remove(activityID)
         }
+        persist()
     }
 
     func enableReminder(dayID: UUID, activityID: UUID) async {
@@ -414,11 +513,18 @@ final class AppState {
             return
         }
 
+        let initiatingTripID = trip.id
         let isScheduled = await Self.syncScheduledReminder(
             activity: activity,
             day: day,
             duration: trip.duration
         )
+        guard trip.id == initiatingTripID else {
+            if isScheduled, let reminder = activity.reminder {
+                Self.cancelScheduledReminder(reminder)
+            }
+            return
+        }
         if isScheduled {
             enabledReminderActivityIDs.insert(activityID)
             aiPlanningMessage = "已开启固定时间提醒。"
@@ -426,6 +532,7 @@ final class AppState {
             enabledReminderActivityIDs.remove(activityID)
             aiPlanningMessage = "当前节点无法开启系统提醒，请确认行程日期和时间。"
         }
+        persist()
     }
 
     private func resolveFixedNodePlaces(
@@ -469,8 +576,8 @@ final class AppState {
             }
         }
 
-        persist()
         travelMinutesBeforeActivityID = [:]
+        persist()
     }
 
     func reorderRouteActivitiesAndReschedule(activityIDs: [UUID]) async {
@@ -975,17 +1082,33 @@ final class AppState {
         return false
     }
 
+    private func load(_ workspace: TripWorkspace) {
+        trip = workspace.trip
+        journalPages = workspace.journalPages
+        journalSelections = workspace.journalSelections
+        stickerSelections = workspace.stickerSelections
+        customStickers = workspace.customStickers
+        completedActivityIDs = workspace.completedActivityIDs
+        travelMinutesBeforeActivityID = workspace.travelMinutesBeforeActivityID
+        enabledReminderActivityIDs = workspace.enabledReminderActivityIDs
+    }
+
+    private func syncActiveWorkspace() {
+        tripLibrary.updateActiveWorkspace { workspace in
+            workspace.trip = trip
+            workspace.journalPages = journalPages
+            workspace.journalSelections = journalSelections
+            workspace.stickerSelections = stickerSelections
+            workspace.customStickers = customStickers
+            workspace.completedActivityIDs = completedActivityIDs
+            workspace.travelMinutesBeforeActivityID = travelMinutesBeforeActivityID
+            workspace.enabledReminderActivityIDs = enabledReminderActivityIDs
+        }
+    }
+
     private func persist() {
-        localStore.save(
-            AppPersistenceSnapshot(
-                trip: trip,
-                journalPages: journalPages,
-                journalSelections: journalSelections,
-                stickerSelections: stickerSelections,
-                customStickers: customStickers,
-                completedActivityIDs: completedActivityIDs
-            )
-        )
+        syncActiveWorkspace()
+        localStore.save(AppPersistenceSnapshot(tripLibrary: tripLibrary))
     }
 
     private static func syncScheduledReminder(
@@ -1043,6 +1166,14 @@ final class AppState {
         UNUserNotificationCenter.current().removePendingNotificationRequests(
             withIdentifiers: [notificationIdentifier(for: reminder)]
         )
+    }
+
+    private static func cancelScheduledReminders(in trip: Trip) {
+        let identifiers = trip.days
+            .flatMap(\.activities)
+            .compactMap(\.reminder)
+            .map(notificationIdentifier)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
     }
 
     private static func notificationIdentifier(for reminder: Reminder) -> String {
