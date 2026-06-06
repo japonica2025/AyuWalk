@@ -101,6 +101,9 @@ final class TripLibraryTests: XCTestCase {
                     amount: 300,
                     category: .food,
                     participantIDs: [participant.id],
+                    payerID: participant.id,
+                    splitMode: .custom,
+                    customShares: [participant.id: 300],
                     notes: nil
                 )
             ]
@@ -138,6 +141,8 @@ final class TripLibraryTests: XCTestCase {
 
         let duplicateParticipantID = try XCTUnwrap(duplicate.trip.participants.first?.id)
         XCTAssertEqual(duplicate.trip.budgetPlan?.expenses.first?.participantIDs, [duplicateParticipantID])
+        XCTAssertEqual(duplicate.trip.budgetPlan?.expenses.first?.payerID, duplicateParticipantID)
+        XCTAssertEqual(duplicate.trip.budgetPlan?.expenses.first?.customShares, [duplicateParticipantID: 300])
         let duplicatePage = try XCTUnwrap(duplicate.journalPages.first)
         let duplicateBlock = try XCTUnwrap(duplicatePage.blocks.first)
         XCTAssertEqual(duplicate.journalSelections[duplicatePage.id]?.selectedBlockIDs, [duplicateBlock.id])

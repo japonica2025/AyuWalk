@@ -203,7 +203,9 @@ struct AWBudgetExpenseEntryCard: View {
     @Binding var amountText: String
     @Binding var category: BudgetCategory
     @Binding var currencyCode: String
+    @Binding var payerID: UUID?
     @Binding var notes: String
+    let participants: [Participant]
     var defaultCurrencyCode: String
     var onAdd: () -> Void
 
@@ -236,6 +238,8 @@ struct AWBudgetExpenseEntryCard: View {
                         .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
                 }
 
+                payerPicker
+
                 Picker("分类", selection: $category) {
                     ForEach(BudgetCategory.allCases, id: \.self) { category in
                         Text(category.displayName).tag(category)
@@ -258,6 +262,40 @@ struct AWBudgetExpenseEntryCard: View {
             }
         }
     }
+
+    private var payerPicker: some View {
+        HStack {
+            Text("付款人")
+                .font(AyuWalkTypography.captionStrong)
+                .foregroundStyle(AyuWalkTheme.mutedInk)
+            Spacer()
+            Menu {
+                ForEach(participants) { participant in
+                    Button(participant.name) {
+                        payerID = participant.id
+                    }
+                }
+            } label: {
+                Text(payerName)
+                    .font(AyuWalkTypography.captionStrong)
+                    .foregroundStyle(AyuWalkTheme.secondaryAccent)
+                    .padding(.horizontal, AyuWalkSpacing.sm)
+                    .padding(.vertical, AyuWalkSpacing.xs)
+                    .background(AyuWalkTheme.surface)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("选择付款人")
+        }
+    }
+
+    private var payerName: String {
+        guard let payerID,
+              let participant = participants.first(where: { $0.id == payerID }) else {
+            return participants.first?.name ?? "未设置"
+        }
+        return participant.name
+    }
 }
 
 struct AWBudgetExpenseListCard: View {
@@ -266,7 +304,8 @@ struct AWBudgetExpenseListCard: View {
     let currencyCode: String
     let participantTotals: [UUID: Decimal]
     let participantTotalsByCurrency: [UUID: [String: Decimal]]
-    var onUpdate: (UUID, String, Decimal, BudgetCategory, String, String?) -> Void
+    let settlementTransfers: [BudgetSettlementTransfer]
+    var onUpdate: (UUID, String, Decimal, BudgetCategory, String, UUID?, BudgetSplitMode, [UUID: Decimal], String?) -> Void
     var onDelete: (UUID) -> Void
     var onToggleParticipant: (UUID, UUID) -> Void
 
@@ -278,6 +317,7 @@ struct AWBudgetExpenseListCard: View {
                     .foregroundStyle(AyuWalkTheme.ink)
 
                 participantTotalsView
+                settlementView
 
                 if expenses.isEmpty {
                     Text("还没有记录支出。新增一笔后，会默认让所有参与人一起 AA。")
@@ -352,13 +392,42 @@ struct AWBudgetExpenseListCard: View {
             .map { format(amount: $0.value, currencyCode: $0.key) }
             .joined(separator: " / ")
     }
+
+    private var settlementView: some View {
+        VStack(alignment: .leading, spacing: AyuWalkSpacing.xs) {
+            Text("结算摘要")
+                .font(AyuWalkTypography.eyebrow)
+                .foregroundStyle(AyuWalkTheme.mutedInk)
+
+            if settlementTransfers.isEmpty {
+                Text("当前没有需要转账的金额。")
+                    .font(AyuWalkTypography.caption)
+                    .foregroundStyle(AyuWalkTheme.mutedInk)
+            } else {
+                ForEach(Array(settlementTransfers.enumerated()), id: \.offset) { _, transfer in
+                    Text(settlementText(for: transfer))
+                        .font(AyuWalkTypography.captionStrong)
+                        .foregroundStyle(AyuWalkTheme.ink)
+                }
+            }
+        }
+        .padding(AyuWalkSpacing.sm)
+        .background(AyuWalkTheme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+    }
+
+    private func settlementText(for transfer: BudgetSettlementTransfer) -> String {
+        let fromName = participants.first(where: { $0.id == transfer.fromParticipantID })?.name ?? "某人"
+        let toName = participants.first(where: { $0.id == transfer.toParticipantID })?.name ?? "某人"
+        return "\(fromName) 转给 \(toName) \(format(amount: transfer.amount, currencyCode: transfer.currencyCode))"
+    }
 }
 
 private struct AWBudgetExpenseRow: View {
     let expense: BudgetExpense
     let participants: [Participant]
     let currencyCode: String
-    var onUpdate: (UUID, String, Decimal, BudgetCategory, String, String?) -> Void
+    var onUpdate: (UUID, String, Decimal, BudgetCategory, String, UUID?, BudgetSplitMode, [UUID: Decimal], String?) -> Void
     var onDelete: (UUID) -> Void
     var onToggleParticipant: (UUID, UUID) -> Void
 
@@ -367,6 +436,13 @@ private struct AWBudgetExpenseRow: View {
     private var shareText: String {
         guard !expense.participantIDs.isEmpty else {
             return "未选择 AA 人员"
+        }
+
+        if expense.splitMode == .custom {
+            let total = expense.participantIDs.reduce(Decimal(0)) { partialResult, participantID in
+                partialResult + (expense.customShares[participantID] ?? 0)
+            }
+            return "\(expense.participantIDs.count) 人自定义分摊 · \(expenseCurrencyCode) \(plainAmount(total))"
         }
 
         let amount = expense.amount / Decimal(expense.participantIDs.count)
@@ -417,6 +493,11 @@ private struct AWBudgetExpenseRow: View {
                         .font(AyuWalkTypography.caption)
                         .foregroundStyle(AyuWalkTheme.mutedInk)
                 }
+                if let payerName {
+                    Text("付款人 \(payerName)")
+                        .font(AyuWalkTypography.caption)
+                        .foregroundStyle(AyuWalkTheme.secondaryAccent)
+                }
             }
 
             Spacer()
@@ -459,7 +540,7 @@ private struct AWBudgetExpenseRow: View {
                 placeholder: "支出名称",
                 text: Binding(
                     get: { expense.title },
-                    set: { onUpdate(expense.id, $0, expense.amount, expense.category, expenseCurrencyCode, expense.notes) }
+                    set: { update(title: $0) }
                 )
             )
 
@@ -469,7 +550,7 @@ private struct AWBudgetExpenseRow: View {
                     get: { plainAmount(expense.amount) },
                     set: { text in
                         if let amount = decimal(from: text) {
-                            onUpdate(expense.id, expense.title, amount, expense.category, expenseCurrencyCode, expense.notes)
+                            update(amount: amount)
                         }
                     }
                 ),
@@ -480,14 +561,28 @@ private struct AWBudgetExpenseRow: View {
                 currencyCode: expenseCurrencyCode,
                 label: "支出货币"
             ) { selected in
-                onUpdate(expense.id, expense.title, expense.amount, expense.category, selected, expense.notes)
+                update(currencyCode: selected)
             }
+
+            payerPicker
+
+            Picker(
+                "分摊方式",
+                selection: Binding(
+                    get: { expense.splitMode },
+                    set: { update(splitMode: $0) }
+                )
+            ) {
+                Text("均分").tag(BudgetSplitMode.equal)
+                Text("自定义").tag(BudgetSplitMode.custom)
+            }
+            .pickerStyle(.segmented)
 
             Picker(
                 "分类",
                 selection: Binding(
                     get: { expense.category },
-                    set: { onUpdate(expense.id, expense.title, expense.amount, $0, expenseCurrencyCode, expense.notes) }
+                    set: { update(category: $0) }
                 )
             ) {
                 ForEach(BudgetCategory.allCases, id: \.self) { category in
@@ -500,12 +595,37 @@ private struct AWBudgetExpenseRow: View {
                 "备注",
                 text: Binding(
                     get: { expense.notes ?? "" },
-                    set: { onUpdate(expense.id, expense.title, expense.amount, expense.category, expenseCurrencyCode, $0) }
+                    set: { update(notes: $0) }
                 )
             )
             .textFieldStyle(.plain)
             .font(AyuWalkTypography.caption)
             .foregroundStyle(AyuWalkTheme.mutedInk)
+        }
+    }
+
+    private var payerPicker: some View {
+        HStack {
+            Text("付款人")
+                .font(AyuWalkTypography.captionStrong)
+                .foregroundStyle(AyuWalkTheme.mutedInk)
+            Spacer()
+            Menu {
+                ForEach(participants) { participant in
+                    Button(participant.name) {
+                        update(payerID: participant.id)
+                    }
+                }
+            } label: {
+                Text(payerName ?? "未设置")
+                    .font(AyuWalkTypography.captionStrong)
+                    .foregroundStyle(AyuWalkTheme.secondaryAccent)
+                    .padding(.horizontal, AyuWalkSpacing.sm)
+                    .padding(.vertical, AyuWalkSpacing.xs)
+                    .background(AyuWalkTheme.surface)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -517,20 +637,94 @@ private struct AWBudgetExpenseRow: View {
         ) {
             ForEach(participants) { participant in
                 let isIncluded = expense.participantIDs.contains(participant.id)
-                Button {
-                    onToggleParticipant(expense.id, participant.id)
-                } label: {
-                    Label(participant.name, systemImage: isIncluded ? "checkmark.circle.fill" : "minus.circle")
-                        .font(AyuWalkTypography.captionStrong)
-                        .foregroundStyle(isIncluded ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.mutedInk)
+                VStack(alignment: .leading, spacing: AyuWalkSpacing.xxs) {
+                    Button {
+                        onToggleParticipant(expense.id, participant.id)
+                    } label: {
+                        Label(participant.name, systemImage: isIncluded ? "checkmark.circle.fill" : "minus.circle")
+                            .font(AyuWalkTypography.captionStrong)
+                            .foregroundStyle(isIncluded ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.mutedInk)
+                            .padding(.horizontal, AyuWalkSpacing.sm)
+                            .padding(.vertical, AyuWalkSpacing.xs)
+                            .background(isIncluded ? AyuWalkTheme.secondaryAccent.opacity(0.12) : AyuWalkTheme.surface)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
+                    if isIncluded, expense.splitMode == .custom {
+                        TextField(
+                            "金额",
+                            text: Binding(
+                                get: { plainAmount(expense.customShares[participant.id] ?? 0) },
+                                set: { text in
+                                    if let amount = decimal(from: text) {
+                                        var shares = expense.customShares
+                                        shares[participant.id] = amount
+                                        update(customShares: shares)
+                                    }
+                                }
+                            )
+                        )
+                        .keyboardType(.decimalPad)
+                        .textFieldStyle(.plain)
+                        .font(AyuWalkTypography.caption)
+                        .foregroundStyle(AyuWalkTheme.ink)
                         .padding(.horizontal, AyuWalkSpacing.sm)
                         .padding(.vertical, AyuWalkSpacing.xs)
-                        .background(isIncluded ? AyuWalkTheme.secondaryAccent.opacity(0.12) : AyuWalkTheme.surface)
+                        .background(AyuWalkTheme.surface)
                         .clipShape(Capsule())
+                    }
                 }
-                .buttonStyle(.plain)
             }
         }
+    }
+
+    private var payerName: String? {
+        guard let payerID = expense.payerID else {
+            return nil
+        }
+        return participants.first(where: { $0.id == payerID })?.name
+    }
+
+    private func update(
+        title: String? = nil,
+        amount: Decimal? = nil,
+        category: BudgetCategory? = nil,
+        currencyCode: String? = nil,
+        payerID: UUID?? = nil,
+        splitMode: BudgetSplitMode? = nil,
+        customShares: [UUID: Decimal]? = nil,
+        notes: String? = nil
+    ) {
+        let nextSplitMode = splitMode ?? expense.splitMode
+        let nextCustomShares: [UUID: Decimal]
+        if let customShares {
+            nextCustomShares = customShares
+        } else if nextSplitMode == .custom, expense.customShares.isEmpty {
+            nextCustomShares = defaultCustomShares()
+        } else {
+            nextCustomShares = expense.customShares
+        }
+
+        onUpdate(
+            expense.id,
+            title ?? expense.title,
+            amount ?? expense.amount,
+            category ?? expense.category,
+            currencyCode ?? expenseCurrencyCode,
+            payerID == nil ? expense.payerID : payerID!,
+            nextSplitMode,
+            nextCustomShares,
+            notes ?? expense.notes
+        )
+    }
+
+    private func defaultCustomShares() -> [UUID: Decimal] {
+        guard !expense.participantIDs.isEmpty else {
+            return [:]
+        }
+        let perPersonAmount = expense.amount / Decimal(expense.participantIDs.count)
+        return Dictionary(uniqueKeysWithValues: expense.participantIDs.map { ($0, perPersonAmount) })
     }
 
     private func decimal(from text: String) -> Decimal? {

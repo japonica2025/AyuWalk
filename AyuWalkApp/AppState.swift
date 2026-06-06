@@ -379,7 +379,14 @@ final class AppState {
         persist()
     }
 
-    func addBudgetExpense(title: String, amount: Decimal, category: BudgetCategory, currencyCode: String, notes: String?) {
+    func addBudgetExpense(
+        title: String,
+        amount: Decimal,
+        category: BudgetCategory,
+        currencyCode: String,
+        payerID: UUID?,
+        notes: String?
+    ) {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedTitle.isEmpty, amount > 0 else {
             return
@@ -387,13 +394,15 @@ final class AppState {
 
         var budget = trip.budgetPlan ?? BudgetPlan(total: 0, currencyCode: DestinationResolver.currencyCode(forCountryCode: nil))
         let trimmedNotes = notes?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let participantIDs = trip.participants.map(\.id)
         budget.expenses.insert(
             BudgetExpense(
                 id: UUID(),
                 title: trimmedTitle,
                 amount: amount,
                 category: category,
-                participantIDs: trip.participants.map(\.id),
+                participantIDs: participantIDs,
+                payerID: payerID ?? participantIDs.first,
                 currencyCode: currencyCode,
                 notes: trimmedNotes?.isEmpty == false ? trimmedNotes : nil
             ),
@@ -409,6 +418,9 @@ final class AppState {
         amount: Decimal,
         category: BudgetCategory,
         currencyCode: String,
+        payerID: UUID?,
+        splitMode: BudgetSplitMode,
+        customShares: [UUID: Decimal],
         notes: String?
     ) {
         guard var budget = trip.budgetPlan,
@@ -422,6 +434,13 @@ final class AppState {
         budget.expenses[index].amount = amount < 0 ? 0 : amount
         budget.expenses[index].category = category
         budget.expenses[index].currencyCode = currencyCode
+        let participantIDSet = Set(budget.expenses[index].participantIDs)
+        let resolvedPayerID = payerID.flatMap { participantIDSet.contains($0) ? $0 : budget.expenses[index].participantIDs.first }
+        budget.expenses[index].payerID = resolvedPayerID
+        budget.expenses[index].splitMode = splitMode
+        budget.expenses[index].customShares = customShares
+            .filter { participantIDSet.contains($0.key) }
+            .mapValues { max($0, 0) }
         budget.expenses[index].notes = trimmedNotes?.isEmpty == false ? trimmedNotes : nil
         trip.budgetPlan = budget
         persist()
@@ -445,8 +464,15 @@ final class AppState {
 
         if budget.expenses[index].participantIDs.contains(participantID) {
             budget.expenses[index].participantIDs.removeAll { $0 == participantID }
+            budget.expenses[index].customShares.removeValue(forKey: participantID)
+            if budget.expenses[index].payerID == participantID {
+                budget.expenses[index].payerID = budget.expenses[index].participantIDs.first
+            }
         } else {
             budget.expenses[index].participantIDs.append(participantID)
+            if budget.expenses[index].payerID == nil {
+                budget.expenses[index].payerID = participantID
+            }
         }
         trip.budgetPlan = budget
         persist()
@@ -477,6 +503,10 @@ final class AppState {
         if var budget = trip.budgetPlan {
             for index in budget.expenses.indices {
                 budget.expenses[index].participantIDs.removeAll { $0 == id }
+                budget.expenses[index].customShares.removeValue(forKey: id)
+                if budget.expenses[index].payerID == id {
+                    budget.expenses[index].payerID = budget.expenses[index].participantIDs.first
+                }
             }
             trip.budgetPlan = budget
         }

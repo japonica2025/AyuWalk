@@ -323,7 +323,10 @@ public struct BudgetExpense: Codable, Equatable, Identifiable, Sendable {
     public var amount: Decimal
     public var category: BudgetCategory
     public var participantIDs: [UUID]
+    public var payerID: UUID?
     public var currencyCode: String
+    public var splitMode: BudgetSplitMode
+    public var customShares: [UUID: Decimal]
     public var notes: String?
 
     public init(
@@ -332,7 +335,10 @@ public struct BudgetExpense: Codable, Equatable, Identifiable, Sendable {
         amount: Decimal,
         category: BudgetCategory,
         participantIDs: [UUID],
+        payerID: UUID? = nil,
         currencyCode: String = "CNY",
+        splitMode: BudgetSplitMode = .equal,
+        customShares: [UUID: Decimal] = [:],
         notes: String?
     ) {
         self.id = id
@@ -340,7 +346,10 @@ public struct BudgetExpense: Codable, Equatable, Identifiable, Sendable {
         self.amount = amount
         self.category = category
         self.participantIDs = participantIDs
+        self.payerID = payerID
         self.currencyCode = currencyCode
+        self.splitMode = splitMode
+        self.customShares = customShares
         self.notes = notes
     }
 
@@ -350,7 +359,10 @@ public struct BudgetExpense: Codable, Equatable, Identifiable, Sendable {
         case amount
         case category
         case participantIDs
+        case payerID
         case currencyCode
+        case splitMode
+        case customShares
         case notes
     }
 
@@ -361,9 +373,17 @@ public struct BudgetExpense: Codable, Equatable, Identifiable, Sendable {
         amount = try container.decode(Decimal.self, forKey: .amount)
         category = try container.decode(BudgetCategory.self, forKey: .category)
         participantIDs = try container.decodeIfPresent([UUID].self, forKey: .participantIDs) ?? []
+        payerID = try container.decodeIfPresent(UUID.self, forKey: .payerID)
         currencyCode = try container.decodeIfPresent(String.self, forKey: .currencyCode) ?? ""
+        splitMode = try container.decodeIfPresent(BudgetSplitMode.self, forKey: .splitMode) ?? .equal
+        customShares = try container.decodeIfPresent([UUID: Decimal].self, forKey: .customShares) ?? [:]
         notes = try container.decodeIfPresent(String.self, forKey: .notes)
     }
+}
+
+public enum BudgetSplitMode: String, Codable, Equatable, Sendable {
+    case equal
+    case custom
 }
 
 public enum BudgetCategory: String, Codable, CaseIterable, Equatable, Sendable {

@@ -59,6 +59,9 @@ final class PersistenceCodingTests: XCTestCase {
         let budget = try JSONDecoder().decode(BudgetPlan.self, from: data)
 
         XCTAssertEqual(budget.expenses.first?.currencyCode, "EUR")
+        XCTAssertNil(budget.expenses.first?.payerID)
+        XCTAssertEqual(budget.expenses.first?.splitMode, .equal)
+        XCTAssertEqual(budget.expenses.first?.customShares, [:])
     }
 
     func testActivityDecodesLegacyFixedNodeState() throws {

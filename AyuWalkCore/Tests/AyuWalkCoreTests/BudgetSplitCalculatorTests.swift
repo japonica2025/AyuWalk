@@ -39,6 +39,54 @@ final class BudgetSplitCalculatorTests: XCTestCase {
         ])
     }
 
+    func testExpenseSharesUseCustomAmountsWhenSelected() {
+        let anna = UUID()
+        let ben = UUID()
+        let expense = BudgetExpense(
+            id: UUID(),
+            title: "酒店",
+            amount: 9000,
+            category: .lodging,
+            participantIDs: [anna, ben],
+            payerID: anna,
+            currencyCode: "JPY",
+            splitMode: .custom,
+            customShares: [anna: 3000, ben: 6000],
+            notes: nil
+        )
+
+        let shares = BudgetSplitCalculator.expenseShares(expense)
+
+        XCTAssertEqual(shares, [
+            BudgetParticipantShare(participantID: anna, amount: 3000),
+            BudgetParticipantShare(participantID: ben, amount: 6000)
+        ])
+    }
+
+    func testExpenseSharesNormalizeCustomAmountsToExpenseTotal() {
+        let anna = UUID()
+        let ben = UUID()
+        let expense = BudgetExpense(
+            id: UUID(),
+            title: "酒店",
+            amount: 120,
+            category: .lodging,
+            participantIDs: [anna, ben],
+            payerID: anna,
+            currencyCode: "EUR",
+            splitMode: .custom,
+            customShares: [anna: 50, ben: 50],
+            notes: nil
+        )
+
+        let shares = BudgetSplitCalculator.expenseShares(expense)
+
+        XCTAssertEqual(shares, [
+            BudgetParticipantShare(participantID: anna, amount: 60),
+            BudgetParticipantShare(participantID: ben, amount: 60)
+        ])
+    }
+
     func testExpenseSharesExcludeRemovedParticipants() {
         let anna = UUID()
         let ben = UUID()
@@ -151,5 +199,71 @@ final class BudgetSplitCalculatorTests: XCTestCase {
 
         XCTAssertEqual(totals["EUR"], 112)
         XCTAssertEqual(totals["JPY"], 2000)
+    }
+
+    func testSettlementTransfersDebtorsToPayersByCurrency() {
+        let anna = UUID()
+        let ben = UUID()
+        let expense = BudgetExpense(
+            id: UUID(),
+            title: "Dinner",
+            amount: 120,
+            category: .food,
+            participantIDs: [anna, ben],
+            payerID: anna,
+            currencyCode: "EUR",
+            notes: nil
+        )
+
+        let transfers = BudgetSplitCalculator.settlementTransfers(for: [expense])
+
+        XCTAssertEqual(transfers, [
+            BudgetSettlementTransfer(fromParticipantID: ben, toParticipantID: anna, amount: 60, currencyCode: "EUR")
+        ])
+    }
+
+    func testSettlementTransfersUseCustomShares() {
+        let anna = UUID()
+        let ben = UUID()
+        let expense = BudgetExpense(
+            id: UUID(),
+            title: "Hotel",
+            amount: 9000,
+            category: .lodging,
+            participantIDs: [anna, ben],
+            payerID: anna,
+            currencyCode: "JPY",
+            splitMode: .custom,
+            customShares: [anna: 3000, ben: 6000],
+            notes: nil
+        )
+
+        let transfers = BudgetSplitCalculator.settlementTransfers(for: [expense])
+
+        XCTAssertEqual(transfers, [
+            BudgetSettlementTransfer(fromParticipantID: ben, toParticipantID: anna, amount: 6000, currencyCode: "JPY")
+        ])
+    }
+
+    func testSettlementTransfersIgnoreInvalidDeletedPayer() {
+        let anna = UUID()
+        let ben = UUID()
+        let deleted = UUID()
+        let expense = BudgetExpense(
+            id: UUID(),
+            title: "Dinner",
+            amount: 120,
+            category: .food,
+            participantIDs: [anna, ben],
+            payerID: deleted,
+            currencyCode: "EUR",
+            notes: nil
+        )
+
+        let transfers = BudgetSplitCalculator.settlementTransfers(for: [expense])
+
+        XCTAssertEqual(transfers, [
+            BudgetSettlementTransfer(fromParticipantID: ben, toParticipantID: anna, amount: 60, currencyCode: "EUR")
+        ])
     }
 }

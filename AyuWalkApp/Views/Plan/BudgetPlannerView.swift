@@ -7,8 +7,8 @@ struct BudgetPlannerView: View {
     let onAddParticipant: (String) -> Void
     let onUpdateParticipant: (UUID, String) -> Void
     let onDeleteParticipant: (UUID) -> Void
-    let onAddExpense: (String, Decimal, BudgetCategory, String, String?) -> Void
-    let onUpdateExpense: (UUID, String, Decimal, BudgetCategory, String, String?) -> Void
+    let onAddExpense: (String, Decimal, BudgetCategory, String, UUID?, String?) -> Void
+    let onUpdateExpense: (UUID, String, Decimal, BudgetCategory, String, UUID?, BudgetSplitMode, [UUID: Decimal], String?) -> Void
     let onDeleteExpense: (UUID) -> Void
     let onToggleExpenseParticipant: (UUID, UUID) -> Void
 
@@ -18,6 +18,7 @@ struct BudgetPlannerView: View {
     @State private var newExpenseAmountText = ""
     @State private var newExpenseCategory: BudgetCategory = .food
     @State private var newExpenseCurrencyCode = ""
+    @State private var newExpensePayerID: UUID?
     @State private var newExpenseNotes = ""
 
     private var budget: BudgetPlan {
@@ -41,6 +42,10 @@ struct BudgetPlannerView: View {
 
     private var participantTotalsByCurrency: [UUID: [String: Decimal]] {
         BudgetSplitCalculator.participantTotalsByCurrency(for: budget.expenses)
+    }
+
+    private var settlementTransfers: [BudgetSettlementTransfer] {
+        BudgetSplitCalculator.settlementTransfers(for: budget.expenses)
     }
 
     var body: some View {
@@ -82,7 +87,9 @@ struct BudgetPlannerView: View {
                 amountText: $newExpenseAmountText,
                 category: $newExpenseCategory,
                 currencyCode: $newExpenseCurrencyCode,
+                payerID: $newExpensePayerID,
                 notes: $newExpenseNotes,
+                participants: trip.participants,
                 defaultCurrencyCode: budget.currencyCode
             ) {
                 guard let amount = decimal(from: newExpenseAmountText), amount > 0 else {
@@ -94,12 +101,14 @@ struct BudgetPlannerView: View {
                     amount,
                     newExpenseCategory,
                     currencyCode,
+                    newExpensePayerID ?? trip.participants.first?.id,
                     newExpenseNotes
                 )
                 newExpenseTitle = ""
                 newExpenseAmountText = ""
                 newExpenseCategory = .food
                 newExpenseCurrencyCode = budget.currencyCode
+                newExpensePayerID = trip.participants.first?.id
                 newExpenseNotes = ""
             }
 
@@ -109,6 +118,7 @@ struct BudgetPlannerView: View {
                 currencyCode: budget.currencyCode,
                 participantTotals: participantTotals,
                 participantTotalsByCurrency: participantTotalsByCurrency,
+                settlementTransfers: settlementTransfers,
                 onUpdate: onUpdateExpense,
                 onDelete: onDeleteExpense,
                 onToggleParticipant: onToggleExpenseParticipant
@@ -117,12 +127,18 @@ struct BudgetPlannerView: View {
         .onAppear {
             budgetText = plainAmount(budget.total)
             newExpenseCurrencyCode = budget.currencyCode
+            newExpensePayerID = newExpensePayerID ?? trip.participants.first?.id
         }
         .onChange(of: budget.total) { _, newValue in
             budgetText = plainAmount(newValue)
         }
         .onChange(of: budget.currencyCode) { _, newValue in
             newExpenseCurrencyCode = newValue
+        }
+        .onChange(of: trip.participants) { _, newValue in
+            if newExpensePayerID == nil || !newValue.contains(where: { $0.id == newExpensePayerID }) {
+                newExpensePayerID = newValue.first?.id
+            }
         }
     }
 
@@ -166,8 +182,8 @@ struct BudgetPlannerView: View {
         onAddParticipant: { _ in },
         onUpdateParticipant: { _, _ in },
         onDeleteParticipant: { _ in },
-        onAddExpense: { _, _, _, _, _ in },
-        onUpdateExpense: { _, _, _, _, _, _ in },
+        onAddExpense: { _, _, _, _, _, _ in },
+        onUpdateExpense: { _, _, _, _, _, _, _, _, _ in },
         onDeleteExpense: { _ in },
         onToggleExpenseParticipant: { _, _ in }
     )

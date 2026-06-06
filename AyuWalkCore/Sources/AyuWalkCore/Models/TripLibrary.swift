@@ -241,7 +241,14 @@ private struct TripWorkspaceDuplicator {
                         amount: expense.amount,
                         category: expense.category,
                         participantIDs: expense.participantIDs.compactMap { ids[$0] },
+                        payerID: expense.payerID.flatMap { ids[$0] },
                         currencyCode: expense.currencyCode,
+                        splitMode: expense.splitMode,
+                        customShares: Dictionary(
+                            uniqueKeysWithValues: expense.customShares.compactMap { participantID, amount in
+                                ids[participantID].map { ($0, amount) }
+                            }
+                        ),
                         notes: expense.notes
                     )
                 }
