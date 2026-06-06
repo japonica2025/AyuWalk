@@ -297,8 +297,16 @@ public struct BudgetPlan: Codable, Equatable, Sendable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         total = try container.decode(Decimal.self, forKey: .total)
-        currencyCode = try container.decode(String.self, forKey: .currencyCode)
-        expenses = try container.decodeIfPresent([BudgetExpense].self, forKey: .expenses) ?? []
+        let decodedCurrencyCode = try container.decode(String.self, forKey: .currencyCode)
+        currencyCode = decodedCurrencyCode
+        let decodedExpenses = try container.decodeIfPresent([BudgetExpense].self, forKey: .expenses) ?? []
+        expenses = decodedExpenses.map { expense in
+            var normalized = expense
+            if normalized.currencyCode.isEmpty {
+                normalized.currencyCode = decodedCurrencyCode
+            }
+            return normalized
+        }
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -315,6 +323,7 @@ public struct BudgetExpense: Codable, Equatable, Identifiable, Sendable {
     public var amount: Decimal
     public var category: BudgetCategory
     public var participantIDs: [UUID]
+    public var currencyCode: String
     public var notes: String?
 
     public init(
@@ -323,6 +332,7 @@ public struct BudgetExpense: Codable, Equatable, Identifiable, Sendable {
         amount: Decimal,
         category: BudgetCategory,
         participantIDs: [UUID],
+        currencyCode: String = "CNY",
         notes: String?
     ) {
         self.id = id
@@ -330,7 +340,29 @@ public struct BudgetExpense: Codable, Equatable, Identifiable, Sendable {
         self.amount = amount
         self.category = category
         self.participantIDs = participantIDs
+        self.currencyCode = currencyCode
         self.notes = notes
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case amount
+        case category
+        case participantIDs
+        case currencyCode
+        case notes
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        amount = try container.decode(Decimal.self, forKey: .amount)
+        category = try container.decode(BudgetCategory.self, forKey: .category)
+        participantIDs = try container.decodeIfPresent([UUID].self, forKey: .participantIDs) ?? []
+        currencyCode = try container.decodeIfPresent(String.self, forKey: .currencyCode) ?? ""
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
     }
 }
 

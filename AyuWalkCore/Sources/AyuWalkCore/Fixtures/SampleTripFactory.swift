@@ -619,7 +619,7 @@ public enum SampleTripFactory {
                 place: slot.place,
                 startTime: slot.start,
                 endTime: slot.end,
-                notes: "按每日模板生成，可继续拖动排序或交给 AI 重新规划",
+                notes: "可继续编辑时间、地点和路线顺序",
                 estimatedCost: slot.cost,
                 routeOrder: routeOrder,
                 reminder: nil
@@ -648,7 +648,7 @@ public enum SampleTripFactory {
         let offset = Double(dayNumber) * 0.0025 + slotOffset
         return Place(
             id: deterministicUUID(namespace: "resolved-placeholder-place", value: "\(destination)-\(dayNumber)-\(slotName)"),
-            name: "\(destination) Day \(dayNumber) \(slotName)待细化地点",
+            name: "\(destination) Day \(dayNumber) \(slotName)",
             address: anchor?.address ?? destination,
             latitude: anchor?.latitude.map { $0 + offset },
             longitude: anchor?.longitude.map { $0 - offset },

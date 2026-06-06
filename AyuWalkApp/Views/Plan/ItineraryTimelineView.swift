@@ -233,12 +233,15 @@ struct ItineraryTimelineView: View {
                                 .font(.caption2.weight(.bold))
                             Text(countdownText)
                                 .font(.caption.weight(.semibold))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.78)
                         }
                         .foregroundStyle(AyuWalkTheme.secondaryAccent)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 6)
                         .background(AyuWalkTheme.pageBackground)
                         .clipShape(Capsule())
+                        .fixedSize(horizontal: true, vertical: false)
 
                         Button {
                             onEnableReminder(day, activity)

@@ -241,6 +241,7 @@ private struct TripWorkspaceDuplicator {
                         amount: expense.amount,
                         category: expense.category,
                         participantIDs: expense.participantIDs.compactMap { ids[$0] },
+                        currencyCode: expense.currencyCode,
                         notes: expense.notes
                     )
                 }

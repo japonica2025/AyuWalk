@@ -170,6 +170,16 @@ struct PlanHomeView: View {
                         onApplyTemplates: appState.applyPackingTemplates
                     )
                     .presentationDetents([.medium, .large])
+                case .aiAdjustment:
+                    AIAdjustmentSheetView(
+                        proposal: appState.latestAIPlanningProposal,
+                        isWorking: appState.isGeneratingTrip
+                    ) { request in
+                        Task {
+                            await appState.adjustCurrentTrip(with: request)
+                        }
+                    }
+                    .presentationDetents([.medium, .large])
                 case .activity(let target):
                     ActivityEditorView(
                         days: appState.trip.days,
@@ -296,6 +306,15 @@ struct PlanHomeView: View {
                         AWStatusPill(text: currentDateLabel, systemImage: "calendar", tint: AyuWalkTheme.secondaryAccent)
                         AWStatusPill(text: "Day \(currentDayNumber)", systemImage: "rectangle.stack.fill", tint: AyuWalkTheme.secondaryAccent)
                     }
+                }
+
+                AWActionCapsuleButton(
+                    title: "AI 调整",
+                    systemImage: "sparkles",
+                    tint: AyuWalkTheme.accent,
+                    isProminent: false
+                ) {
+                    activeSheet = .aiAdjustment
                 }
 
                 HStack(spacing: 10) {
@@ -579,6 +598,7 @@ private enum PlanSheet: Identifiable {
     case trips
     case budget
     case packing
+    case aiAdjustment
     case activity(ActivityEditTarget)
 
     var id: String {
@@ -589,8 +609,94 @@ private enum PlanSheet: Identifiable {
             return "budget"
         case .packing:
             return "packing"
+        case .aiAdjustment:
+            return "ai-adjustment"
         case .activity(let target):
             return "activity-\(target.id.uuidString)"
+        }
+    }
+}
+
+private struct AIAdjustmentSheetView: View {
+    @Environment(\.dismiss) private var dismiss
+    let proposal: AIPlanningProposal?
+    let isWorking: Bool
+    let onApply: (String) -> Void
+    @State private var request = ""
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: AyuWalkSpacing.xl) {
+                    AWPanel(background: AyuWalkTheme.surface) {
+                        VStack(alignment: .leading, spacing: AyuWalkSpacing.sm) {
+                            Text("告诉 AI 想怎么调整")
+                                .font(AyuWalkTypography.sectionTitle)
+                                .foregroundStyle(AyuWalkTheme.ink)
+                            Text("固定航班、酒店和提醒节点会保留；普通路线点会在确认后重新安排。")
+                                .font(AyuWalkTypography.body)
+                                .foregroundStyle(AyuWalkTheme.mutedInk)
+                        }
+                    }
+
+                    TextEditor(text: $request)
+                        .font(AyuWalkTypography.body)
+                        .foregroundStyle(AyuWalkTheme.ink)
+                        .scrollContentBackground(.hidden)
+                        .frame(minHeight: 140)
+                        .padding(AyuWalkSpacing.md)
+                        .background(AyuWalkTheme.paper)
+                        .clipShape(RoundedRectangle(cornerRadius: AyuWalkTheme.cardRadius, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: AyuWalkTheme.cardRadius, style: .continuous)
+                                .stroke(AyuWalkTheme.border, lineWidth: 1)
+                        }
+
+                    if let proposal {
+                        AWCardChrome(background: AyuWalkTheme.elevated) {
+                            VStack(alignment: .leading, spacing: AyuWalkSpacing.sm) {
+                                AWStatusPill(
+                                    text: "上次规划置信度 \(Int(proposal.confidence * 100))%",
+                                    systemImage: proposal.source == .remoteAI ? "sparkles" : "arrow.triangle.2.circlepath",
+                                    tint: proposal.source == .remoteAI ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent,
+                                    isFilled: true
+                                )
+                                if let reason = proposal.adjustmentReason {
+                                    Text(reason)
+                                        .font(AyuWalkTypography.body)
+                                        .foregroundStyle(AyuWalkTheme.mutedInk)
+                                }
+                                ForEach(proposal.assumptions) { assumption in
+                                    Label(assumption.text, systemImage: "info.circle")
+                                        .font(AyuWalkTypography.caption)
+                                        .foregroundStyle(AyuWalkTheme.mutedInk)
+                                }
+                            }
+                        }
+                    }
+
+                    AWPrimaryButton(
+                        title: isWorking ? "正在调整" : "确认并应用调整",
+                        systemImage: "sparkles",
+                        tint: request.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                            ? AyuWalkTheme.mutedInk
+                            : AyuWalkTheme.accent
+                    ) {
+                        onApply(request)
+                        dismiss()
+                    }
+                    .disabled(request.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isWorking)
+                }
+                .padding(AyuWalkSpacing.pageInset)
+            }
+            .background(AyuWalkTheme.canvas)
+            .navigationTitle("AI 调整行程")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("取消") { dismiss() }
+                }
+            }
         }
     }
 }

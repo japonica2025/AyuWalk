@@ -5,6 +5,7 @@ import UIKit
 
 struct JournalPreviewView: View {
     @Environment(AppState.self) private var appState
+    var onBottomToolActiveChanged: (Bool) -> Void = { _ in }
     @State private var selectedPageID: UUID?
     @State private var isChoosingModules = false
     @State private var isStickerTrayVisible = false
@@ -104,7 +105,7 @@ struct JournalPreviewView: View {
                     if isStickerTrayVisible, let currentPage {
                         stickerTray(for: currentPage, height: max(geometry.size.height * 0.25, 178))
                             .padding(.horizontal, 14)
-                            .padding(.bottom, 88)
+                            .padding(.bottom, 8)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
                 }
@@ -139,6 +140,12 @@ struct JournalPreviewView: View {
             }
             .onAppear {
                 selectedPageID = selectedPageID ?? appState.journalPages.first?.id
+            }
+            .onChange(of: isStickerTrayVisible) { _, isVisible in
+                onBottomToolActiveChanged(isVisible)
+            }
+            .onDisappear {
+                onBottomToolActiveChanged(false)
             }
         }
     }
@@ -237,7 +244,7 @@ struct JournalPreviewView: View {
                     Text("贴纸")
                         .font(AyuWalkTypography.sectionTitle)
                         .foregroundStyle(AyuWalkTheme.ink)
-                    Text("可重复添加；拖到纸面任意位置")
+                    Text("可重复添加；点按或拖到纸面任意位置")
                         .font(AyuWalkTypography.micro)
                         .foregroundStyle(AyuWalkTheme.mutedInk)
                 }
@@ -309,29 +316,34 @@ struct JournalPreviewView: View {
     }
 
     private func stickerSource(_ sticker: Sticker, page: JournalPage) -> some View {
-        VStack(spacing: 7) {
-            stickerArtwork(for: sticker, size: 30)
-            Text(sticker.title)
-                .font(AyuWalkTypography.microStrong)
-                .lineLimit(1)
+        Button {
+            addStickerToCenter(sticker, on: page)
+        } label: {
+            VStack(spacing: 7) {
+                stickerArtwork(for: sticker, size: 30)
+                Text(sticker.title)
+                    .font(AyuWalkTypography.microStrong)
+                    .lineLimit(1)
+            }
+            .foregroundStyle(AyuWalkTheme.ink)
+            .frame(width: 86, height: 70)
+            .background(AyuWalkTheme.surface.opacity(0.95))
+            .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
+                    .stroke(AyuWalkTheme.border, lineWidth: 1)
+            }
+            .shadow(color: AyuWalkShadow.journal, radius: 8, x: 0, y: 4)
+            .contentShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
         }
-        .foregroundStyle(AyuWalkTheme.ink)
-        .frame(width: 86, height: 70)
-        .background(AyuWalkTheme.surface.opacity(0.95))
-        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
-                .stroke(AyuWalkTheme.border, lineWidth: 1)
-        }
-        .shadow(color: AyuWalkShadow.journal, radius: 8, x: 0, y: 4)
-        .contentShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
-        .highPriorityGesture(
+        .buttonStyle(.plain)
+        .simultaneousGesture(
             DragGesture(minimumDistance: 3, coordinateSpace: .global)
                 .onEnded { value in
                     addSticker(sticker, to: page, at: value.location)
                 }
         )
-        .accessibilityLabel("拖动\(sticker.title)")
+        .accessibilityLabel("添加\(sticker.title)贴纸")
     }
 
     private func addSticker(_ sticker: Sticker, to page: JournalPage, at location: CGPoint) {
@@ -344,6 +356,15 @@ struct JournalPreviewView: View {
             stickerID: sticker.id,
             xRatio: (location.x - frame.minX) / max(frame.width, 1),
             yRatio: (location.y - frame.minY) / max(frame.height, 1)
+        )
+    }
+
+    private func addStickerToCenter(_ sticker: Sticker, on page: JournalPage) {
+        appState.addStickerPlacement(
+            pageID: page.id,
+            stickerID: sticker.id,
+            xRatio: 0.5,
+            yRatio: 0.5
         )
     }
 

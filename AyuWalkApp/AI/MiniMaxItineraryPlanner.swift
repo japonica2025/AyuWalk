@@ -15,6 +15,7 @@ struct MiniMaxPlaceSuggestion: Decodable, Equatable {
 
 struct MiniMaxPlanningResult: Equatable {
     var suggestions: [MiniMaxPlaceSuggestion]
+    var proposal: AIPlanningProposal?
     var statusMessage: String
 }
 
@@ -30,9 +31,13 @@ struct MiniMaxItineraryPlanner {
         importedSource: ImportedSource?
     ) async -> MiniMaxPlanningResult {
         guard let configuration = runtime.configuration else {
+            let fallbackSuggestions = Self.fallbackSuggestions(for: destination)
             return MiniMaxPlanningResult(
-                suggestions: [],
-                statusMessage: "MiniMax 未配置，已使用 MapKit 目的地定位生成路线。"
+                suggestions: fallbackSuggestions,
+                proposal: nil,
+                statusMessage: fallbackSuggestions.isEmpty
+                    ? "MiniMax 未配置，已使用 MapKit 目的地定位生成路线。"
+                    : "MiniMax 未配置，已使用内置真实地点候选交给 MapKit 匹配坐标。"
             )
         }
 
@@ -52,6 +57,7 @@ struct MiniMaxItineraryPlanner {
                 let fallbackSuggestions = Self.fallbackSuggestions(for: destination)
                 return MiniMaxPlanningResult(
                     suggestions: fallbackSuggestions,
+                    proposal: nil,
                     statusMessage: fallbackSuggestions.isEmpty
                         ? "MiniMax 请求失败（HTTP \(statusCode)），已使用 MapKit 目的地定位生成路线。"
                         : "MiniMax 请求失败（HTTP \(statusCode)），已使用内置目的地候选交给 MapKit 匹配坐标。"
@@ -63,11 +69,19 @@ struct MiniMaxItineraryPlanner {
                 .compactMap(\.text)
                 .joined(separator: "\n")
 
-            let suggestions = parseSuggestions(from: content)
+            let proposal = try? AIPlanningResponseDecoder.decode(
+                content,
+                source: .remoteAI,
+                dayCount: dayCount
+            )
+            let suggestions = proposal.map(Self.suggestions(from:)) ?? parseSuggestions(from: content)
             let finalSuggestions = suggestions.isEmpty ? Self.fallbackSuggestions(for: destination) : suggestions
             return MiniMaxPlanningResult(
                 suggestions: finalSuggestions,
-                statusMessage: suggestions.isEmpty
+                proposal: proposal?.days.isEmpty == false ? proposal : nil,
+                statusMessage: proposal?.days.isEmpty == false
+                    ? "MiniMax 已生成结构化行程，并交给 MapKit 校验地点坐标。"
+                    : suggestions.isEmpty
                     ? "MiniMax 未返回可用地点，已使用内置目的地候选交给 MapKit 匹配坐标。"
                     : "MiniMax 已生成 \(suggestions.count) 个候选地点，并交给 MapKit 匹配坐标。"
             )
@@ -75,6 +89,7 @@ struct MiniMaxItineraryPlanner {
             let fallbackSuggestions = Self.fallbackSuggestions(for: destination)
             return MiniMaxPlanningResult(
                 suggestions: fallbackSuggestions,
+                proposal: nil,
                 statusMessage: fallbackSuggestions.isEmpty
                     ? "MiniMax 请求异常，已使用 MapKit 目的地定位生成路线。"
                     : "MiniMax 请求异常，已使用内置目的地候选交给 MapKit 匹配坐标。"
@@ -108,17 +123,38 @@ struct MiniMaxItineraryPlanner {
         导入资料：\(importedSource?.extractedText ?? "无")
 
         请只返回 JSON，不要 Markdown。格式：
-        {"places":[{"name":"地点名","address":"完整地址或城市国家","latitude":48.8566,"longitude":2.3522,"countryCode":"FR","dayNumber":1,"category":"sight","suggestedDurationMinutes":90,"reason":"为什么适合"}]}
+        {
+          "confidence":0.85,
+          "questions":[{"id":"pace","prompt":"希望行程节奏如何？","options":["轻松","均衡","充实"],"isRequired":false}],
+          "assumptions":[{"id":"pace","text":"未指定节奏，默认使用均衡安排"}],
+          "adjustmentReason":null,
+          "days":[{
+            "dayNumber":1,
+            "title":"当天主题",
+            "activities":[{
+              "title":"活动标题",
+              "kind":"sight",
+              "place":{"name":"真实地点名","address":"完整地址或城市国家","latitude":48.8566,"longitude":2.3522},
+              "startTime":"10:00",
+              "endTime":"11:30",
+              "notes":"推荐原因和安排说明",
+              "estimatedCost":0,
+              "isFixedNode":false
+            }]
+          }]
+        }
         规则：
-        - 每个地点必须包含 latitude、longitude、countryCode，且坐标必须落在目的地所在国家和城市附近。
+        - 先判断信息是否足够；仅在确实影响规划时返回最多 3 个简短 questions，否则返回空数组并在 assumptions 说明合理假设。
+        - confidence 必须在 0 到 1 之间，反映地点、时间和用户意图的可靠程度。
+        - 必须返回 \(normalizedDayCount) 个 days；每天安排 2 到 4 个活动，并保留合理休息时间。
+        - 每个 place 必须包含 latitude、longitude，且坐标必须落在目的地所在国家和城市附近。
         - 地点必须真实存在，适合 Apple MapKit 搜索。
         - 地点必须在目的地定位结果所在城市，不要跨城市，不要返回同名城市或其他国家/地区的地点。
         - 地点名优先使用当地官方名称或英文名称，例如大阪使用 Dotonbori / Osaka Castle / Kuromon Market。
-        - 返回 \(minimumPlaceCount) 到 \(maximumPlaceCount) 个地点，至少覆盖每天 3 个候选点，按推荐游玩顺序排列。
-        - dayNumber 必须分布在 1 到 \(normalizedDayCount)，不要只集中在前几天。
-        - category 只能用 sight、meal、shopping、hotel、transport、concert、freeTime 之一。
-        - suggestedDurationMinutes 建议在 45 到 180 之间，用于后续时间规划。
+        - kind 只能用 sight、meal、shopping、hotel、transport、concert、freeTime、note 之一。
+        - 不要把不确定的航班、酒店或活动时间标记为 isFixedNode。
         - 如果用户导入资料里有地点，优先保留。
+        - 总活动地点数量建议在 \(minimumPlaceCount) 到 \(maximumPlaceCount) 之间。
         """
 
         let body = MiniMaxChatRequest(
@@ -127,7 +163,7 @@ struct MiniMaxItineraryPlanner {
             messages: [
                 MiniMaxChatMessage(role: "user", content: userPrompt)
             ],
-            system: "你是旅行规划助手。你的任务是把用户想法整理成适合地图搜索的候选地点清单。最终 text 块必须只返回有效 JSON，不要 Markdown，不要解释。",
+            system: "你是旅行规划助手。你的任务是生成可执行、可编辑的结构化日程，并清楚表达置信度、必要问题和假设。最终 text 块必须只返回有效 JSON，不要 Markdown，不要解释。",
             temperature: 0.3
         )
         request.httpBody = try JSONEncoder().encode(body)
@@ -187,6 +223,27 @@ struct MiniMaxItineraryPlanner {
         }
 
         return String(text[start...end])
+    }
+
+    private static func suggestions(from proposal: AIPlanningProposal) -> [MiniMaxPlaceSuggestion] {
+        proposal.days.flatMap { day in
+            day.activities.compactMap { activity in
+                guard let place = activity.place else {
+                    return nil
+                }
+                return MiniMaxPlaceSuggestion(
+                    name: place.name,
+                    address: place.address,
+                    latitude: place.latitude,
+                    longitude: place.longitude,
+                    countryCode: nil,
+                    dayNumber: day.dayNumber,
+                    category: activity.kind.rawValue,
+                    suggestedDurationMinutes: nil,
+                    reason: activity.notes
+                )
+            }
+        }
     }
 
     private static func fallbackSuggestions(for destination: String) -> [MiniMaxPlaceSuggestion] {

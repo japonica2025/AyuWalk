@@ -14,6 +14,7 @@ final class AppState {
     var customStickers: [Sticker]
     var isGeneratingTrip: Bool
     var aiPlanningMessage: String?
+    var latestAIPlanningProposal: AIPlanningProposal?
     var travelMinutesBeforeActivityID: [UUID: Int]
     var enabledReminderActivityIDs: Set<UUID>
     var completedActivityIDs: Set<UUID>
@@ -54,6 +55,7 @@ final class AppState {
         self.fixedNodePlaceResolver = fixedNodePlaceResolver
         self.isGeneratingTrip = false
         self.aiPlanningMessage = nil
+        self.latestAIPlanningProposal = nil
         self.travelMinutesBeforeActivityID = [:]
         self.enabledReminderActivityIDs = []
         self.completedActivityIDs = []
@@ -255,7 +257,10 @@ final class AppState {
             destinationLocation: destinationLocation,
             resolvedPlaces: resolvedPlaces.count >= 2 ? resolvedPlaces : []
         )
-        var scheduledTrip = generatedTrip
+        var scheduledTrip = aiResult.proposal.map {
+            AITripProposalApplier.apply($0, to: generatedTrip, resolvedPlaces: resolvedPlaces)
+        } ?? generatedTrip
+        latestAIPlanningProposal = aiResult.proposal
         Self.applyDuration(effectiveDuration, to: &scheduledTrip)
         let importedFixedCount = Self.insertImportedFixedNodes(
             importedSource: importedSource,
@@ -266,6 +271,7 @@ final class AppState {
             destination: destinationSearchContext,
             destinationLocation: destinationLocation
         )
+        let generatedTravelMinutes = await travelMinutesBeforeActivityID(for: Array(scheduledTrip.days.prefix(1)))
 
         let pages = journalEngine.generatePages(for: scheduledTrip)
         syncActiveWorkspace()
@@ -275,22 +281,75 @@ final class AppState {
             journalSelections: Self.defaultSelections(for: pages),
             stickerSelections: [:],
             customStickers: [],
-            completedActivityIDs: []
+            completedActivityIDs: [],
+            travelMinutesBeforeActivityID: generatedTravelMinutes
         )
         let workspaceID = tripLibrary.appendNewWorkspace(workspace)
         if let workspace = tripLibrary.workspaces.first(where: { $0.id == workspaceID }) {
             load(workspace)
         }
-        travelMinutesBeforeActivityID = [:]
+        travelMinutesBeforeActivityID = generatedTravelMinutes
         let fixedNodeMessage = importedFixedCount > 0 ? " 已识别 \(importedFixedCount) 个固定时间节点。" : ""
         if resolvedPlaces.count >= 2 {
-            aiPlanningMessage = "\(aiResult.statusMessage) 已匹配 \(resolvedPlaces.count) 个真实坐标。\(fixedNodeMessage)"
+            let confidenceMessage = aiResult.proposal.map {
+                " 规划置信度 \(Int($0.confidence * 100))%。"
+            } ?? ""
+            aiPlanningMessage = "\(aiResult.statusMessage) 已匹配 \(resolvedPlaces.count) 个真实坐标。\(confidenceMessage)\(fixedNodeMessage)"
         } else if aiResult.suggestions.isEmpty {
             aiPlanningMessage = aiResult.statusMessage + fixedNodeMessage
         } else {
             aiPlanningMessage = "MiniMax 已生成 \(aiResult.suggestions.count) 个候选地点，但 MapKit 未匹配到足够近的坐标，已使用目的地定位生成路线。\(fixedNodeMessage)"
         }
         persist()
+    }
+
+    func adjustCurrentTrip(with request: String) async {
+        let trimmedRequest = request.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedRequest.isEmpty, !isGeneratingTrip else {
+            return
+        }
+
+        let targetTripID = trip.id
+        isGeneratingTrip = true
+        aiPlanningMessage = "正在根据你的要求调整现有行程。"
+        defer {
+            isGeneratingTrip = false
+        }
+
+        let dayCount = Self.dayCount(from: trip.duration)
+        let result = await aiPlanner.suggestPlaces(
+            destination: trip.destination,
+            dayCount: dayCount,
+            purpose: trip.purpose,
+            notes: Self.adjustmentPrompt(userRequest: trimmedRequest, trip: trip),
+            importedSource: trip.importedSources.first
+        )
+        guard trip.id == targetTripID else {
+            return
+        }
+
+        guard let proposal = result.proposal else {
+            aiPlanningMessage = "远程 AI 暂不可用，已保留当前行程，稍后可再次尝试调整。"
+            return
+        }
+
+        let adjustedTrip = AITripProposalApplier.apply(
+            proposal,
+            to: trip,
+            mode: .preserveExistingOrdinaryActivities
+        )
+        let previousIDs = Set(trip.days.flatMap(\.activities).map(\.id))
+        let adjustedIDs = Set(adjustedTrip.days.flatMap(\.activities).map(\.id))
+        applyItineraryEdit(
+            ItineraryEdit(
+                previousDays: trip.days,
+                days: adjustedTrip.days,
+                affectedActivityIDs: previousIDs.union(adjustedIDs)
+            ),
+            undoMessage: "已应用 AI 行程调整"
+        )
+        latestAIPlanningProposal = proposal
+        aiPlanningMessage = "\(proposal.adjustmentReason ?? trimmedRequest) · 置信度 \(Int(proposal.confidence * 100))%"
     }
 
     func toggleActivityCompletion(activityID: UUID) {
@@ -310,14 +369,17 @@ final class AppState {
         persist()
     }
 
-    func updateBudgetTotal(_ total: Decimal) {
+    func updateBudgetTotal(_ total: Decimal, currencyCode: String? = nil) {
         var budget = trip.budgetPlan ?? BudgetPlan(total: 0, currencyCode: DestinationResolver.currencyCode(forCountryCode: nil))
         budget.total = total < 0 ? 0 : total
+        if let currencyCode {
+            budget.currencyCode = currencyCode
+        }
         trip.budgetPlan = budget
         persist()
     }
 
-    func addBudgetExpense(title: String, amount: Decimal, category: BudgetCategory, notes: String?) {
+    func addBudgetExpense(title: String, amount: Decimal, category: BudgetCategory, currencyCode: String, notes: String?) {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedTitle.isEmpty, amount > 0 else {
             return
@@ -332,6 +394,7 @@ final class AppState {
                 amount: amount,
                 category: category,
                 participantIDs: trip.participants.map(\.id),
+                currencyCode: currencyCode,
                 notes: trimmedNotes?.isEmpty == false ? trimmedNotes : nil
             ),
             at: 0
@@ -345,6 +408,7 @@ final class AppState {
         title: String,
         amount: Decimal,
         category: BudgetCategory,
+        currencyCode: String,
         notes: String?
     ) {
         guard var budget = trip.budgetPlan,
@@ -357,6 +421,7 @@ final class AppState {
         budget.expenses[index].title = trimmedTitle.isEmpty ? "未命名支出" : trimmedTitle
         budget.expenses[index].amount = amount < 0 ? 0 : amount
         budget.expenses[index].category = category
+        budget.expenses[index].currencyCode = currencyCode
         budget.expenses[index].notes = trimmedNotes?.isEmpty == false ? trimmedNotes : nil
         trip.budgetPlan = budget
         persist()
@@ -1364,6 +1429,39 @@ final class AppState {
     private func clearItineraryUndo() {
         itineraryUndoSnapshot = nil
         itineraryUndoMessage = nil
+    }
+
+    private static func adjustmentPrompt(userRequest: String, trip: Trip) -> String {
+        let days = trip.days.map { day in
+            let activities = day.activities.map { activity in
+                let fixedMarker = activity.isFixedNode ? " 固定节点" : ""
+                let time = [activity.startTime, activity.endTime]
+                    .compactMap { $0 }
+                    .joined(separator: "-")
+                let timeText = time.isEmpty ? "" : " \(time)"
+                return "- \(activity.title)\(timeText)\(fixedMarker)"
+            }
+            .joined(separator: "\n")
+            return "Day \(day.dayNumber) \(day.title):\n\(activities)"
+        }
+        .joined(separator: "\n")
+
+        return """
+        用户调整要求：
+        \(userRequest)
+
+        当前行程，请在保留用户已编辑内容和固定节点的前提下提出增量调整：
+        \(days)
+        """
+    }
+
+    private func travelMinutesBeforeActivityID(for days: [TripDay]) async -> [UUID: Int] {
+        var result: [UUID: Int] = [:]
+        for day in days {
+            let travelMinutes = await travelTimeResolver.travelMinutesBeforeActivityID(for: day)
+            result.merge(travelMinutes) { _, new in new }
+        }
+        return result
     }
 
     private func syncActiveWorkspace() {

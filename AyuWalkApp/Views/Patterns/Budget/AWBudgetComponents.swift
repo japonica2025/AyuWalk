@@ -1,11 +1,50 @@
 import AyuWalkCore
 import SwiftUI
 
+private let supportedBudgetCurrencyCodes = ["CNY", "JPY", "EUR", "USD", "GBP", "KRW", "HKD", "TWD", "MNT"]
+
+private struct BudgetCurrencyMenu: View {
+    let currencyCode: String
+    let label: String
+    var onSelect: (String) -> Void
+
+    var body: some View {
+        Menu {
+            ForEach(supportedBudgetCurrencyCodes, id: \.self) { code in
+                Button {
+                    onSelect(code)
+                } label: {
+                    if code == currencyCode {
+                        Label(code, systemImage: "checkmark")
+                    } else {
+                        Text(code)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: AyuWalkSpacing.xxs) {
+                Text(currencyCode)
+                    .font(AyuWalkTypography.bodyStrong)
+                Image(systemName: "chevron.down")
+                    .font(AyuWalkTypography.microStrong)
+            }
+            .foregroundStyle(AyuWalkTheme.secondaryAccent)
+            .padding(.horizontal, AyuWalkSpacing.sm)
+            .frame(height: AyuWalkSize.formControlHeight)
+            .background(AyuWalkTheme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+    }
+}
+
 struct AWBudgetTotalCard: View {
     let currencyCode: String
     let participants: [Participant]
     @Binding var budgetText: String
     @Binding var newParticipantName: String
+    var onCurrencyChange: (String) -> Void
     var onSave: () -> Void
     var onAddParticipant: () -> Void
     var onUpdateParticipant: (UUID, String) -> Void
@@ -41,9 +80,11 @@ struct AWBudgetTotalCard: View {
                 }
 
                 HStack(alignment: .firstTextBaseline, spacing: AyuWalkSpacing.sm) {
-                    Text(currencyCode)
-                        .font(AyuWalkTypography.sectionTitle)
-                        .foregroundStyle(AyuWalkTheme.mutedInk)
+                    BudgetCurrencyMenu(
+                        currencyCode: currencyCode,
+                        label: "总预算货币",
+                        onSelect: onCurrencyChange
+                    )
 
                     TextField("填写总预算", text: $budgetText)
                         .keyboardType(.decimalPad)
@@ -161,11 +202,13 @@ struct AWBudgetExpenseEntryCard: View {
     @Binding var title: String
     @Binding var amountText: String
     @Binding var category: BudgetCategory
+    @Binding var currencyCode: String
     @Binding var notes: String
-    var currencyCode: String
+    var defaultCurrencyCode: String
     var onAdd: () -> Void
 
     var body: some View {
+        let effectiveCurrencyCode = currencyCode.isEmpty ? defaultCurrencyCode : currencyCode
         AWCardChrome(cornerRadius: AyuWalkRadii.panel) {
             VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
                 Text("记录一笔")
@@ -175,10 +218,12 @@ struct AWBudgetExpenseEntryCard: View {
                 AWTextField(placeholder: "支出名称", text: $title)
 
                 HStack(spacing: AyuWalkSpacing.sm) {
-                    Text(currencyCode)
-                        .font(AyuWalkTypography.bodyStrong)
-                        .foregroundStyle(AyuWalkTheme.mutedInk)
-                        .frame(width: 46, alignment: .leading)
+                    BudgetCurrencyMenu(
+                        currencyCode: effectiveCurrencyCode,
+                        label: "支出货币"
+                    ) { selected in
+                        currencyCode = selected
+                    }
 
                     TextField("金额", text: $amountText)
                         .keyboardType(.decimalPad)
@@ -220,7 +265,8 @@ struct AWBudgetExpenseListCard: View {
     let participants: [Participant]
     let currencyCode: String
     let participantTotals: [UUID: Decimal]
-    var onUpdate: (UUID, String, Decimal, BudgetCategory, String?) -> Void
+    let participantTotalsByCurrency: [UUID: [String: Decimal]]
+    var onUpdate: (UUID, String, Decimal, BudgetCategory, String, String?) -> Void
     var onDelete: (UUID) -> Void
     var onToggleParticipant: (UUID, UUID) -> Void
 
@@ -276,7 +322,7 @@ struct AWBudgetExpenseListCard: View {
                             .font(AyuWalkTypography.captionStrong)
                             .foregroundStyle(AyuWalkTheme.ink)
                         Spacer()
-                        Text(format(amount: participantTotals[participant.id] ?? 0, currencyCode: currencyCode))
+                        Text(participantTotalText(for: participant))
                             .font(AyuWalkTypography.captionStrong)
                             .foregroundStyle(AyuWalkTheme.secondaryAccent)
                     }
@@ -295,13 +341,24 @@ struct AWBudgetExpenseListCard: View {
             : String(format: "%.2f", number)
         return "\(currencyCode) \(formatted)"
     }
+
+    private func participantTotalText(for participant: Participant) -> String {
+        let groupedTotals = participantTotalsByCurrency[participant.id] ?? [:]
+        if groupedTotals.isEmpty {
+            return format(amount: participantTotals[participant.id] ?? 0, currencyCode: currencyCode)
+        }
+        return groupedTotals
+            .sorted { $0.key < $1.key }
+            .map { format(amount: $0.value, currencyCode: $0.key) }
+            .joined(separator: " / ")
+    }
 }
 
 private struct AWBudgetExpenseRow: View {
     let expense: BudgetExpense
     let participants: [Participant]
     let currencyCode: String
-    var onUpdate: (UUID, String, Decimal, BudgetCategory, String?) -> Void
+    var onUpdate: (UUID, String, Decimal, BudgetCategory, String, String?) -> Void
     var onDelete: (UUID) -> Void
     var onToggleParticipant: (UUID, UUID) -> Void
 
@@ -313,7 +370,11 @@ private struct AWBudgetExpenseRow: View {
         }
 
         let amount = expense.amount / Decimal(expense.participantIDs.count)
-        return "\(expense.participantIDs.count) 人 AA · \(currencyCode) \(plainAmount(amount)) / 人"
+        return "\(expense.participantIDs.count) 人 AA · \(expenseCurrencyCode) \(plainAmount(amount)) / 人"
+    }
+
+    private var expenseCurrencyCode: String {
+        expense.currencyCode.isEmpty ? currencyCode : expense.currencyCode
     }
 
     var body: some View {
@@ -360,7 +421,7 @@ private struct AWBudgetExpenseRow: View {
 
             Spacer()
 
-            Text("\(currencyCode) \(plainAmount(expense.amount))")
+            Text("\(expenseCurrencyCode) \(plainAmount(expense.amount))")
                 .font(AyuWalkTypography.bodyStrong)
                 .foregroundStyle(AyuWalkTheme.ink)
 
@@ -398,7 +459,7 @@ private struct AWBudgetExpenseRow: View {
                 placeholder: "支出名称",
                 text: Binding(
                     get: { expense.title },
-                    set: { onUpdate(expense.id, $0, expense.amount, expense.category, expense.notes) }
+                    set: { onUpdate(expense.id, $0, expense.amount, expense.category, expenseCurrencyCode, expense.notes) }
                 )
             )
 
@@ -408,18 +469,25 @@ private struct AWBudgetExpenseRow: View {
                     get: { plainAmount(expense.amount) },
                     set: { text in
                         if let amount = decimal(from: text) {
-                            onUpdate(expense.id, expense.title, amount, expense.category, expense.notes)
+                            onUpdate(expense.id, expense.title, amount, expense.category, expenseCurrencyCode, expense.notes)
                         }
                     }
                 ),
                 keyboardType: .decimalPad
             )
 
+            BudgetCurrencyMenu(
+                currencyCode: expenseCurrencyCode,
+                label: "支出货币"
+            ) { selected in
+                onUpdate(expense.id, expense.title, expense.amount, expense.category, selected, expense.notes)
+            }
+
             Picker(
                 "分类",
                 selection: Binding(
                     get: { expense.category },
-                    set: { onUpdate(expense.id, expense.title, expense.amount, $0, expense.notes) }
+                    set: { onUpdate(expense.id, expense.title, expense.amount, $0, expenseCurrencyCode, expense.notes) }
                 )
             ) {
                 ForEach(BudgetCategory.allCases, id: \.self) { category in
@@ -432,7 +500,7 @@ private struct AWBudgetExpenseRow: View {
                 "备注",
                 text: Binding(
                     get: { expense.notes ?? "" },
-                    set: { onUpdate(expense.id, expense.title, expense.amount, expense.category, $0) }
+                    set: { onUpdate(expense.id, expense.title, expense.amount, expense.category, expenseCurrencyCode, $0) }
                 )
             )
             .textFieldStyle(.plain)

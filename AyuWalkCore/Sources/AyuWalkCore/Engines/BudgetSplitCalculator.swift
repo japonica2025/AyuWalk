@@ -31,6 +31,22 @@ public enum BudgetSplitCalculator {
             }
         }
     }
+
+    public static func participantTotalsByCurrency(for expenses: [BudgetExpense]) -> [UUID: [String: Decimal]] {
+        expenses.reduce(into: [:]) { totals, expense in
+            let currencyCode = expense.currencyCode.isEmpty ? "CNY" : expense.currencyCode
+            for share in expenseShares(expense) {
+                totals[share.participantID, default: [:]][currencyCode, default: 0] += share.amount
+            }
+        }
+    }
+
+    public static func expenseTotalsByCurrency(for expenses: [BudgetExpense]) -> [String: Decimal] {
+        expenses.reduce(into: [:]) { totals, expense in
+            let currencyCode = expense.currencyCode.isEmpty ? "CNY" : expense.currencyCode
+            totals[currencyCode, default: 0] += expense.amount
+        }
+    }
 }
 
 public struct BudgetSplit: Equatable, Sendable {

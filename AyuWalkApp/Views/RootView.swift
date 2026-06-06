@@ -9,6 +9,7 @@ struct RootView: View {
     @Environment(AppState.self) private var appState
     @State private var selectedTab: AppTab = .plan
     @State private var isCreatingTrip = false
+    @State private var isJournalBottomToolActive = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -28,15 +29,20 @@ struct RootView: View {
                             }
                         )
                     case .journal:
-                        JournalPreviewView()
+                        JournalPreviewView { isActive in
+                            isJournalBottomToolActive = isActive
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                bottomMenu
-                    .padding(.bottom, menuBottomOffset(for: proxy))
-                    .disabled(appState.isGeneratingTrip)
-                    .opacity(appState.isGeneratingTrip ? 0.55 : 1)
+                if !isJournalBottomToolActive {
+                    bottomMenu
+                        .padding(.bottom, menuBottomOffset(for: proxy))
+                        .disabled(appState.isGeneratingTrip)
+                        .opacity(appState.isGeneratingTrip ? 0.55 : 1)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
 
                 if appState.isGeneratingTrip {
                     generationOverlay

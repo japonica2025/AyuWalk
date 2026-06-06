@@ -3,12 +3,12 @@ import SwiftUI
 
 struct BudgetPlannerView: View {
     let trip: Trip
-    let onUpdateBudget: (Decimal) -> Void
+    let onUpdateBudget: (Decimal, String) -> Void
     let onAddParticipant: (String) -> Void
     let onUpdateParticipant: (UUID, String) -> Void
     let onDeleteParticipant: (UUID) -> Void
-    let onAddExpense: (String, Decimal, BudgetCategory, String?) -> Void
-    let onUpdateExpense: (UUID, String, Decimal, BudgetCategory, String?) -> Void
+    let onAddExpense: (String, Decimal, BudgetCategory, String, String?) -> Void
+    let onUpdateExpense: (UUID, String, Decimal, BudgetCategory, String, String?) -> Void
     let onDeleteExpense: (UUID) -> Void
     let onToggleExpenseParticipant: (UUID, UUID) -> Void
 
@@ -17,6 +17,7 @@ struct BudgetPlannerView: View {
     @State private var newExpenseTitle = ""
     @State private var newExpenseAmountText = ""
     @State private var newExpenseCategory: BudgetCategory = .food
+    @State private var newExpenseCurrencyCode = ""
     @State private var newExpenseNotes = ""
 
     private var budget: BudgetPlan {
@@ -30,12 +31,16 @@ struct BudgetPlannerView: View {
         )
     }
 
-    private var recordedTotal: Decimal {
-        budget.expenses.reduce(0) { $0 + $1.amount }
+    private var recordedTotalsByCurrency: [String: Decimal] {
+        BudgetSplitCalculator.expenseTotalsByCurrency(for: budget.expenses)
     }
 
     private var participantTotals: [UUID: Decimal] {
         BudgetSplitCalculator.participantTotals(for: budget.expenses)
+    }
+
+    private var participantTotalsByCurrency: [UUID: [String: Decimal]] {
+        BudgetSplitCalculator.participantTotalsByCurrency(for: budget.expenses)
     }
 
     var body: some View {
@@ -45,12 +50,18 @@ struct BudgetPlannerView: View {
                 participants: trip.participants,
                 budgetText: $budgetText,
                 newParticipantName: $newParticipantName,
+                onCurrencyChange: { currencyCode in
+                    onUpdateBudget(budget.total, currencyCode)
+                    if newExpenseCurrencyCode.isEmpty {
+                        newExpenseCurrencyCode = currencyCode
+                    }
+                },
                 onSave: {
                     guard let amount = decimal(from: budgetText) else {
                         budgetText = plainAmount(budget.total)
                         return
                     }
-                    onUpdateBudget(amount)
+                    onUpdateBudget(amount, budget.currencyCode)
                 },
                 onAddParticipant: {
                     onAddParticipant(newParticipantName)
@@ -63,28 +74,32 @@ struct BudgetPlannerView: View {
             AWBudgetSplitCard(
                 perPersonText: format(amount: split.perPerson, currencyCode: split.currencyCode),
                 participantCount: trip.participants.count,
-                recordedTotalText: format(amount: recordedTotal, currencyCode: budget.currencyCode)
+                recordedTotalText: format(totalsByCurrency: recordedTotalsByCurrency)
             )
 
             AWBudgetExpenseEntryCard(
                 title: $newExpenseTitle,
                 amountText: $newExpenseAmountText,
                 category: $newExpenseCategory,
+                currencyCode: $newExpenseCurrencyCode,
                 notes: $newExpenseNotes,
-                currencyCode: budget.currencyCode
+                defaultCurrencyCode: budget.currencyCode
             ) {
                 guard let amount = decimal(from: newExpenseAmountText), amount > 0 else {
                     return
                 }
+                let currencyCode = newExpenseCurrencyCode.isEmpty ? budget.currencyCode : newExpenseCurrencyCode
                 onAddExpense(
                     newExpenseTitle,
                     amount,
                     newExpenseCategory,
+                    currencyCode,
                     newExpenseNotes
                 )
                 newExpenseTitle = ""
                 newExpenseAmountText = ""
                 newExpenseCategory = .food
+                newExpenseCurrencyCode = budget.currencyCode
                 newExpenseNotes = ""
             }
 
@@ -93,6 +108,7 @@ struct BudgetPlannerView: View {
                 participants: trip.participants,
                 currencyCode: budget.currencyCode,
                 participantTotals: participantTotals,
+                participantTotalsByCurrency: participantTotalsByCurrency,
                 onUpdate: onUpdateExpense,
                 onDelete: onDeleteExpense,
                 onToggleParticipant: onToggleExpenseParticipant
@@ -100,9 +116,13 @@ struct BudgetPlannerView: View {
         }
         .onAppear {
             budgetText = plainAmount(budget.total)
+            newExpenseCurrencyCode = budget.currencyCode
         }
         .onChange(of: budget.total) { _, newValue in
             budgetText = plainAmount(newValue)
+        }
+        .onChange(of: budget.currencyCode) { _, newValue in
+            newExpenseCurrencyCode = newValue
         }
     }
 
@@ -125,17 +145,29 @@ struct BudgetPlannerView: View {
         let number = NSDecimalNumber(decimal: amount).intValue
         return "\(currencyCode) \(number)"
     }
+
+    private func format(totalsByCurrency: [String: Decimal]) -> String? {
+        guard !totalsByCurrency.isEmpty else {
+            return nil
+        }
+        return totalsByCurrency
+            .sorted { lhs, rhs in lhs.key < rhs.key }
+            .map { currencyCode, amount in
+                format(amount: amount, currencyCode: currencyCode)
+            }
+            .joined(separator: " / ")
+    }
 }
 
 #Preview {
     BudgetPlannerView(
         trip: SampleTripFactory.tokyoFiveDayTrip(),
-        onUpdateBudget: { _ in },
+        onUpdateBudget: { _, _ in },
         onAddParticipant: { _ in },
         onUpdateParticipant: { _, _ in },
         onDeleteParticipant: { _ in },
-        onAddExpense: { _, _, _, _ in },
-        onUpdateExpense: { _, _, _, _, _ in },
+        onAddExpense: { _, _, _, _, _ in },
+        onUpdateExpense: { _, _, _, _, _, _ in },
         onDeleteExpense: { _ in },
         onToggleExpenseParticipant: { _, _ in }
     )

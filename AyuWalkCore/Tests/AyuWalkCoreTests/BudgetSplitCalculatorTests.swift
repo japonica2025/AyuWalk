@@ -86,4 +86,70 @@ final class BudgetSplitCalculatorTests: XCTestCase {
         XCTAssertEqual(totals[anna], 5000)
         XCTAssertEqual(totals[ben], 3000)
     }
+
+    func testParticipantTotalsGroupByExpenseCurrency() {
+        let anna = UUID()
+        let expenses = [
+            BudgetExpense(
+                id: UUID(),
+                title: "Dinner",
+                amount: 100,
+                category: .food,
+                participantIDs: [anna],
+                currencyCode: "EUR",
+                notes: nil
+            ),
+            BudgetExpense(
+                id: UUID(),
+                title: "Taxi",
+                amount: 2000,
+                category: .transport,
+                participantIDs: [anna],
+                currencyCode: "JPY",
+                notes: nil
+            )
+        ]
+
+        let totals = BudgetSplitCalculator.participantTotalsByCurrency(for: expenses)
+
+        XCTAssertEqual(totals[anna]?["EUR"], 100)
+        XCTAssertEqual(totals[anna]?["JPY"], 2000)
+    }
+
+    func testExpenseTotalsGroupByCurrencyWithoutMixingAmounts() {
+        let expenses = [
+            BudgetExpense(
+                id: UUID(),
+                title: "Dinner",
+                amount: 100,
+                category: .food,
+                participantIDs: [],
+                currencyCode: "EUR",
+                notes: nil
+            ),
+            BudgetExpense(
+                id: UUID(),
+                title: "Taxi",
+                amount: 2000,
+                category: .transport,
+                participantIDs: [],
+                currencyCode: "JPY",
+                notes: nil
+            ),
+            BudgetExpense(
+                id: UUID(),
+                title: "Coffee",
+                amount: 12,
+                category: .food,
+                participantIDs: [],
+                currencyCode: "EUR",
+                notes: nil
+            )
+        ]
+
+        let totals = BudgetSplitCalculator.expenseTotalsByCurrency(for: expenses)
+
+        XCTAssertEqual(totals["EUR"], 112)
+        XCTAssertEqual(totals["JPY"], 2000)
+    }
 }

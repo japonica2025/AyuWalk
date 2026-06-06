@@ -29,6 +29,7 @@ struct CreateTripView: View {
 黑门市场、道顿堀、梅田夜景，想要美食和轻松 city walk
 """
     @State private var ambiguousDestinations: [DestinationLocation] = []
+    @State private var planningReview: CreateTripPlanningReview?
 
     let onGenerate: (CreateTripDraft) -> Void
 
@@ -91,6 +92,21 @@ struct CreateTripView: View {
         }
         .onChange(of: endDate) { _, _ in
             normalizeDateRange()
+        }
+        .sheet(item: $planningReview) { review in
+            CreateTripPlanningReviewView(review: review) { answers in
+                var draft = review.draft
+                let answerText = answers.values.filter { !$0.isEmpty }.joined(separator: "；")
+                if !answerText.isEmpty {
+                    draft.notes = [draft.notes, "补充偏好：\(answerText)"]
+                        .filter { !$0.isEmpty }
+                        .joined(separator: "\n")
+                }
+                onGenerate(draft)
+                planningReview = nil
+                dismiss()
+            }
+            .presentationDetents([.medium, .large])
         }
     }
 
@@ -183,7 +199,7 @@ struct CreateTripView: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(AyuWalkTheme.mutedInk)
                 HStack(spacing: 8) {
-                    TextField("例如 大阪、北京、蒙古", text: $destination)
+                    TextField("例如 大阪、巴黎、伦敦", text: $destination)
                         .font(.title3.weight(.semibold))
                         .foregroundStyle(AyuWalkTheme.ink)
                         .textInputAutocapitalization(.none)
@@ -210,7 +226,6 @@ struct CreateTripView: View {
                     destinationButton(label: "大阪", value: "Osaka, Japan")
                     destinationButton(label: "巴黎", value: "Paris, France")
                     destinationButton(label: "伦敦", value: "London, United Kingdom")
-                    destinationButton(label: "蒙古", value: "蒙古")
                 }
             }
 
@@ -464,18 +479,32 @@ struct CreateTripView: View {
     }
 
     private func generate(with destination: String, destinationLocation: DestinationLocation?) {
-        onGenerate(
-            CreateTripDraft(
-                destination: destination,
-                destinationLocation: destinationLocation,
-                dayCount: effectiveDayCount,
-                duration: effectiveDuration,
-                purpose: purpose,
-                notes: effectiveNotes,
-                importedSource: importedSource
-            )
+        let draft = CreateTripDraft(
+            destination: destination,
+            destinationLocation: destinationLocation,
+            dayCount: effectiveDayCount,
+            duration: effectiveDuration,
+            purpose: purpose,
+            notes: effectiveNotes,
+            importedSource: importedSource
         )
-        dismiss()
+        let request = AIPlanningRequest(
+            destination: draft.destination,
+            dayCount: draft.dayCount,
+            purpose: [draft.purpose],
+            notes: draft.notes,
+            importedText: draft.importedSource?.extractedText,
+            adjustmentRequest: nil
+        )
+        planningReview = CreateTripPlanningReview(
+            draft: draft,
+            questions: AIPlanningClarificationPolicy.questions(for: request),
+            assumptions: [
+                "优先安排同一区域地点，减少往返移动",
+                "未提供固定时间的活动会保持可调整"
+            ],
+            confidence: request.notes.count >= 20 || request.importedText?.isEmpty == false ? 0.78 : 0.62
+        )
     }
 
     private func sectionTitle(_ title: String) -> some View {
@@ -556,6 +585,95 @@ struct CreateTripView: View {
                 .padding(.vertical, 7)
                 .background(destination == value ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.pageBackground)
                 .clipShape(Capsule())
+        }
+    }
+}
+
+private struct CreateTripPlanningReview: Identifiable {
+    let id = UUID()
+    var draft: CreateTripDraft
+    var questions: [AIPlanningQuestion]
+    var assumptions: [String]
+    var confidence: Double
+}
+
+private struct CreateTripPlanningReviewView: View {
+    @Environment(\.dismiss) private var dismiss
+    let review: CreateTripPlanningReview
+    let onConfirm: ([String: String]) -> Void
+    @State private var answers: [String: String] = [:]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: AyuWalkSpacing.xl) {
+                    AWPanel(background: AyuWalkTheme.surface) {
+                        VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
+                            AWStatusPill(
+                                text: "初始置信度 \(Int(review.confidence * 100))%",
+                                systemImage: "sparkles",
+                                tint: AyuWalkTheme.accent,
+                                isFilled: true
+                            )
+                            Text("\(review.draft.destination) · \(review.draft.dayCount) 天")
+                                .font(AyuWalkTypography.sectionTitle)
+                                .foregroundStyle(AyuWalkTheme.ink)
+                            Text("确认这些信息后，AI 才会生成并写入新行程。")
+                                .font(AyuWalkTypography.body)
+                                .foregroundStyle(AyuWalkTheme.mutedInk)
+                        }
+                    }
+
+                    if !review.questions.isEmpty {
+                        AWSectionHeader(title: "补充问题", subtitle: "选择更接近你的偏好")
+                        ForEach(review.questions) { question in
+                            AWCardChrome(background: AyuWalkTheme.elevated) {
+                                VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
+                                    Text(question.prompt)
+                                        .font(AyuWalkTypography.bodyStrong)
+                                        .foregroundStyle(AyuWalkTheme.ink)
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: AyuWalkSpacing.sm) {
+                                            ForEach(question.options, id: \.self) { option in
+                                                AWSelectableChip(
+                                                    title: option,
+                                                    isSelected: answers[question.id] == option
+                                                ) {
+                                                    answers[question.id] = option
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    AWSectionHeader(title: "当前假设", subtitle: "生成后仍可逐项修改")
+                    AWCardChrome(background: AyuWalkTheme.elevated) {
+                        VStack(alignment: .leading, spacing: AyuWalkSpacing.sm) {
+                            ForEach(review.assumptions, id: \.self) { assumption in
+                                Label(assumption, systemImage: "checkmark.circle.fill")
+                                    .font(AyuWalkTypography.body)
+                                    .foregroundStyle(AyuWalkTheme.mutedInk)
+                            }
+                        }
+                    }
+
+                    AWPrimaryButton(title: "确认并生成", systemImage: "sparkles") {
+                        onConfirm(answers)
+                    }
+                }
+                .padding(AyuWalkSpacing.pageInset)
+            }
+            .background(AyuWalkTheme.canvas)
+            .navigationTitle("确认 AI 规划")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("返回") { dismiss() }
+                }
+            }
         }
     }
 }
