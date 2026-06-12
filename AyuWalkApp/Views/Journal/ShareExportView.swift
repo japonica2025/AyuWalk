@@ -1,4 +1,6 @@
+import AyuWalkCore
 import CoreText
+import Photos
 import SwiftUI
 import UIKit
 
@@ -9,7 +11,7 @@ struct ShareExportView: View {
     @State private var copiedLabel: String?
     @State private var editableSocialCopy: String
     @State private var sharePayload: SharePayload?
-    @State private var exportErrorMessage: String?
+    @State private var exportNotice: ExportNotice?
 
     init(markdown: String, socialCopy: String) {
         self.markdown = markdown
@@ -31,6 +33,7 @@ struct ShareExportView: View {
                             content: $editableSocialCopy,
                             copyLabel: "复制文案",
                             shareLabel: "系统分享",
+                            assetKind: .socialCopy,
                             isEditable: true
                         ) {
                             sharePayload = SharePayload(items: [editableSocialCopy])
@@ -42,12 +45,13 @@ struct ShareExportView: View {
                             content: .constant(markdown),
                             copyLabel: "复制 Markdown",
                             shareLabel: "分享文件",
+                            assetKind: .markdown,
                             isEditable: false
                         ) {
                             do {
                                 sharePayload = SharePayload(items: [try markdownFileURL()])
                             } catch {
-                                exportErrorMessage = "Markdown 文件生成失败，请稍后再试。"
+                                exportNotice = .failure("Markdown 文件生成失败，请稍后再试。")
                             }
                         }
 
@@ -57,12 +61,13 @@ struct ShareExportView: View {
                             content: .constant("包含当前行程、预算、AA、行李清单和手帐模块内容。"),
                             copyLabel: nil,
                             shareLabel: "分享 PDF",
+                            assetKind: .pdf,
                             isEditable: false
                         ) {
                             do {
                                 sharePayload = SharePayload(items: [try pdfFileURL()])
                             } catch {
-                                exportErrorMessage = "PDF 文件生成失败，请稍后再试。"
+                                exportNotice = .failure("PDF 文件生成失败，请稍后再试。")
                             }
                         }
 
@@ -72,12 +77,18 @@ struct ShareExportView: View {
                             content: .constant("提取当前行程重点，生成一张可分享的旅行计划卡片。"),
                             copyLabel: nil,
                             shareLabel: "分享卡片",
+                            saveLabel: "保存相册",
+                            assetKind: .summaryCardImage,
                             isEditable: false
                         ) {
                             do {
                                 sharePayload = SharePayload(items: [try imageFileURL(style: .summaryCard)])
                             } catch {
-                                exportErrorMessage = "卡片图生成失败，请稍后再试。"
+                                exportNotice = .failure("卡片图生成失败，请稍后再试。")
+                            }
+                        } onSave: {
+                            Task {
+                                await saveImageToPhotoLibrary(style: .summaryCard)
                             }
                         }
 
@@ -87,12 +98,18 @@ struct ShareExportView: View {
                             content: .constant("包含当前行程、预算、AA、行李清单和手帐模块的完整图文。"),
                             copyLabel: nil,
                             shareLabel: "分享长图",
+                            saveLabel: "保存相册",
+                            assetKind: .longDocumentImage,
                             isEditable: false
                         ) {
                             do {
                                 sharePayload = SharePayload(items: [try imageFileURL(style: .longDocument)])
                             } catch {
-                                exportErrorMessage = "长图生成失败，请稍后再试。"
+                                exportNotice = .failure("长图生成失败，请稍后再试。")
+                            }
+                        } onSave: {
+                            Task {
+                                await saveImageToPhotoLibrary(style: .longDocument)
                             }
                         }
                     }
@@ -104,20 +121,26 @@ struct ShareExportView: View {
             .sheet(item: $sharePayload) { payload in
                 ShareSheet(items: payload.items)
             }
-            .alert("导出失败", isPresented: Binding(
-                get: { exportErrorMessage != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        exportErrorMessage = nil
-                    }
-                }
-            )) {
-                Button("知道了", role: .cancel) {
-                    exportErrorMessage = nil
-                }
-            } message: {
-                Text(exportErrorMessage ?? "")
+            .alert(item: $exportNotice) { notice in
+                Alert(
+                    title: Text(notice.title),
+                    message: Text(notice.message),
+                    dismissButton: .default(Text("知道了"))
+                )
             }
+        }
+    }
+
+    @MainActor
+    private func saveImageToPhotoLibrary(style: ExportImageStyle) async {
+        do {
+            let url = try imageFileURL(style: style)
+            try await PhotoLibraryImageSaver.saveImageFile(at: url)
+            exportNotice = .success("图片已保存到系统相册。")
+        } catch PhotoLibraryImageSaver.SaveError.permissionDenied {
+            exportNotice = .failure("没有相册写入权限。请在系统设置中允许 Ayu Walk 添加照片。")
+        } catch {
+            exportNotice = .failure("图片保存失败，请稍后再试。")
         }
     }
 
@@ -127,8 +150,11 @@ struct ShareExportView: View {
         content: Binding<String>,
         copyLabel: String?,
         shareLabel: String,
+        saveLabel: String? = nil,
+        assetKind: ShareExportAssetKind,
         isEditable: Bool,
-        onShare: @escaping () -> Void
+        onShare: @escaping () -> Void,
+        onSave: (() -> Void)? = nil
     ) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
@@ -144,6 +170,24 @@ struct ShareExportView: View {
                 Spacer()
 
                 HStack(spacing: 8) {
+                    if assetKind.isRasterImage,
+                       let saveLabel,
+                       let onSave {
+                        Button(action: onSave) {
+                            Text(saveLabel)
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(AyuWalkTheme.ink)
+                                .padding(.horizontal, 11)
+                                .padding(.vertical, 8)
+                                .background(AyuWalkTheme.pageBackground)
+                                .clipShape(Capsule())
+                                .overlay {
+                                    Capsule()
+                                        .stroke(AyuWalkTheme.border, lineWidth: 1)
+                                }
+                        }
+                    }
+
                     Button(action: onShare) {
                         Text(shareLabel)
                             .font(.caption.weight(.bold))
@@ -610,6 +654,62 @@ private enum ExportImagePalette {
     static let ink = AyuWalkTheme.ink
     static let mutedInk = AyuWalkTheme.mutedInk
     static let accent = AyuWalkTheme.accent
+}
+
+private struct ExportNotice: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+
+    static func success(_ message: String) -> ExportNotice {
+        ExportNotice(title: "已完成", message: message)
+    }
+
+    static func failure(_ message: String) -> ExportNotice {
+        ExportNotice(title: "导出失败", message: message)
+    }
+}
+
+private enum PhotoLibraryImageSaver {
+    enum SaveError: Error {
+        case permissionDenied
+        case saveFailed
+    }
+
+    static func saveImageFile(at url: URL) async throws {
+        let status = await photoLibraryAddStatus()
+        guard status == .authorized || status == .limited else {
+            throw SaveError.permissionDenied
+        }
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            PHPhotoLibrary.shared().performChanges {
+                let request = PHAssetCreationRequest.forAsset()
+                request.addResource(with: .photo, fileURL: url, options: nil)
+            } completionHandler: { success, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else if success {
+                    continuation.resume()
+                } else {
+                    continuation.resume(throwing: SaveError.saveFailed)
+                }
+            }
+        }
+    }
+
+    private static func photoLibraryAddStatus() async -> PHAuthorizationStatus {
+        let currentStatus = PHPhotoLibrary.authorizationStatus(for: .addOnly)
+        guard currentStatus == .notDetermined else {
+            return currentStatus
+        }
+
+        return await withCheckedContinuation { continuation in
+            PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+                continuation.resume(returning: status)
+            }
+        }
+    }
 }
 
 private struct SharePayload: Identifiable {
