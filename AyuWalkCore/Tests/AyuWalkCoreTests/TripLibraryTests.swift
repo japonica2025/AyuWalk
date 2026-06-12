@@ -94,6 +94,13 @@ final class TripLibraryTests: XCTestCase {
         source.trip.budgetPlan = BudgetPlan(
             total: 2_000,
             currencyCode: "CNY",
+            categoryBudgets: [
+                .food: 500,
+                .transport: 300
+            ],
+            exchangeRates: [
+                "JPY": Decimal(string: "0.05")!
+            ],
             expenses: [
                 BudgetExpense(
                     id: UUID(),
@@ -107,6 +114,19 @@ final class TripLibraryTests: XCTestCase {
                     notes: nil
                 )
             ]
+        )
+        let packingReminder = PackingReminder(
+            id: UUID(),
+            dayOffsetBeforeTrip: 2,
+            fireTime: "20:00",
+            note: "检查行李",
+            isEnabled: true
+        )
+        source.trip.packingList = PackingList(
+            items: [
+                PackingItem(id: UUID(), title: "护照", isPacked: false, notes: nil)
+            ],
+            reminder: packingReminder
         )
         let customSticker = Sticker(id: UUID(), title: "票根", symbol: "ticket.fill")
         source.customStickers = [customSticker]
@@ -140,9 +160,15 @@ final class TripLibraryTests: XCTestCase {
         XCTAssertTrue(Set(duplicate.customStickers.map(\.id)).isDisjoint(with: source.customStickers.map(\.id)))
 
         let duplicateParticipantID = try XCTUnwrap(duplicate.trip.participants.first?.id)
+        XCTAssertEqual(duplicate.trip.budgetPlan?.categoryBudgets, [.food: 500, .transport: 300])
+        XCTAssertEqual(duplicate.trip.budgetPlan?.exchangeRates, ["JPY": Decimal(string: "0.05")!])
         XCTAssertEqual(duplicate.trip.budgetPlan?.expenses.first?.participantIDs, [duplicateParticipantID])
         XCTAssertEqual(duplicate.trip.budgetPlan?.expenses.first?.payerID, duplicateParticipantID)
         XCTAssertEqual(duplicate.trip.budgetPlan?.expenses.first?.customShares, [duplicateParticipantID: 300])
+        XCTAssertNotEqual(duplicate.trip.packingList?.reminder?.id, packingReminder.id)
+        XCTAssertEqual(duplicate.trip.packingList?.reminder?.dayOffsetBeforeTrip, packingReminder.dayOffsetBeforeTrip)
+        XCTAssertEqual(duplicate.trip.packingList?.reminder?.fireTime, packingReminder.fireTime)
+        XCTAssertEqual(duplicate.trip.packingList?.reminder?.isEnabled, packingReminder.isEnabled)
         let duplicatePage = try XCTUnwrap(duplicate.journalPages.first)
         let duplicateBlock = try XCTUnwrap(duplicatePage.blocks.first)
         XCTAssertEqual(duplicate.journalSelections[duplicatePage.id]?.selectedBlockIDs, [duplicateBlock.id])

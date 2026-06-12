@@ -234,6 +234,8 @@ private struct TripWorkspaceDuplicator {
             BudgetPlan(
                 total: budget.total,
                 currencyCode: budget.currencyCode,
+                categoryBudgets: budget.categoryBudgets,
+                exchangeRates: budget.exchangeRates,
                 expenses: budget.expenses.map { expense in
                     BudgetExpense(
                         id: remap(expense.id),
@@ -257,6 +259,14 @@ private struct TripWorkspaceDuplicator {
         let packingList = source.packingList.map { list in
             PackingList(items: list.items.map {
                 PackingItem(id: remap($0.id), title: $0.title, isPacked: $0.isPacked, notes: $0.notes)
+            }, reminder: list.reminder.map {
+                PackingReminder(
+                    id: remap($0.id),
+                    dayOffsetBeforeTrip: $0.dayOffsetBeforeTrip,
+                    fireTime: $0.fireTime,
+                    note: $0.note,
+                    isEnabled: $0.isEnabled
+                )
             })
         }
 

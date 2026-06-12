@@ -96,6 +96,110 @@ struct AWPackingTemplatePicker: View {
     }
 }
 
+struct AWPackingReminderCard: View {
+    let reminder: PackingReminder?
+    let suggestedReminder: PackingReminder?
+    var onUpdateReminder: (PackingReminder?) -> Void
+
+    private var displayReminder: PackingReminder? {
+        reminder ?? suggestedReminder
+    }
+
+    var body: some View {
+        AWCardChrome(cornerRadius: AyuWalkRadii.panel) {
+            VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
+                HStack(alignment: .top, spacing: AyuWalkSpacing.md) {
+                    AWIconBadge(
+                        systemImage: "bell.badge",
+                        tint: reminder?.isEnabled == true ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.accent,
+                        size: AyuWalkSize.largeIconButton
+                    )
+
+                    VStack(alignment: .leading, spacing: AyuWalkSpacing.xxs) {
+                        Text("打包提醒")
+                            .font(AyuWalkTypography.sectionTitle)
+                            .foregroundStyle(AyuWalkTheme.ink)
+
+                        Text(statusText)
+                            .font(AyuWalkTypography.body)
+                            .foregroundStyle(AyuWalkTheme.mutedInk)
+                    }
+
+                    Spacer()
+                }
+
+                if let displayReminder {
+                    HStack(spacing: AyuWalkSpacing.sm) {
+                        AWStatusPill(
+                            text: "出发前 \(displayReminder.dayOffsetBeforeTrip) 天",
+                            systemImage: "calendar.badge.clock",
+                            tint: AyuWalkTheme.secondaryAccent
+                        )
+                        AWStatusPill(
+                            text: displayReminder.fireTime,
+                            systemImage: "clock",
+                            tint: AyuWalkTheme.accent
+                        )
+                    }
+
+                    if let note = displayReminder.note, !note.isEmpty {
+                        Text(note)
+                            .font(AyuWalkTypography.caption)
+                            .foregroundStyle(AyuWalkTheme.mutedInk)
+                    }
+                }
+
+                HStack(spacing: AyuWalkSpacing.sm) {
+                    if let reminder {
+                        AWActionCapsuleButton(
+                            title: reminder.isEnabled ? "关闭提醒" : "开启提醒",
+                            systemImage: reminder.isEnabled ? "bell.slash" : "bell",
+                            tint: AyuWalkTheme.secondaryAccent,
+                            isProminent: !reminder.isEnabled
+                        ) {
+                            var updatedReminder = reminder
+                            updatedReminder.isEnabled.toggle()
+                            onUpdateReminder(updatedReminder)
+                        }
+
+                        Button(role: .destructive) {
+                            onUpdateReminder(nil)
+                        } label: {
+                            Image(systemName: "trash")
+                                .font(AyuWalkTypography.icon(size: 15, weight: .bold))
+                                .frame(width: AyuWalkSize.compactIconButton, height: AyuWalkSize.compactIconButton)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(AyuWalkTheme.accent)
+                        .accessibilityLabel("删除打包提醒")
+                    } else if let suggestedReminder {
+                        AWActionCapsuleButton(
+                            title: "使用建议",
+                            systemImage: "plus.circle.fill",
+                            tint: AyuWalkTheme.secondaryAccent,
+                            isProminent: true
+                        ) {
+                            var enabledReminder = suggestedReminder
+                            enabledReminder.isEnabled = true
+                            onUpdateReminder(enabledReminder)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var statusText: String {
+        if let reminder {
+            return reminder.isEnabled ? "已为当前行程开启系统提醒。" : "提醒计划已保存，当前未开启。"
+        }
+        if suggestedReminder != nil {
+            return "根据未打包物品生成一个建议提醒。"
+        }
+        return "当前物品已全部打包，暂时不需要提醒。"
+    }
+}
+
 private struct AWPackingTemplateTile: View {
     let template: PackingTemplate
     let recommendation: PackingTemplateRecommendation?

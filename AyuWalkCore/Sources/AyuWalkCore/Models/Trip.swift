@@ -463,9 +463,28 @@ public struct BudgetParticipantShare: Equatable, Sendable {
 
 public struct PackingList: Codable, Equatable, Sendable {
     public var items: [PackingItem]
+    public var reminder: PackingReminder?
 
-    public init(items: [PackingItem]) {
+    public init(items: [PackingItem], reminder: PackingReminder? = nil) {
         self.items = items
+        self.reminder = reminder
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case items
+        case reminder
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        items = try container.decodeIfPresent([PackingItem].self, forKey: .items) ?? []
+        reminder = try container.decodeIfPresent(PackingReminder.self, forKey: .reminder)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(items, forKey: .items)
+        try container.encodeIfPresent(reminder, forKey: .reminder)
     }
 }
 
@@ -480,6 +499,28 @@ public struct PackingItem: Codable, Equatable, Identifiable, Sendable {
         self.title = title
         self.isPacked = isPacked
         self.notes = notes
+    }
+}
+
+public struct PackingReminder: Codable, Equatable, Identifiable, Sendable {
+    public let id: UUID
+    public var dayOffsetBeforeTrip: Int
+    public var fireTime: String
+    public var note: String?
+    public var isEnabled: Bool
+
+    public init(
+        id: UUID,
+        dayOffsetBeforeTrip: Int,
+        fireTime: String,
+        note: String?,
+        isEnabled: Bool
+    ) {
+        self.id = id
+        self.dayOffsetBeforeTrip = max(dayOffsetBeforeTrip, 0)
+        self.fireTime = fireTime
+        self.note = note
+        self.isEnabled = isEnabled
     }
 }
 

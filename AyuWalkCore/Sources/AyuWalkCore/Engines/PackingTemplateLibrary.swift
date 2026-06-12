@@ -152,7 +152,7 @@ public enum PackingTemplateLibrary {
             }
         }
 
-        return PackingList(items: mergedItems)
+        return PackingList(items: mergedItems, reminder: packingList.reminder)
     }
 
     public static func isApplied(_ template: PackingTemplate, to packingList: PackingList) -> Bool {

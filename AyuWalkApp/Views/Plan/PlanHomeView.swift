@@ -170,7 +170,8 @@ struct PlanHomeView: View {
                         onAddItem: appState.addPackingItem,
                         onUpdateItem: appState.updatePackingItem,
                         onDeleteItems: appState.deletePackingItems,
-                        onApplyTemplates: appState.applyPackingTemplates
+                        onApplyTemplates: appState.applyPackingTemplates,
+                        onUpdateReminder: appState.updatePackingReminder
                     )
                     .presentationDetents([.medium, .large])
                 case .aiAdjustment:

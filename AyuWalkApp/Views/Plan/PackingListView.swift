@@ -9,6 +9,7 @@ struct PackingListView: View {
     let onUpdateItem: (UUID, String, String?) -> Void
     let onDeleteItems: (Set<UUID>) -> Void
     let onApplyTemplates: ([PackingTemplate]) -> Void
+    let onUpdateReminder: (PackingReminder?) -> Void
 
     @State private var newItemTitle = ""
     @State private var newItemNotes = ""
@@ -24,7 +25,15 @@ struct PackingListView: View {
     }
 
     private var recommendations: [PackingTemplateRecommendation] {
-        PackingTemplateLibrary.recommendations(for: trip, packingList: PackingList(items: items))
+        PackingTemplateLibrary.recommendations(for: trip, packingList: packingList)
+    }
+
+    private var packingList: PackingList {
+        PackingList(items: items, reminder: trip.packingList?.reminder)
+    }
+
+    private var suggestedReminder: PackingReminder? {
+        PackingReminderPlanner.suggestedReminder(for: trip, packingList: packingList)
     }
 
     private var deletionTitle: String {
@@ -55,6 +64,12 @@ struct PackingListView: View {
                     selectedTemplateIDs = Set(recommendations.map(\.template.id))
                     isShowingTemplates = true
                 }
+            )
+
+            AWPackingReminderCard(
+                reminder: trip.packingList?.reminder,
+                suggestedReminder: suggestedReminder,
+                onUpdateReminder: onUpdateReminder
             )
 
             AWPackingAddItemCard(title: $newItemTitle, notes: $newItemNotes) {
@@ -126,6 +141,7 @@ struct PackingListView: View {
         onAddItem: { _, _ in },
         onUpdateItem: { _, _, _ in },
         onDeleteItems: { _ in },
-        onApplyTemplates: { _ in }
+        onApplyTemplates: { _ in },
+        onUpdateReminder: { _ in }
     )
 }

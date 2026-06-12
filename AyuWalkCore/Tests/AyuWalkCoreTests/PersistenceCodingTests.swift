@@ -102,6 +102,46 @@ final class PersistenceCodingTests: XCTestCase {
         XCTAssertEqual(budget.expenses.first?.customShares, [:])
     }
 
+    func testPackingListDecodesLegacyJSONWithoutReminder() throws {
+        let json = """
+        {
+          "items": [{
+            "id": "00000000-0000-0000-0000-00000000A001",
+            "title": "护照",
+            "isPacked": false,
+            "notes": "检查有效期"
+          }]
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+
+        let packingList = try JSONDecoder().decode(PackingList.self, from: data)
+
+        XCTAssertEqual(packingList.items.first?.title, "护照")
+        XCTAssertNil(packingList.reminder)
+    }
+
+    func testPackingListRoundTripsReminderState() throws {
+        let reminder = PackingReminder(
+            id: UUID(),
+            dayOffsetBeforeTrip: 2,
+            fireTime: "20:00",
+            note: "出发前 2 天检查行李",
+            isEnabled: true
+        )
+        let packingList = PackingList(
+            items: [
+                PackingItem(id: UUID(), title: "护照", isPacked: false, notes: nil)
+            ],
+            reminder: reminder
+        )
+
+        let data = try JSONEncoder().encode(packingList)
+        let decoded = try JSONDecoder().decode(PackingList.self, from: data)
+
+        XCTAssertEqual(decoded, packingList)
+    }
+
     func testActivityDecodesLegacyFixedNodeState() throws {
         let json = """
         {

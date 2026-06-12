@@ -41,6 +41,21 @@ final class PackingTemplateLibraryTests: XCTestCase {
         XCTAssertEqual(merged.items.last?.isPacked, false)
     }
 
+    func testApplyingTemplatePreservesReminder() {
+        let reminder = PackingReminder(
+            id: UUID(),
+            dayOffsetBeforeTrip: 2,
+            fireTime: "20:00",
+            note: "检查行李",
+            isEnabled: true
+        )
+        let existingList = PackingList(items: [], reminder: reminder)
+
+        let merged = PackingTemplateLibrary.applying(PackingTemplateLibrary.default[0], to: existingList)
+
+        XCTAssertEqual(merged.reminder, reminder)
+    }
+
     func testApplyingSameTemplateTwiceIsIdempotentAndReportsAppliedState() {
         let template = PackingTemplateLibrary.default[0]
         let firstMerge = PackingTemplateLibrary.applying(template, to: PackingList(items: []))

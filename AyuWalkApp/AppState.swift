@@ -30,6 +30,7 @@ final class AppState {
     @ObservationIgnored private let fixedNodePlaceResolver: MapKitFixedNodePlaceResolver
     @ObservationIgnored private var itineraryUndoSnapshot: ItineraryMutationSnapshot?
     @ObservationIgnored private var itineraryMutationRevision: UInt = 0
+    @ObservationIgnored private var packingReminderRevision: UInt = 0
     @ObservationIgnored private var reminderActivityIDsInFlight: Set<UUID> = []
     @ObservationIgnored private static let customStickerCategoryID = UUID(
         uuidString: "00000000-0000-0000-0000-000000000706"
@@ -169,6 +170,7 @@ final class AppState {
         load(workspace)
         clearItineraryUndo()
         persist()
+        syncActivePackingReminderAfterTripChange()
         return duplicateID
     }
 
@@ -608,6 +610,82 @@ final class AppState {
         let packingList = trip.packingList ?? PackingList(items: [])
         trip.packingList = PackingTemplateLibrary.applying(templates, to: packingList)
         persist()
+    }
+
+    func updatePackingReminder(_ reminder: PackingReminder?) {
+        packingReminderRevision &+= 1
+        let revision = packingReminderRevision
+        let targetTripID = trip.id
+        Task {
+            await applyPackingReminderUpdate(reminder, targetTripID: targetTripID, revision: revision)
+        }
+    }
+
+    private func applyPackingReminderUpdate(
+        _ reminder: PackingReminder?,
+        targetTripID: UUID,
+        revision: UInt
+    ) async {
+        guard trip.id == targetTripID, packingReminderRevision == revision else {
+            return
+        }
+
+        let previousReminder = trip.packingList?.reminder
+        var packingList = trip.packingList ?? PackingList(items: [])
+
+        guard var updatedReminder = reminder else {
+            previousReminder.map(Self.cancelScheduledReminder)
+            packingList.reminder = nil
+            trip.packingList = packingList
+            persist()
+            return
+        }
+
+        if let previousReminder, previousReminder.id != updatedReminder.id {
+            Self.cancelScheduledReminder(previousReminder)
+        }
+
+        if updatedReminder.isEnabled {
+            let schedulingTrip = trip
+            let isScheduled = await Self.syncScheduledPackingReminder(
+                updatedReminder,
+                trip: schedulingTrip
+            )
+            guard trip.id == schedulingTrip.id, packingReminderRevision == revision else {
+                if isScheduled {
+                    Self.cancelScheduledReminder(updatedReminder)
+                }
+                return
+            }
+
+            if isScheduled {
+                aiPlanningMessage = "已开启打包提醒。"
+            } else {
+                updatedReminder.isEnabled = false
+                aiPlanningMessage = "当前行程日期待定或提醒时间已过，已保存提醒计划。"
+            }
+        } else {
+            previousReminder.map(Self.cancelScheduledReminder)
+            aiPlanningMessage = "已关闭打包提醒。"
+        }
+
+        packingList = trip.packingList ?? PackingList(items: [])
+        packingList.reminder = updatedReminder
+        trip.packingList = packingList
+        persist()
+    }
+
+    private func syncActivePackingReminderAfterTripChange() {
+        guard let reminder = trip.packingList?.reminder, reminder.isEnabled else {
+            return
+        }
+
+        packingReminderRevision &+= 1
+        let revision = packingReminderRevision
+        let targetTripID = trip.id
+        Task {
+            await applyPackingReminderUpdate(reminder, targetTripID: targetTripID, revision: revision)
+        }
     }
 
     func updateActivity(
@@ -1594,22 +1672,80 @@ final class AppState {
         }
     }
 
+    private static func syncScheduledPackingReminder(_ reminder: PackingReminder, trip: Trip) async -> Bool {
+        guard reminder.isEnabled else {
+            cancelScheduledReminder(reminder)
+            return false
+        }
+
+        guard let targetDate = packingNotificationTargetDate(reminder: reminder, duration: trip.duration),
+              targetDate > Date() else {
+            cancelScheduledReminder(reminder)
+            return false
+        }
+
+        do {
+            let center = UNUserNotificationCenter.current()
+            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            guard granted else {
+                cancelScheduledReminder(reminder)
+                return false
+            }
+
+            center.removePendingNotificationRequests(withIdentifiers: [notificationIdentifier(for: reminder)])
+
+            let content = UNMutableNotificationContent()
+            content.title = "织步记打包提醒"
+            content.body = "\(trip.title) · \(reminder.note ?? "检查行李清单")"
+            content.sound = .default
+
+            let triggerDate = Calendar.current.dateComponents(
+                [.year, .month, .day, .hour, .minute],
+                from: targetDate
+            )
+            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+            let request = UNNotificationRequest(
+                identifier: notificationIdentifier(for: reminder),
+                content: content,
+                trigger: trigger
+            )
+            try await center.add(request)
+            return true
+        } catch {
+            cancelScheduledReminder(reminder)
+            return false
+        }
+    }
+
     private static func cancelScheduledReminder(_ reminder: Reminder) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(
             withIdentifiers: [notificationIdentifier(for: reminder)]
         )
     }
 
+    private static func cancelScheduledReminder(_ reminder: PackingReminder) {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [notificationIdentifier(for: reminder)]
+        )
+    }
+
     private static func cancelScheduledReminders(in trip: Trip) {
-        let identifiers = trip.days
+        var identifiers = trip.days
             .flatMap(\.activities)
             .compactMap(\.reminder)
             .map(notificationIdentifier)
+        if let packingReminder = trip.packingList?.reminder {
+            identifiers.append(notificationIdentifier(for: packingReminder))
+        }
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
     }
 
     private static func notificationIdentifier(for reminder: Reminder) -> String {
         "ayuwalk.reminder.\(reminder.id.uuidString)"
+    }
+
+    private static func notificationIdentifier(for reminder: PackingReminder) -> String {
+        "ayuwalk.packing-reminder.\(reminder.id.uuidString)"
     }
 
     private static func notificationTargetDate(
@@ -1638,6 +1774,39 @@ final class AppState {
             minute: minute,
             second: 0,
             of: dayDate
+        )
+    }
+
+    private static func packingNotificationTargetDate(
+        reminder: PackingReminder,
+        duration: TripDuration
+    ) -> Date? {
+        guard case let .dateRange(start, _) = duration else {
+            return nil
+        }
+
+        let timeParts = reminder.fireTime.split(separator: ":")
+        guard timeParts.count == 2,
+              let hour = Int(timeParts[0]),
+              let minute = Int(timeParts[1]) else {
+            return nil
+        }
+
+        let calendar = Calendar.current
+        let startOfTrip = calendar.startOfDay(for: start)
+        guard let reminderDate = calendar.date(
+            byAdding: .day,
+            value: -reminder.dayOffsetBeforeTrip,
+            to: startOfTrip
+        ) else {
+            return nil
+        }
+
+        return calendar.date(
+            bySettingHour: hour,
+            minute: minute,
+            second: 0,
+            of: reminderDate
         )
     }
 }
