@@ -5,11 +5,14 @@ struct JournalPageCard: View {
     let page: JournalPage
     var visibleBlocks: [JournalBlock]? = nil
     var placedStickers: [PlacedJournalSticker] = []
+    var isStickerEditingMode = false
     var onDropSticker: (UUID, Double, Double) -> Void = { _, _, _ in }
     var onRemoveSticker: (UUID) -> Void = { _ in }
     var onMoveSticker: (UUID, Double, Double) -> Void = { _, _, _ in }
     var onTransformSticker: (UUID, Double, Double) -> Void = { _, _, _ in }
     var onStickerInteractionChanged: (Bool) -> Void = { _ in }
+
+    @State private var isStickerInteracting = false
 
     var body: some View {
         AWJournalBookFrame {
@@ -51,7 +54,10 @@ struct JournalPageCard: View {
                                     onRemove: onRemoveSticker,
                                     onMove: onMoveSticker,
                                     onTransform: onTransformSticker,
-                                    onInteractionChanged: onStickerInteractionChanged
+                                    onInteractionChanged: { isInteracting in
+                                        isStickerInteracting = isInteracting
+                                        onStickerInteractionChanged(isInteracting)
+                                    }
                                 )
                             }
                             .dropDestination(for: String.self) { items, location in
@@ -71,6 +77,7 @@ struct JournalPageCard: View {
                     }
                     .frame(maxWidth: .infinity, minHeight: 560, alignment: .topLeading)
                 }
+                .scrollDisabled(isStickerEditingMode || isStickerInteracting)
                 .frame(maxWidth: .infinity, minHeight: 430, maxHeight: 560, alignment: .topLeading)
             }
         }

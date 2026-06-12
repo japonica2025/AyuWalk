@@ -461,7 +461,7 @@ public enum SampleTripFactory {
             localizedPlace(
                 id: deterministicUUIDString(namespace: "localized-place", value: "\(destination)-\(dayNumber)-center"),
                 destination: destination,
-                suffix: "Day \(dayNumber) 中心散步",
+                suffix: "市中心散步",
                 location: location,
                 latitudeOffset: dayOffset,
                 longitudeOffset: dayOffset
@@ -469,7 +469,7 @@ public enum SampleTripFactory {
             localizedPlace(
                 id: deterministicUUIDString(namespace: "localized-place", value: "\(destination)-\(dayNumber)-food"),
                 destination: destination,
-                suffix: "Day \(dayNumber) 午餐街区",
+                suffix: "午餐街区",
                 location: location,
                 latitudeOffset: dayOffset + 0.008,
                 longitudeOffset: dayOffset + 0.009
@@ -477,7 +477,7 @@ public enum SampleTripFactory {
             localizedPlace(
                 id: deterministicUUIDString(namespace: "localized-place", value: "\(destination)-\(dayNumber)-evening"),
                 destination: destination,
-                suffix: "Day \(dayNumber) 傍晚记录点",
+                suffix: "傍晚记录点",
                 location: location,
                 latitudeOffset: dayOffset - 0.007,
                 longitudeOffset: dayOffset + 0.011
@@ -485,7 +485,7 @@ public enum SampleTripFactory {
             localizedPlace(
                 id: deterministicUUIDString(namespace: "localized-place", value: "\(destination)-\(dayNumber)-dinner"),
                 destination: destination,
-                suffix: "Day \(dayNumber) 晚餐街区",
+                suffix: "晚餐街区",
                 location: location,
                 latitudeOffset: dayOffset - 0.004,
                 longitudeOffset: dayOffset + 0.009
@@ -496,35 +496,35 @@ public enum SampleTripFactory {
             id: deterministicUUID(namespace: "localized-day", value: "\(destination)-\(dayNumber)"),
             dayNumber: dayNumber,
             dateLabel: "Day \(dayNumber)",
-            title: "\(destination) Day \(dayNumber) 初步路线",
+            title: "\(destination) 城市散步",
             activities: [
                 Activity(
                     id: deterministicUUID(namespace: "localized-activity", value: "\(destination)-\(dayNumber)-center"),
-                    title: "\(destination) Day \(dayNumber) 中心散步",
+                    title: "\(destination) 市中心散步",
                     kind: .sight,
                     place: places[0],
                     startTime: "10:00",
                     endTime: "11:30",
-                    notes: "根据目的地定位生成的起点，后续可替换成真实景点搜索结果",
+                    notes: "上午先从交通便利的中心区域开始，节奏适合熟悉街区。",
                     estimatedCost: 0,
                     routeOrder: routeBase + 1,
                     reminder: nil
                 ),
                 Activity(
                     id: deterministicUUID(namespace: "localized-activity", value: "\(destination)-\(dayNumber)-food"),
-                    title: "午饭：\(destination) Day \(dayNumber) 午餐街区",
+                    title: "午饭：\(destination) 午餐街区",
                     kind: .meal,
                     place: places[1],
                     startTime: "12:00",
                     endTime: "13:30",
-                    notes: "先按定位附近保留饭点，后续接餐厅推荐",
+                    notes: "保留正常午餐时间，方便按当天路线选择附近餐厅。",
                     estimatedCost: 300,
                     routeOrder: routeBase + 2,
                     reminder: nil
                 ),
                 Activity(
                     id: deterministicUUID(namespace: "localized-activity", value: "\(destination)-\(dayNumber)-evening"),
-                    title: "\(destination) Day \(dayNumber) 傍晚记录",
+                    title: "\(destination) 傍晚记录",
                     kind: .sight,
                     place: places[2],
                     startTime: "15:00",
@@ -536,12 +536,12 @@ public enum SampleTripFactory {
                 ),
                 Activity(
                     id: deterministicUUID(namespace: "localized-activity", value: "\(destination)-\(dayNumber)-dinner"),
-                    title: "晚饭：\(destination) Day \(dayNumber) 晚餐街区",
+                    title: "晚饭：\(destination) 晚餐街区",
                     kind: .meal,
                     place: places[3],
                     startTime: "18:30",
                     endTime: "20:00",
-                    notes: "先保留晚餐时间，后续可按预算和评分推荐餐厅",
+                    notes: "晚餐后留出回酒店或继续散步的缓冲。",
                     estimatedCost: 500,
                     routeOrder: routeBase + 4,
                     reminder: nil
@@ -619,7 +619,7 @@ public enum SampleTripFactory {
                 place: slot.place,
                 startTime: slot.start,
                 endTime: slot.end,
-                notes: "可继续编辑时间、地点和路线顺序",
+                notes: slot.kind == .meal ? "按当天路线安排用餐，保留排队和休息时间。" : "建议预留步行、拍照和临时停留时间。",
                 estimatedCost: slot.cost,
                 routeOrder: routeOrder,
                 reminder: nil
@@ -648,7 +648,7 @@ public enum SampleTripFactory {
         let offset = Double(dayNumber) * 0.0025 + slotOffset
         return Place(
             id: deterministicUUID(namespace: "resolved-placeholder-place", value: "\(destination)-\(dayNumber)-\(slotName)"),
-            name: "\(destination) Day \(dayNumber) \(slotName)",
+            name: "\(destination) 第 \(dayNumber) 天\(slotName)",
             address: anchor?.address ?? destination,
             latitude: anchor?.latitude.map { $0 + offset },
             longitude: anchor?.longitude.map { $0 - offset },
@@ -673,28 +673,28 @@ public enum SampleTripFactory {
             id: deterministicUUID(namespace: "unresolved-day", value: "\(destination)-\(dayNumber)"),
             dayNumber: dayNumber,
             dateLabel: "Day \(dayNumber)",
-            title: "\(destination) Day \(dayNumber) 待定位路线",
+            title: "\(destination) 第 \(dayNumber) 天安排",
             activities: [
                 Activity(
                     id: deterministicUUID(namespace: "unresolved-activity", value: "\(destination)-\(dayNumber)-confirm"),
-                    title: "\(destination) Day \(dayNumber) 目的地确认",
+                    title: "\(destination) 目的地确认",
                     kind: .note,
                     place: confirmationPlace,
-                    startTime: nil,
-                    endTime: nil,
-                    notes: "定位失败时保留用户目的地和天数，不退回其他城市",
+                    startTime: "10:00",
+                    endTime: "11:00",
+                    notes: "确认城市、街区或想去的地点后，可以继续完善地图路线。",
                     estimatedCost: nil,
                     routeOrder: routeOrder + 1,
                     reminder: nil
                 ),
                 Activity(
                     id: deterministicUUID(namespace: "unresolved-activity", value: "\(destination)-\(dayNumber)-plan"),
-                    title: "\(destination) Day \(dayNumber) 初步安排",
+                    title: "\(destination) 出行偏好整理",
                     kind: .note,
                     place: planningPlace,
-                    startTime: nil,
-                    endTime: nil,
-                    notes: "重新输入更具体的城市或景点后可获得地图点位",
+                    startTime: "15:00",
+                    endTime: "16:00",
+                    notes: "先记录餐饮、购物、拍照和交通偏好，方便生成更贴近本次旅行的路线。",
                     estimatedCost: nil,
                     routeOrder: routeOrder + 2,
                     reminder: nil

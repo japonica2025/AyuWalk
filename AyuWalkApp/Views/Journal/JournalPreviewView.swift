@@ -23,8 +23,10 @@ struct JournalPreviewView: View {
                         .ignoresSafeArea()
 
                     VStack(alignment: .leading, spacing: 14) {
-                        journalHeader
-                        pageSelector
+                        if !isStickerTrayVisible {
+                            journalHeader
+                            pageSelector
+                        }
 
                         ScrollViewReader { proxy in
                             ScrollView(.horizontal) {
@@ -34,6 +36,7 @@ struct JournalPreviewView: View {
                                             page: page,
                                             visibleBlocks: appState.selectedBlocks(for: page),
                                             placedStickers: appState.placedStickers(for: page),
+                                            isStickerEditingMode: isStickerTrayVisible,
                                             onDropSticker: { stickerID, xRatio, yRatio in
                                                 appState.addStickerPlacement(
                                                     pageID: page.id,
@@ -88,7 +91,7 @@ struct JournalPreviewView: View {
                             }
                             .contentMargins(.horizontal, 18, for: .scrollContent)
                             .scrollTargetBehavior(.viewAligned)
-                            .scrollDisabled(isStickerInteracting)
+                            .scrollDisabled(isStickerInteracting || isStickerTrayVisible)
                             .onChange(of: selectedPageID) { _, newValue in
                                 guard let newValue else { return }
 
@@ -244,7 +247,7 @@ struct JournalPreviewView: View {
                     Text("贴纸")
                         .font(AyuWalkTypography.sectionTitle)
                         .foregroundStyle(AyuWalkTheme.ink)
-                    Text("可重复添加；点按或拖到纸面任意位置")
+                    Text("点按添加到当前页面，再在纸面上移动、旋转或缩放")
                         .font(AyuWalkTypography.micro)
                         .foregroundStyle(AyuWalkTheme.mutedInk)
                 }
@@ -258,6 +261,21 @@ struct JournalPreviewView: View {
                     .padding(.vertical, 5)
                     .background(AyuWalkTheme.secondaryAccent.opacity(0.10))
                     .clipShape(Capsule())
+
+                Button {
+                    isStickerInteracting = false
+                    isStickerTrayVisible = false
+                } label: {
+                    Label("完成", systemImage: "checkmark.circle.fill")
+                        .font(AyuWalkTypography.captionStrong)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                        .background(AyuWalkTheme.secondaryAccent)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("退出贴纸编辑")
             }
 
             ScrollView(.horizontal, showsIndicators: false) {

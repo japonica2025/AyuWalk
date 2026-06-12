@@ -226,6 +226,36 @@ final class PlanningEngineTests: XCTestCase {
         XCTAssertFalse(places.contains { $0.address?.contains("Tokyo") == true || $0.address?.contains("Osaka") == true })
     }
 
+    func testGeneratedFallbackTripsDoNotExposeImplementationPlaceholderCopy() {
+        let localizedTrip = MockPlanningEngine().generateTrip(
+            destination: "巴黎",
+            dayCount: 2,
+            purpose: [.cityWalk],
+            notes: "想轻松散步",
+            destinationLocation: DestinationLocation(
+                latitude: 48.8566,
+                longitude: 2.3522,
+                displayName: "Paris, France"
+            )
+        )
+        let unresolvedTrip = MockPlanningEngine().generateTrip(
+            destination: "未知目的地",
+            dayCount: 2,
+            purpose: [.cityWalk],
+            notes: "先保留结构"
+        )
+
+        let visibleText = (localizedTrip.days + unresolvedTrip.days).flatMap { day in
+            [day.title] + day.activities.flatMap { activity in
+                [activity.title, activity.notes].compactMap { $0 }
+            }
+        }
+
+        XCTAssertFalse(visibleText.contains { text in
+            ["后续", "待定位", "可替换", "定位失败", "重新输入"].contains { text.contains($0) }
+        })
+    }
+
     func testMockPlanningEngineUsesDestinationCurrencyForResolvedDestination() {
         let trip = MockPlanningEngine().generateTrip(
             destination: "Paris, France",
