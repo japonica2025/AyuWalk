@@ -117,14 +117,7 @@ struct ShareExportBuilder {
     }
 
     static func socialCopy(trip: Trip) -> String {
-        let firstDay = trip.days.first?.title ?? trip.destination
-        return """
-        \(trip.title) 初版路线整理好了。
-
-        这次想用轻松一点的节奏走 \(trip.destination)，先从 \(firstDay) 开始，把路线、预算、行李和手帐草稿放在一起慢慢调整。
-
-        #织步记 #AyuWalk #旅行规划 #电子手帐 #\(trip.destination)旅行
-        """
+        TripShareCopyBuilder.socialCopy(trip: trip)
     }
 
     private static func durationText(for duration: TripDuration) -> String {

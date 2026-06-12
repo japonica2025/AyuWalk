@@ -6,6 +6,13 @@ struct ShareExportView: View {
     let socialCopy: String
 
     @State private var copiedLabel: String?
+    @State private var editableSocialCopy: String
+
+    init(markdown: String, socialCopy: String) {
+        self.markdown = markdown
+        self.socialCopy = socialCopy
+        _editableSocialCopy = State(initialValue: socialCopy)
+    }
 
     var body: some View {
         NavigationStack {
@@ -17,16 +24,18 @@ struct ShareExportView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         exportCard(
                             title: "小红书文案",
-                            subtitle: "可直接复制后发布，也可以再交给 AI 改写",
-                            content: socialCopy,
-                            copyLabel: "复制文案"
+                            subtitle: "可先编辑，再复制发布",
+                            content: $editableSocialCopy,
+                            copyLabel: "复制文案",
+                            isEditable: true
                         )
 
                         exportCard(
                             title: "Markdown 文档",
                             subtitle: "可导入其他 AI、笔记软件或手帐工具继续编辑",
-                            content: markdown,
-                            copyLabel: "复制 Markdown"
+                            content: .constant(markdown),
+                            copyLabel: "复制 Markdown",
+                            isEditable: false
                         )
                     }
                     .padding(20)
@@ -37,7 +46,13 @@ struct ShareExportView: View {
         }
     }
 
-    private func exportCard(title: String, subtitle: String, content: String, copyLabel: String) -> some View {
+    private func exportCard(
+        title: String,
+        subtitle: String,
+        content: Binding<String>,
+        copyLabel: String,
+        isEditable: Bool
+    ) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -52,7 +67,7 @@ struct ShareExportView: View {
                 Spacer()
 
                 Button {
-                    UIPasteboard.general.string = content
+                    UIPasteboard.general.string = content.wrappedValue
                     copiedLabel = copyLabel
                 } label: {
                     Text(copiedLabel == copyLabel ? "已复制" : copyLabel)
@@ -65,14 +80,25 @@ struct ShareExportView: View {
                 }
             }
 
-            Text(content)
-                .font(.footnote)
-                .foregroundStyle(AyuWalkTheme.ink)
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(12)
-                .background(AyuWalkTheme.pageBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            if isEditable {
+                TextEditor(text: content)
+                    .font(.footnote)
+                    .foregroundStyle(AyuWalkTheme.ink)
+                    .scrollContentBackground(.hidden)
+                    .frame(minHeight: 180)
+                    .padding(8)
+                    .background(AyuWalkTheme.pageBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            } else {
+                Text(content.wrappedValue)
+                    .font(.footnote)
+                    .foregroundStyle(AyuWalkTheme.ink)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .background(AyuWalkTheme.pageBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
         }
         .padding(16)
         .background(AyuWalkTheme.paper)
