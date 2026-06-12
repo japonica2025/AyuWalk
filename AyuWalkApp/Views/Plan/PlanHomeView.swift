@@ -164,6 +164,7 @@ struct PlanHomeView: View {
                     .presentationDetents([.medium, .large])
                 case .packing:
                     PackingListView(
+                        trip: appState.trip,
                         items: appState.trip.packingList?.items ?? [],
                         onToggleItem: appState.togglePackingItem,
                         onAddItem: appState.addPackingItem,

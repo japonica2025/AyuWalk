@@ -94,4 +94,119 @@ final class PackingTemplateLibraryTests: XCTestCase {
 
         XCTAssertEqual(merged.items.map(\.title), ["充电器", "护照", "转换插头"])
     }
+
+    func testRecommendationsIncludeShortTripAndInternationalForResolvedOverseasShortTrip() {
+        let trip = trip(
+            destination: "Tokyo",
+            duration: .dayCount(3),
+            purpose: [.cityWalk],
+            activities: []
+        )
+
+        let recommendations = PackingTemplateLibrary.recommendations(for: trip, packingList: PackingList(items: []))
+
+        XCTAssertEqual(recommendations.map(\.template.id).prefix(2), [.international, .shortTrip])
+        XCTAssertTrue(recommendations.contains { $0.template.id == .international && $0.reason.contains("海外") })
+        XCTAssertTrue(recommendations.contains { $0.template.id == .shortTrip && $0.reason.contains("3 天") })
+    }
+
+    func testRecommendationsIncludeFamilyForFamilyPurpose() {
+        let trip = trip(
+            destination: "上海",
+            duration: .dayCount(5),
+            purpose: [.family],
+            activities: []
+        )
+
+        let recommendations = PackingTemplateLibrary.recommendations(for: trip, packingList: PackingList(items: []))
+
+        XCTAssertTrue(recommendations.contains { $0.template.id == .family && $0.reason.contains("亲子") })
+    }
+
+    func testRecommendationsUseBudgetCurrencyForUnresolvedInternationalTrips() {
+        let trip = trip(
+            destination: "想去的海边小镇",
+            duration: .dayCount(4),
+            purpose: [.cityWalk],
+            activities: [],
+            budgetPlan: BudgetPlan(total: 800, currencyCode: "EUR")
+        )
+
+        let recommendations = PackingTemplateLibrary.recommendations(for: trip, packingList: PackingList(items: []))
+
+        XCTAssertTrue(recommendations.contains { $0.template.id == .international && $0.reason.contains("海外") })
+    }
+
+    func testRecommendationsSkipTemplatesAlreadyApplied() {
+        let template = PackingTemplateLibrary.default.first { $0.id == .international }!
+        let trip = trip(
+            destination: "Paris",
+            duration: .dayCount(5),
+            purpose: [.cityWalk],
+            activities: []
+        )
+        let packingList = PackingTemplateLibrary.applying(template, to: PackingList(items: []))
+
+        let recommendations = PackingTemplateLibrary.recommendations(for: trip, packingList: packingList)
+
+        XCTAssertFalse(recommendations.contains { $0.template.id == .international })
+    }
+
+    func testRecommendationsIncludeContentCreatorForPhotoActivities() {
+        let trip = trip(
+            destination: "大阪",
+            duration: .dayCount(4),
+            purpose: [.cityWalk],
+            activities: [
+                Activity(
+                    id: UUID(),
+                    title: "胶片相机拍照散步",
+                    kind: .sight,
+                    place: nil,
+                    startTime: nil,
+                    endTime: nil,
+                    notes: "准备照片素材",
+                    estimatedCost: nil,
+                    routeOrder: nil,
+                    reminder: nil
+                )
+            ]
+        )
+
+        let recommendations = PackingTemplateLibrary.recommendations(for: trip, packingList: PackingList(items: []))
+
+        XCTAssertTrue(recommendations.contains { $0.template.id == .contentCreator && $0.reason.contains("拍照") })
+    }
+
+    private func trip(
+        destination: String,
+        duration: TripDuration,
+        purpose: [TravelPurpose],
+        activities: [Activity],
+        budgetPlan: BudgetPlan? = nil
+    ) -> Trip {
+        Trip(
+            id: UUID(),
+            title: "\(destination) Test",
+            englishProductName: "AyuWalk",
+            destination: destination,
+            purpose: purpose,
+            duration: duration,
+            days: [
+                TripDay(
+                    id: UUID(),
+                    dayNumber: 1,
+                    dateLabel: "Day 1",
+                    title: "第一天",
+                    activities: activities
+                )
+            ],
+            participants: [],
+            importedSources: [],
+            budgetPlan: budgetPlan,
+            packingList: nil,
+            journalPages: [],
+            planningScripts: []
+        )
+    }
 }

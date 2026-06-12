@@ -2,6 +2,7 @@ import AyuWalkCore
 import SwiftUI
 
 struct PackingListView: View {
+    let trip: Trip
     let items: [PackingItem]
     let onToggleItem: (UUID) -> Void
     let onAddItem: (String, String?) -> Void
@@ -20,6 +21,10 @@ struct PackingListView: View {
 
     private var packedCount: Int {
         items.filter(\.isPacked).count
+    }
+
+    private var recommendations: [PackingTemplateRecommendation] {
+        PackingTemplateLibrary.recommendations(for: trip, packingList: PackingList(items: items))
     }
 
     private var deletionTitle: String {
@@ -47,7 +52,7 @@ struct PackingListView: View {
                 packedCount: packedCount,
                 itemCount: items.count,
                 onOpenTemplates: {
-                    selectedTemplateIDs.removeAll()
+                    selectedTemplateIDs = Set(recommendations.map(\.template.id))
                     isShowingTemplates = true
                 }
             )
@@ -75,6 +80,7 @@ struct PackingListView: View {
         .sheet(isPresented: $isShowingTemplates) {
             AWPackingTemplatePicker(
                 templates: PackingTemplateLibrary.default,
+                recommendations: recommendations,
                 selectedTemplateIDs: $selectedTemplateIDs
             ) {
                 let templates = PackingTemplateLibrary.default.filter { selectedTemplateIDs.contains($0.id) }
@@ -114,6 +120,7 @@ struct PackingListView: View {
 
 #Preview {
     PackingListView(
+        trip: SampleTripFactory.tokyoFiveDayTrip(),
         items: SampleTripFactory.tokyoFiveDayTrip().packingList?.items ?? [],
         onToggleItem: { _ in },
         onAddItem: { _, _ in },

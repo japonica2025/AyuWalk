@@ -41,12 +41,17 @@ struct AWPackingProgressCard: View {
 
 struct AWPackingTemplatePicker: View {
     let templates: [PackingTemplate]
+    let recommendations: [PackingTemplateRecommendation]
     @Binding var selectedTemplateIDs: Set<PackingTemplateID>
     var onAddSelected: () -> Void
 
+    private var recommendationByTemplateID: [PackingTemplateID: PackingTemplateRecommendation] {
+        Dictionary(uniqueKeysWithValues: recommendations.map { ($0.template.id, $0) })
+    }
+
     var body: some View {
         AWSheetScaffold(title: "模板清单") {
-            Text("选择本次需要补充的模板，添加后已有物品不会重复。")
+            Text(templateIntroText)
                 .font(AyuWalkTypography.body)
                 .foregroundStyle(AyuWalkTheme.mutedInk)
 
@@ -61,6 +66,7 @@ struct AWPackingTemplatePicker: View {
                     } label: {
                         AWPackingTemplateTile(
                             template: template,
+                            recommendation: recommendationByTemplateID[template.id],
                             isSelected: selectedTemplateIDs.contains(template.id)
                         )
                     }
@@ -82,10 +88,17 @@ struct AWPackingTemplatePicker: View {
             .disabled(selectedTemplateIDs.isEmpty)
         }
     }
+
+    private var templateIntroText: String {
+        recommendations.isEmpty
+            ? "选择本次需要补充的模板，添加后已有物品不会重复。"
+            : "已根据目的地、天数和行程内容预选推荐模板，添加后已有物品不会重复。"
+    }
 }
 
 private struct AWPackingTemplateTile: View {
     let template: PackingTemplate
+    let recommendation: PackingTemplateRecommendation?
     let isSelected: Bool
 
     var body: some View {
@@ -113,6 +126,13 @@ private struct AWPackingTemplateTile: View {
                 .font(AyuWalkTypography.caption)
                 .foregroundStyle(AyuWalkTheme.mutedInk)
                 .lineLimit(2)
+
+            if let recommendation {
+                Text(recommendation.reason)
+                    .font(AyuWalkTypography.micro)
+                    .foregroundStyle(AyuWalkTheme.accent)
+                    .lineLimit(3)
+            }
 
             Text("\(template.items.count) 项")
                 .font(AyuWalkTypography.captionStrong)

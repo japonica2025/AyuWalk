@@ -40,6 +40,19 @@ public struct PackingTemplateItem: Equatable, Sendable {
     }
 }
 
+public struct PackingTemplateRecommendation: Equatable, Identifiable, Sendable {
+    public var id: PackingTemplateID { template.id }
+    public var template: PackingTemplate
+    public var reason: String
+    public var priority: Int
+
+    public init(template: PackingTemplate, reason: String, priority: Int) {
+        self.template = template
+        self.reason = reason
+        self.priority = priority
+    }
+}
+
 public enum PackingTemplateLibrary {
     public static let `default`: [PackingTemplate] = [
         PackingTemplate(
@@ -147,9 +160,99 @@ public enum PackingTemplateLibrary {
         return template.items.allSatisfy { existingTitles.contains(normalizedTitle($0.title)) }
     }
 
+    public static func recommendations(for trip: Trip, packingList: PackingList?) -> [PackingTemplateRecommendation] {
+        let currentPackingList = packingList ?? PackingList(items: [])
+        let templatesByID = Dictionary(uniqueKeysWithValues: Self.default.map { ($0.id, $0) })
+        var recommendations: [PackingTemplateRecommendation] = []
+
+        func append(_ templateID: PackingTemplateID, reason: String, priority: Int) {
+            guard let template = templatesByID[templateID],
+                  !isApplied(template, to: currentPackingList),
+                  !recommendations.contains(where: { $0.template.id == templateID }) else {
+                return
+            }
+            recommendations.append(PackingTemplateRecommendation(template: template, reason: reason, priority: priority))
+        }
+
+        let dayCount = dayCount(for: trip)
+        if isLikelyInternational(trip) {
+            append(.international, reason: "海外目的地，建议先补齐证件、网络和支付材料。", priority: 10)
+        }
+
+        if dayCount <= 3 {
+            append(.shortTrip, reason: "\(dayCount) 天短途行程，适合先生成基础轻装清单。", priority: 20)
+        }
+
+        if dayCount >= 4 || destinationSuggestsWeatherPrep(trip.destination) {
+            append(.weatherReady, reason: "\(dayCount) 天行程可能遇到天气和温差变化。", priority: 30)
+        }
+
+        if suggestsPhotoGear(trip) {
+            append(.contentCreator, reason: "行程里包含拍照或素材记录，建议准备补电和存储用品。", priority: 40)
+        }
+
+        if trip.purpose.contains(.family) {
+            append(.family, reason: "亲子出行，建议补充儿童用品和应急准备。", priority: 50)
+        }
+
+        return recommendations.sorted { lhs, rhs in
+            if lhs.priority != rhs.priority {
+                return lhs.priority < rhs.priority
+            }
+            return lhs.template.title < rhs.template.title
+        }
+    }
+
     private static func normalizedTitle(_ title: String) -> String {
         title
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .folding(options: [.caseInsensitive, .widthInsensitive], locale: .current)
+    }
+
+    private static func dayCount(for trip: Trip) -> Int {
+        switch trip.duration {
+        case .dayCount(let count):
+            return TripPlanningLimits.normalizedDayCount(count)
+        case .dateRange(let start, let end):
+            let calendar = Calendar(identifier: .gregorian)
+            let startOfDay = calendar.startOfDay(for: start)
+            let endOfDay = calendar.startOfDay(for: end)
+            let days = calendar.dateComponents([.day], from: startOfDay, to: endOfDay).day ?? 0
+            return TripPlanningLimits.normalizedDayCount(days + 1)
+        }
+    }
+
+    private static func isLikelyInternational(_ trip: Trip) -> Bool {
+        if let budgetCurrencyCode = trip.budgetPlan?.currencyCode,
+           !budgetCurrencyCode.isEmpty,
+           budgetCurrencyCode.uppercased() != "CNY" {
+            return true
+        }
+
+        switch DestinationResolver.resolve(trip.destination) {
+        case .resolved(let location):
+            return location.countryCode?.uppercased() != "CN"
+        case .ambiguous, .unresolved:
+            return false
+        }
+    }
+
+    private static func destinationSuggestsWeatherPrep(_ destination: String) -> Bool {
+        let normalized = normalizedTitle(destination)
+        let weatherKeywords = [
+            "伦敦", "london", "巴黎", "paris", "东京", "東京", "tokyo", "大阪", "osaka",
+            "北海道", "雪", "海边", "海島", "海岛", "山", "雨"
+        ]
+        return weatherKeywords.contains { normalized.contains($0) }
+    }
+
+    private static func suggestsPhotoGear(_ trip: Trip) -> Bool {
+        let photoKeywords = ["拍照", "摄影", "相机", "照片", "素材", "photo", "camera", "vlog", "胶片"]
+        let activityText = trip.days
+            .flatMap(\.activities)
+            .map { [$0.title, $0.notes ?? "", $0.place?.name ?? ""].joined(separator: " ") }
+            .joined(separator: " ")
+        let normalized = normalizedTitle(activityText)
+        return photoKeywords.contains { normalized.contains($0) }
     }
 }
