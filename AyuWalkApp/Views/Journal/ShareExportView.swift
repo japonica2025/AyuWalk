@@ -65,6 +65,36 @@ struct ShareExportView: View {
                                 exportErrorMessage = "PDF 文件生成失败，请稍后再试。"
                             }
                         }
+
+                        exportCard(
+                            title: "计划卡片图",
+                            subtitle: "生成适合转发的竖版 PNG 卡片",
+                            content: .constant("提取当前行程重点，生成一张可分享的旅行计划卡片。"),
+                            copyLabel: nil,
+                            shareLabel: "分享卡片",
+                            isEditable: false
+                        ) {
+                            do {
+                                sharePayload = SharePayload(items: [try imageFileURL(style: .summaryCard)])
+                            } catch {
+                                exportErrorMessage = "卡片图生成失败，请稍后再试。"
+                            }
+                        }
+
+                        exportCard(
+                            title: "长图文档",
+                            subtitle: "生成包含完整内容的长图 PNG",
+                            content: .constant("包含当前行程、预算、AA、行李清单和手帐模块的完整图文。"),
+                            copyLabel: nil,
+                            shareLabel: "分享长图",
+                            isEditable: false
+                        ) {
+                            do {
+                                sharePayload = SharePayload(items: [try imageFileURL(style: .longDocument)])
+                            } catch {
+                                exportErrorMessage = "长图生成失败，请稍后再试。"
+                            }
+                        }
                     }
                     .padding(20)
                 }
@@ -189,13 +219,38 @@ struct ShareExportView: View {
         return url
     }
 
-    private func pdfFileURL() throws -> URL {
-        let title = markdown
-            .split(separator: "\n")
-            .first { $0.hasPrefix("# ") }
-            .map { String($0.dropFirst(2)) } ?? "AyuWalk"
+    @MainActor
+    private func imageFileURL(style: ExportImageStyle) throws -> URL {
+        let title = exportTitle
+        let fileName = sanitizedFileName(title) + "-\(style.fileNameSuffix).png"
         let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent(sanitizedFileName(title) + ".pdf")
+            .appendingPathComponent(fileName)
+        let renderHeight = style.renderHeight(for: markdown)
+        guard renderHeight <= style.maximumRenderHeight else {
+            throw ExportError.imageRenderingFailed
+        }
+
+        let content = ExportImageDocumentView(
+            markdown: markdown,
+            style: style,
+            renderHeight: renderHeight
+        )
+        let renderer = ImageRenderer(content: content)
+        renderer.scale = 2
+        renderer.proposedSize = ProposedViewSize(width: style.canvasWidth, height: renderHeight)
+
+        guard let image = renderer.uiImage,
+              let data = image.pngData() else {
+            throw ExportError.imageRenderingFailed
+        }
+
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    private func pdfFileURL() throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(sanitizedFileName(exportTitle) + ".pdf")
         let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 595, height: 842))
         let attributedContent = pdfAttributedContent()
         var renderedCharacters = 0
@@ -289,6 +344,13 @@ struct ShareExportView: View {
 
     private static let pdfInkColor = UIColor(red: 0.18, green: 0.12, blue: 0.08, alpha: 1)
 
+    private var exportTitle: String {
+        markdown
+            .split(separator: "\n")
+            .first { $0.hasPrefix("# ") }
+            .map { String($0.dropFirst(2)) } ?? "AyuWalk"
+    }
+
     private func sanitizedFileName(_ title: String) -> String {
         let invalid = CharacterSet(charactersIn: "/\\?%*|\"<>:")
             .union(.newlines)
@@ -304,6 +366,250 @@ struct ShareExportView: View {
 private enum ExportError: Error {
     case encodingFailed
     case pdfRenderingFailed
+    case imageRenderingFailed
+}
+
+private enum ExportImageStyle {
+    case summaryCard
+    case longDocument
+
+    var fileNameSuffix: String {
+        switch self {
+        case .summaryCard:
+            return "card"
+        case .longDocument:
+            return "long-image"
+        }
+    }
+
+    var canvasWidth: CGFloat {
+        540
+    }
+
+    var maximumRenderHeight: CGFloat {
+        switch self {
+        case .summaryCard:
+            return 675
+        case .longDocument:
+            return 5_000
+        }
+    }
+
+    func renderHeight(for markdown: String) -> CGFloat {
+        switch self {
+        case .summaryCard:
+            return 675
+        case .longDocument:
+            let rawLines = markdown.isEmpty ? ["# AyuWalk", "暂无导出内容"] : markdown.components(separatedBy: .newlines)
+            let contentHeight = rawLines.reduce(CGFloat(0)) { total, rawLine in
+                let line = ExportImageLine(rawValue: rawLine)
+                return total + line.estimatedHeight
+            }
+            let lineSpacing = CGFloat(max(rawLines.count - 1, 0)) * ExportImageDocumentView.longDocumentLineSpacing
+            return min(max(contentHeight + lineSpacing + 56, 675), maximumRenderHeight + 1)
+        }
+    }
+}
+
+private struct ExportImageDocumentView: View {
+    static let longDocumentLineSpacing: CGFloat = 10
+
+    let markdown: String
+    let style: ExportImageStyle
+    let renderHeight: CGFloat
+
+    private var lines: [ExportImageLine] {
+        let rawLines = markdown.isEmpty ? ["# AyuWalk", "暂无导出内容"] : markdown.components(separatedBy: .newlines)
+        return rawLines.map(ExportImageLine.init)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            switch style {
+            case .summaryCard:
+                summaryCardContent
+            case .longDocument:
+                longDocumentContent
+            }
+        }
+        .frame(width: style.canvasWidth, height: renderHeight, alignment: .topLeading)
+        .background(ExportImagePalette.paper)
+    }
+
+    private var summaryCardContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(primaryTitle)
+                .font(.system(size: 30, weight: .bold, design: .serif))
+                .foregroundStyle(ExportImagePalette.ink)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("Ayu Walk Travel Notes")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(ExportImagePalette.accent)
+                .textCase(.uppercase)
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(summaryLines.prefix(5)) { line in
+                    HStack(alignment: .top, spacing: 8) {
+                        Circle()
+                            .fill(ExportImagePalette.accent.opacity(0.75))
+                            .frame(width: 6, height: 6)
+                            .padding(.top, 8)
+
+                        Text(line.text)
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(ExportImagePalette.ink)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(ExportImagePalette.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+
+            Spacer(minLength: 0)
+
+            HStack {
+                Text("Created with 织步记")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(ExportImagePalette.mutedInk)
+
+                Spacer()
+
+                Text("AyuWalk")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(ExportImagePalette.accent)
+            }
+        }
+        .padding(34)
+        .frame(width: 540, height: 675, alignment: .topLeading)
+        .background {
+            RoundedRectangle(cornerRadius: 34, style: .continuous)
+                .fill(ExportImagePalette.paper)
+        }
+    }
+
+    private var longDocumentContent: some View {
+        VStack(alignment: .leading, spacing: Self.longDocumentLineSpacing) {
+            ForEach(lines) { line in
+                if line.text.isEmpty {
+                    Spacer()
+                        .frame(height: 4)
+                } else {
+                    Text(line.text)
+                        .font(line.font)
+                        .foregroundStyle(line.color)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, line.topPadding)
+                }
+            }
+        }
+        .padding(28)
+        .frame(width: 540, alignment: .topLeading)
+        .background(ExportImagePalette.paper)
+    }
+
+    private var primaryTitle: String {
+        lines.first(where: { $0.kind == .title })?.text ?? "AyuWalk"
+    }
+
+    private var summaryLines: [ExportImageLine] {
+        let bodyLines = lines.filter { line in
+            !line.text.isEmpty && line.kind != .title && line.kind != .heading
+        }
+        return bodyLines.isEmpty ? [ExportImageLine(rawValue: "暂无导出内容")] : bodyLines
+    }
+}
+
+private struct ExportImageLine: Identifiable {
+    enum Kind {
+        case title
+        case heading
+        case body
+    }
+
+    let id = UUID()
+    let text: String
+    let kind: Kind
+
+    init(rawValue: String) {
+        if rawValue.hasPrefix("# ") {
+            text = String(rawValue.dropFirst(2))
+            kind = .title
+        } else if rawValue.hasPrefix("##") {
+            text = rawValue.replacingOccurrences(
+                of: "^#+\\s*",
+                with: "",
+                options: .regularExpression
+            )
+            kind = .heading
+        } else {
+            text = rawValue.replacingOccurrences(
+                of: "^[-*>\\s\\[x\\]]+",
+                with: "",
+                options: .regularExpression
+            )
+            kind = .body
+        }
+    }
+
+    var font: Font {
+        switch kind {
+        case .title:
+            return .system(size: 30, weight: .bold, design: .serif)
+        case .heading:
+            return .system(size: 20, weight: .bold)
+        case .body:
+            return .system(size: 15, weight: .regular)
+        }
+    }
+
+    var color: Color {
+        switch kind {
+        case .title, .heading:
+            return ExportImagePalette.ink
+        case .body:
+            return ExportImagePalette.mutedInk
+        }
+    }
+
+    var topPadding: CGFloat {
+        switch kind {
+        case .title:
+            return 0
+        case .heading:
+            return 14
+        case .body:
+            return 0
+        }
+    }
+
+    var estimatedHeight: CGFloat {
+        if text.isEmpty {
+            return 14
+        }
+
+        let wrappedLineCount = CGFloat(max(Int(ceil(Double(text.count) / 28.0)), 1))
+        switch kind {
+        case .title:
+            return 42 * wrappedLineCount
+        case .heading:
+            return 34 + topPadding
+        case .body:
+            return 24 * wrappedLineCount
+        }
+    }
+}
+
+private enum ExportImagePalette {
+    static let paper = AyuWalkTheme.pageBackground
+    static let surface = AyuWalkTheme.surface.opacity(0.92)
+    static let ink = AyuWalkTheme.ink
+    static let mutedInk = AyuWalkTheme.mutedInk
+    static let accent = AyuWalkTheme.accent
 }
 
 private struct SharePayload: Identifiable {
