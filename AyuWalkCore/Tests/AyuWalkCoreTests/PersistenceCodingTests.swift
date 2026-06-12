@@ -37,7 +37,24 @@ final class PersistenceCodingTests: XCTestCase {
 
         XCTAssertEqual(budget.total, 12000)
         XCTAssertEqual(budget.currencyCode, "JPY")
+        XCTAssertEqual(budget.categoryBudgets, [:])
         XCTAssertEqual(budget.expenses, [])
+    }
+
+    func testBudgetPlanRoundTripsCategoryBudgets() throws {
+        let budget = BudgetPlan(
+            total: 12000,
+            currencyCode: "JPY",
+            categoryBudgets: [
+                .food: 3000,
+                .transport: 2000
+            ]
+        )
+
+        let data = try JSONEncoder().encode(budget)
+        let decoded = try JSONDecoder().decode(BudgetPlan.self, from: data)
+
+        XCTAssertEqual(decoded, budget)
     }
 
     func testBudgetPlanDecodesLegacyExpensesWithBudgetCurrency() throws {

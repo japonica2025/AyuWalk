@@ -198,6 +198,168 @@ struct AWBudgetSplitCard: View {
     }
 }
 
+struct AWBudgetCategoryProgressCard: View {
+    let progress: [BudgetCategoryProgress]
+    let defaultCurrencyCode: String
+    var onUpdateBudget: (BudgetCategory, Decimal) -> Void
+
+    @State private var budgetTexts: [BudgetCategory: String] = [:]
+
+    private var normalizedDefaultCurrencyCode: String {
+        defaultCurrencyCode.isEmpty ? "CNY" : defaultCurrencyCode
+    }
+
+    var body: some View {
+        AWCardChrome(cornerRadius: AyuWalkRadii.panel) {
+            VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
+                HStack {
+                    Text("分类预算")
+                        .font(AyuWalkTypography.sectionTitle)
+                        .foregroundStyle(AyuWalkTheme.ink)
+
+                    Spacer()
+
+                    Text("0 表示不设上限")
+                        .font(AyuWalkTypography.microStrong)
+                        .foregroundStyle(AyuWalkTheme.mutedInk)
+                }
+
+                ForEach(BudgetCategory.allCases, id: \.self) { category in
+                    categoryRow(category)
+
+                    if category != BudgetCategory.allCases.last {
+                        Divider()
+                            .overlay(AyuWalkTheme.border)
+                    }
+                }
+            }
+        }
+        .onAppear {
+            syncBudgetTexts()
+        }
+        .onChange(of: progress) { _, _ in
+            syncBudgetTexts()
+        }
+    }
+
+    private func categoryRow(_ category: BudgetCategory) -> some View {
+        let item = primaryProgress(for: category)
+        let otherCurrencyProgress = additionalProgress(for: category)
+
+        return VStack(alignment: .leading, spacing: AyuWalkSpacing.xs) {
+            HStack(spacing: AyuWalkSpacing.sm) {
+                Text(category.displayName)
+                    .font(AyuWalkTypography.captionStrong)
+                    .foregroundStyle(AyuWalkTheme.ink)
+
+                Spacer()
+
+                Text("\(item.currencyCode) 已用 \(plainAmount(item.spent))")
+                    .font(AyuWalkTypography.microStrong)
+                    .foregroundStyle(item.spent > item.budgeted && item.budgeted > 0 ? AyuWalkTheme.accent : AyuWalkTheme.mutedInk)
+            }
+
+            HStack(spacing: AyuWalkSpacing.sm) {
+                TextField(
+                    "预算",
+                    text: Binding(
+                        get: { budgetTexts[category] ?? plainAmount(item.budgeted) },
+                        set: { budgetTexts[category] = $0 }
+                    )
+                )
+                .keyboardType(.decimalPad)
+                .textFieldStyle(.plain)
+                .font(AyuWalkTypography.bodyStrong)
+                .foregroundStyle(AyuWalkTheme.ink)
+                .padding(.horizontal, AyuWalkSpacing.sm)
+                .frame(height: AyuWalkSize.formControlHeight)
+                .background(AyuWalkTheme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+                .accessibilityLabel("\(category.displayName)分类预算")
+
+                Button {
+                    let amount = decimal(from: budgetTexts[category] ?? "") ?? 0
+                    onUpdateBudget(category, amount)
+                } label: {
+                    Image(systemName: "checkmark")
+                        .font(AyuWalkTypography.icon(size: 14, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: AyuWalkSize.iconButton, height: AyuWalkSize.iconButton)
+                        .background(AyuWalkTheme.secondaryAccent)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("保存\(category.displayName)分类预算")
+            }
+
+            ProgressView(value: progressValue(for: item))
+                .tint(item.spent > item.budgeted && item.budgeted > 0 ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent)
+
+            Text(statusText(for: item))
+                .font(AyuWalkTypography.micro)
+                .foregroundStyle(AyuWalkTheme.mutedInk)
+
+            ForEach(otherCurrencyProgress, id: \.currencyCode) { extraItem in
+                Text("\(extraItem.currencyCode) 另有支出 \(plainAmount(extraItem.spent))")
+                    .font(AyuWalkTypography.micro)
+                    .foregroundStyle(AyuWalkTheme.mutedInk)
+            }
+        }
+    }
+
+    private func primaryProgress(for category: BudgetCategory) -> BudgetCategoryProgress {
+        progress.first { item in
+            item.category == category && item.currencyCode == normalizedDefaultCurrencyCode
+        } ?? BudgetCategoryProgress(
+            category: category,
+            budgeted: 0,
+            spent: 0,
+            currencyCode: normalizedDefaultCurrencyCode
+        )
+    }
+
+    private func additionalProgress(for category: BudgetCategory) -> [BudgetCategoryProgress] {
+        progress.filter { item in
+            item.category == category && item.currencyCode != normalizedDefaultCurrencyCode
+        }
+    }
+
+    private func statusText(for item: BudgetCategoryProgress) -> String {
+        guard item.budgeted > 0 else {
+            return "未设置预算上限"
+        }
+        if item.remaining >= 0 {
+            return "剩余 \(item.currencyCode) \(plainAmount(item.remaining))"
+        }
+        return "超出 \(item.currencyCode) \(plainAmount(-item.remaining))"
+    }
+
+    private func progressValue(for item: BudgetCategoryProgress) -> Double {
+        guard let ratio = item.usageRatio else {
+            return 0
+        }
+        return min(max(NSDecimalNumber(decimal: ratio).doubleValue, 0), 1)
+    }
+
+    private func syncBudgetTexts() {
+        for category in BudgetCategory.allCases {
+            budgetTexts[category] = plainAmount(primaryProgress(for: category).budgeted)
+        }
+    }
+
+    private func decimal(from text: String) -> Decimal? {
+        Decimal(string: text.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: ",", with: ""))
+    }
+
+    private func plainAmount(_ amount: Decimal) -> String {
+        let number = NSDecimalNumber(decimal: amount)
+        if amount == Decimal(number.intValue) {
+            return "\(number.intValue)"
+        }
+        return number.stringValue
+    }
+}
+
 struct AWBudgetExpenseEntryCard: View {
     @Binding var title: String
     @Binding var amountText: String

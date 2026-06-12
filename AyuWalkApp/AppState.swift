@@ -379,6 +379,18 @@ final class AppState {
         persist()
     }
 
+    func updateCategoryBudget(category: BudgetCategory, amount: Decimal) {
+        var budget = trip.budgetPlan ?? BudgetPlan(total: 0, currencyCode: DestinationResolver.currencyCode(forCountryCode: nil))
+        let normalizedAmount = max(amount, 0)
+        if normalizedAmount == 0 {
+            budget.categoryBudgets.removeValue(forKey: category)
+        } else {
+            budget.categoryBudgets[category] = normalizedAmount
+        }
+        trip.budgetPlan = budget
+        persist()
+    }
+
     func addBudgetExpense(
         title: String,
         amount: Decimal,

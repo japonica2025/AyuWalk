@@ -280,17 +280,25 @@ public enum ImportedSourceKind: String, Codable, Equatable, Sendable {
 public struct BudgetPlan: Codable, Equatable, Sendable {
     public var total: Decimal
     public var currencyCode: String
+    public var categoryBudgets: [BudgetCategory: Decimal]
     public var expenses: [BudgetExpense]
 
-    public init(total: Decimal, currencyCode: String, expenses: [BudgetExpense] = []) {
+    public init(
+        total: Decimal,
+        currencyCode: String,
+        categoryBudgets: [BudgetCategory: Decimal] = [:],
+        expenses: [BudgetExpense] = []
+    ) {
         self.total = total
         self.currencyCode = currencyCode
+        self.categoryBudgets = categoryBudgets
         self.expenses = expenses
     }
 
     private enum CodingKeys: String, CodingKey {
         case total
         case currencyCode
+        case categoryBudgets
         case expenses
     }
 
@@ -299,6 +307,7 @@ public struct BudgetPlan: Codable, Equatable, Sendable {
         total = try container.decode(Decimal.self, forKey: .total)
         let decodedCurrencyCode = try container.decode(String.self, forKey: .currencyCode)
         currencyCode = decodedCurrencyCode
+        categoryBudgets = try container.decodeIfPresent([BudgetCategory: Decimal].self, forKey: .categoryBudgets) ?? [:]
         let decodedExpenses = try container.decodeIfPresent([BudgetExpense].self, forKey: .expenses) ?? []
         expenses = decodedExpenses.map { expense in
             var normalized = expense
@@ -313,6 +322,7 @@ public struct BudgetPlan: Codable, Equatable, Sendable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(total, forKey: .total)
         try container.encode(currencyCode, forKey: .currencyCode)
+        try container.encode(categoryBudgets, forKey: .categoryBudgets)
         try container.encode(expenses, forKey: .expenses)
     }
 }

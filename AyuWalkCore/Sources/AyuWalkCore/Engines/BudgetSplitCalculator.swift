@@ -68,6 +68,42 @@ public enum BudgetSplitCalculator {
         }
     }
 
+    public static func categoryProgress(for budget: BudgetPlan) -> [BudgetCategoryProgress] {
+        var progressByKey: [BudgetCategoryProgressKey: BudgetCategoryProgress] = [:]
+
+        for (category, budgeted) in budget.categoryBudgets {
+            let currencyCode = budget.currencyCode.isEmpty ? "CNY" : budget.currencyCode
+            let key = BudgetCategoryProgressKey(category: category, currencyCode: currencyCode)
+            progressByKey[key] = BudgetCategoryProgress(
+                category: category,
+                budgeted: max(budgeted, 0),
+                spent: 0,
+                currencyCode: currencyCode
+            )
+        }
+
+        for expense in budget.expenses {
+            let currencyCode = expense.currencyCode.isEmpty ? budget.currencyCode : expense.currencyCode
+            let normalizedCurrencyCode = currencyCode.isEmpty ? "CNY" : currencyCode
+            let key = BudgetCategoryProgressKey(category: expense.category, currencyCode: normalizedCurrencyCode)
+            var progress = progressByKey[key] ?? BudgetCategoryProgress(
+                category: expense.category,
+                budgeted: 0,
+                spent: 0,
+                currencyCode: normalizedCurrencyCode
+            )
+            progress.spent += max(expense.amount, 0)
+            progressByKey[key] = progress
+        }
+
+        return progressByKey.values.sorted { lhs, rhs in
+            if lhs.currencyCode != rhs.currencyCode {
+                return lhs.currencyCode < rhs.currencyCode
+            }
+            return lhs.category.sortIndex < rhs.category.sortIndex
+        }
+    }
+
     public static func settlementTransfers(for expenses: [BudgetExpense]) -> [BudgetSettlementTransfer] {
         let balancesByCurrency = expenses.reduce(into: [String: [UUID: Decimal]]()) { balancesByCurrency, expense in
             let currencyCode = expense.currencyCode.isEmpty ? "CNY" : expense.currencyCode
@@ -172,5 +208,41 @@ public struct BudgetSettlementTransfer: Equatable, Sendable {
         self.toParticipantID = toParticipantID
         self.amount = amount
         self.currencyCode = currencyCode
+    }
+}
+
+public struct BudgetCategoryProgress: Equatable, Sendable {
+    public var category: BudgetCategory
+    public var budgeted: Decimal
+    public var spent: Decimal
+    public var currencyCode: String
+
+    public var remaining: Decimal {
+        budgeted - spent
+    }
+
+    public var usageRatio: Decimal? {
+        guard budgeted > 0 else {
+            return nil
+        }
+        return spent / budgeted
+    }
+
+    public init(category: BudgetCategory, budgeted: Decimal, spent: Decimal, currencyCode: String) {
+        self.category = category
+        self.budgeted = budgeted
+        self.spent = spent
+        self.currencyCode = currencyCode
+    }
+}
+
+private struct BudgetCategoryProgressKey: Hashable {
+    var category: BudgetCategory
+    var currencyCode: String
+}
+
+private extension BudgetCategory {
+    var sortIndex: Int {
+        BudgetCategory.allCases.firstIndex(of: self) ?? Int.max
     }
 }

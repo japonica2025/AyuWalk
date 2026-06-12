@@ -201,6 +201,91 @@ final class BudgetSplitCalculatorTests: XCTestCase {
         XCTAssertEqual(totals["JPY"], 2000)
     }
 
+    func testCategoryProgressUsesConfiguredCategoryBudgets() {
+        let budget = BudgetPlan(
+            total: 1000,
+            currencyCode: "EUR",
+            categoryBudgets: [
+                .food: 300,
+                .transport: 200
+            ],
+            expenses: [
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Dinner",
+                    amount: 120,
+                    category: .food,
+                    participantIDs: [],
+                    currencyCode: "EUR",
+                    notes: nil
+                ),
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Coffee",
+                    amount: 30,
+                    category: .food,
+                    participantIDs: [],
+                    currencyCode: "EUR",
+                    notes: nil
+                ),
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Taxi",
+                    amount: 80,
+                    category: .transport,
+                    participantIDs: [],
+                    currencyCode: "EUR",
+                    notes: nil
+                )
+            ]
+        )
+
+        let progress = BudgetSplitCalculator.categoryProgress(for: budget)
+
+        XCTAssertEqual(progress, [
+            BudgetCategoryProgress(category: .transport, budgeted: 200, spent: 80, currencyCode: "EUR"),
+            BudgetCategoryProgress(category: .food, budgeted: 300, spent: 150, currencyCode: "EUR")
+        ])
+        XCTAssertEqual(progress.first { $0.category == .food }?.usageRatio, Decimal(string: "0.5"))
+    }
+
+    func testCategoryProgressIncludesUnbudgetedSpentCategoriesByCurrency() {
+        let budget = BudgetPlan(
+            total: 1000,
+            currencyCode: "EUR",
+            categoryBudgets: [.food: 300],
+            expenses: [
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Museum",
+                    amount: 60,
+                    category: .ticket,
+                    participantIDs: [],
+                    currencyCode: "EUR",
+                    notes: nil
+                ),
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Train",
+                    amount: 2000,
+                    category: .transport,
+                    participantIDs: [],
+                    currencyCode: "JPY",
+                    notes: nil
+                )
+            ]
+        )
+
+        let progress = BudgetSplitCalculator.categoryProgress(for: budget)
+
+        XCTAssertEqual(progress, [
+            BudgetCategoryProgress(category: .food, budgeted: 300, spent: 0, currencyCode: "EUR"),
+            BudgetCategoryProgress(category: .ticket, budgeted: 0, spent: 60, currencyCode: "EUR"),
+            BudgetCategoryProgress(category: .transport, budgeted: 0, spent: 2000, currencyCode: "JPY")
+        ])
+        XCTAssertNil(progress[1].usageRatio)
+    }
+
     func testSettlementTransfersDebtorsToPayersByCurrency() {
         let anna = UUID()
         let ben = UUID()

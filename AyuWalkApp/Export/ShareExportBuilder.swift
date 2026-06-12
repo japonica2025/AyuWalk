@@ -34,6 +34,45 @@ struct ShareExportBuilder {
             lines.append("")
             lines.append("## 预算")
             lines.append("- 总预算：\(budget.currencyCode) \(NSDecimalNumber(decimal: budget.total).intValue)")
+            let expenseTotals = BudgetSplitCalculator.expenseTotalsByCurrency(for: budget.expenses)
+            if !expenseTotals.isEmpty {
+                lines.append("- 已记录：\(format(totalsByCurrency: expenseTotals))")
+            }
+
+            let categoryProgress = BudgetSplitCalculator.categoryProgress(for: budget)
+            if !categoryProgress.isEmpty {
+                lines.append("")
+                lines.append("### 分类预算")
+                for item in categoryProgress {
+                    let budgetText = item.budgeted > 0
+                        ? "\(item.currencyCode) \(amountText(item.budgeted))"
+                        : "未设置"
+                    lines.append("- \(item.category.displayName)：已用 \(item.currencyCode) \(amountText(item.spent)) / 预算 \(budgetText)")
+                }
+            }
+
+            let participantTotals = BudgetSplitCalculator.participantTotalsByCurrency(for: budget.expenses)
+            if !participantTotals.isEmpty {
+                lines.append("")
+                lines.append("### AA 摘要")
+                for participant in trip.participants {
+                    let totals = participantTotals[participant.id] ?? [:]
+                    if !totals.isEmpty {
+                        lines.append("- \(participant.name)：\(format(totalsByCurrency: totals))")
+                    }
+                }
+            }
+
+            let transfers = BudgetSplitCalculator.settlementTransfers(for: budget.expenses)
+            if !transfers.isEmpty {
+                lines.append("")
+                lines.append("### 结算建议")
+                for transfer in transfers {
+                    let fromName = participantName(for: transfer.fromParticipantID, in: trip)
+                    let toName = participantName(for: transfer.toParticipantID, in: trip)
+                    lines.append("- \(fromName) 转给 \(toName)：\(transfer.currencyCode) \(amountText(transfer.amount))")
+                }
+            }
         }
 
         if let packingList = trip.packingList {
@@ -104,5 +143,24 @@ struct ShareExportBuilder {
     private static func timeText(for activity: Activity) -> String {
         let parts = [activity.startTime, activity.endTime].compactMap { $0 }
         return parts.isEmpty ? "" : "\(parts.joined(separator: "-")) "
+    }
+
+    private static func format(totalsByCurrency: [String: Decimal]) -> String {
+        totalsByCurrency
+            .sorted { $0.key < $1.key }
+            .map { "\($0.key) \(amountText($0.value))" }
+            .joined(separator: " / ")
+    }
+
+    private static func amountText(_ amount: Decimal) -> String {
+        let number = NSDecimalNumber(decimal: amount)
+        if amount == Decimal(number.intValue) {
+            return "\(number.intValue)"
+        }
+        return number.stringValue
+    }
+
+    private static func participantName(for participantID: UUID, in trip: Trip) -> String {
+        trip.participants.first(where: { $0.id == participantID })?.name ?? "某人"
     }
 }

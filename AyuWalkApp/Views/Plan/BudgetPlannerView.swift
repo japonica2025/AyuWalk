@@ -4,6 +4,7 @@ import SwiftUI
 struct BudgetPlannerView: View {
     let trip: Trip
     let onUpdateBudget: (Decimal, String) -> Void
+    let onUpdateCategoryBudget: (BudgetCategory, Decimal) -> Void
     let onAddParticipant: (String) -> Void
     let onUpdateParticipant: (UUID, String) -> Void
     let onDeleteParticipant: (UUID) -> Void
@@ -48,6 +49,10 @@ struct BudgetPlannerView: View {
         BudgetSplitCalculator.settlementTransfers(for: budget.expenses)
     }
 
+    private var categoryProgress: [BudgetCategoryProgress] {
+        BudgetSplitCalculator.categoryProgress(for: budget)
+    }
+
     var body: some View {
         AWSheetScaffold(title: "预算规划") {
             AWBudgetTotalCard(
@@ -80,6 +85,12 @@ struct BudgetPlannerView: View {
                 perPersonText: format(amount: split.perPerson, currencyCode: split.currencyCode),
                 participantCount: trip.participants.count,
                 recordedTotalText: format(totalsByCurrency: recordedTotalsByCurrency)
+            )
+
+            AWBudgetCategoryProgressCard(
+                progress: categoryProgress,
+                defaultCurrencyCode: budget.currencyCode,
+                onUpdateBudget: onUpdateCategoryBudget
             )
 
             AWBudgetExpenseEntryCard(
@@ -179,6 +190,7 @@ struct BudgetPlannerView: View {
     BudgetPlannerView(
         trip: SampleTripFactory.tokyoFiveDayTrip(),
         onUpdateBudget: { _, _ in },
+        onUpdateCategoryBudget: { _, _ in },
         onAddParticipant: { _ in },
         onUpdateParticipant: { _, _ in },
         onDeleteParticipant: { _ in },
