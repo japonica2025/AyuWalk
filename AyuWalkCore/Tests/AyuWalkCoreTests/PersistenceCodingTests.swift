@@ -38,16 +38,21 @@ final class PersistenceCodingTests: XCTestCase {
         XCTAssertEqual(budget.total, 12000)
         XCTAssertEqual(budget.currencyCode, "JPY")
         XCTAssertEqual(budget.categoryBudgets, [:])
+        XCTAssertEqual(budget.exchangeRates, [:])
         XCTAssertEqual(budget.expenses, [])
     }
 
-    func testBudgetPlanRoundTripsCategoryBudgets() throws {
+    func testBudgetPlanRoundTripsCategoryBudgetsAndExchangeRates() throws {
         let budget = BudgetPlan(
             total: 12000,
             currencyCode: "JPY",
             categoryBudgets: [
                 .food: 3000,
                 .transport: 2000
+            ],
+            exchangeRates: [
+                "EUR": Decimal(string: "162.5")!,
+                "USD": Decimal(string: "151.2")!
             ]
         )
 
@@ -55,6 +60,22 @@ final class PersistenceCodingTests: XCTestCase {
         let decoded = try JSONDecoder().decode(BudgetPlan.self, from: data)
 
         XCTAssertEqual(decoded, budget)
+    }
+
+    func testBudgetPlanNormalizesDecodedExchangeRateCurrencyCodes() throws {
+        let json = """
+        {
+          "total": 12000,
+          "currencyCode": "JPY",
+          "exchangeRates": {
+            " eur ": 162.5
+          }
+        }
+        """.data(using: .utf8)!
+
+        let budget = try JSONDecoder().decode(BudgetPlan.self, from: json)
+
+        XCTAssertEqual(budget.exchangeRates, ["EUR": Decimal(string: "162.5")!])
     }
 
     func testBudgetPlanDecodesLegacyExpensesWithBudgetCurrency() throws {

@@ -152,6 +152,7 @@ struct PlanHomeView: View {
                         trip: appState.trip,
                         onUpdateBudget: appState.updateBudgetTotal,
                         onUpdateCategoryBudget: appState.updateCategoryBudget,
+                        onUpdateExchangeRate: appState.updateExchangeRate,
                         onAddParticipant: appState.addParticipant,
                         onUpdateParticipant: appState.updateParticipant,
                         onDeleteParticipant: appState.deleteParticipant,

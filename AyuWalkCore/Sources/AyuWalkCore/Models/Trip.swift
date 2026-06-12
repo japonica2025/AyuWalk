@@ -281,17 +281,20 @@ public struct BudgetPlan: Codable, Equatable, Sendable {
     public var total: Decimal
     public var currencyCode: String
     public var categoryBudgets: [BudgetCategory: Decimal]
+    public var exchangeRates: [String: Decimal]
     public var expenses: [BudgetExpense]
 
     public init(
         total: Decimal,
         currencyCode: String,
         categoryBudgets: [BudgetCategory: Decimal] = [:],
+        exchangeRates: [String: Decimal] = [:],
         expenses: [BudgetExpense] = []
     ) {
         self.total = total
         self.currencyCode = currencyCode
         self.categoryBudgets = categoryBudgets
+        self.exchangeRates = exchangeRates
         self.expenses = expenses
     }
 
@@ -299,6 +302,7 @@ public struct BudgetPlan: Codable, Equatable, Sendable {
         case total
         case currencyCode
         case categoryBudgets
+        case exchangeRates
         case expenses
     }
 
@@ -308,6 +312,13 @@ public struct BudgetPlan: Codable, Equatable, Sendable {
         let decodedCurrencyCode = try container.decode(String.self, forKey: .currencyCode)
         currencyCode = decodedCurrencyCode
         categoryBudgets = try container.decodeIfPresent([BudgetCategory: Decimal].self, forKey: .categoryBudgets) ?? [:]
+        let decodedExchangeRates = try container.decodeIfPresent([String: Decimal].self, forKey: .exchangeRates) ?? [:]
+        exchangeRates = decodedExchangeRates.reduce(into: [:]) { rates, item in
+            let currencyCode = item.key.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+            if !currencyCode.isEmpty {
+                rates[currencyCode] = item.value
+            }
+        }
         let decodedExpenses = try container.decodeIfPresent([BudgetExpense].self, forKey: .expenses) ?? []
         expenses = decodedExpenses.map { expense in
             var normalized = expense
@@ -323,7 +334,25 @@ public struct BudgetPlan: Codable, Equatable, Sendable {
         try container.encode(total, forKey: .total)
         try container.encode(currencyCode, forKey: .currencyCode)
         try container.encode(categoryBudgets, forKey: .categoryBudgets)
+        try container.encode(exchangeRates, forKey: .exchangeRates)
         try container.encode(expenses, forKey: .expenses)
+    }
+
+    public mutating func updateTotal(_ total: Decimal, currencyCode: String? = nil) {
+        self.total = max(total, 0)
+        guard let currencyCode else {
+            return
+        }
+        let normalizedCurrencyCode = Self.normalizedCurrencyCode(currencyCode)
+        if Self.normalizedCurrencyCode(self.currencyCode) != normalizedCurrencyCode {
+            exchangeRates.removeAll()
+        }
+        self.currencyCode = normalizedCurrencyCode
+    }
+
+    private static func normalizedCurrencyCode(_ currencyCode: String) -> String {
+        let trimmed = currencyCode.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "CNY" : trimmed.uppercased()
     }
 }
 

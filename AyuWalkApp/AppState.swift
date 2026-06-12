@@ -371,10 +371,7 @@ final class AppState {
 
     func updateBudgetTotal(_ total: Decimal, currencyCode: String? = nil) {
         var budget = trip.budgetPlan ?? BudgetPlan(total: 0, currencyCode: DestinationResolver.currencyCode(forCountryCode: nil))
-        budget.total = total < 0 ? 0 : total
-        if let currencyCode {
-            budget.currencyCode = currencyCode
-        }
+        budget.updateTotal(total, currencyCode: currencyCode)
         trip.budgetPlan = budget
         persist()
     }
@@ -386,6 +383,25 @@ final class AppState {
             budget.categoryBudgets.removeValue(forKey: category)
         } else {
             budget.categoryBudgets[category] = normalizedAmount
+        }
+        trip.budgetPlan = budget
+        persist()
+    }
+
+    func updateExchangeRate(currencyCode: String, rate: Decimal) {
+        let normalizedCurrencyCode = currencyCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        guard !normalizedCurrencyCode.isEmpty else {
+            return
+        }
+        var budget = trip.budgetPlan ?? BudgetPlan(total: 0, currencyCode: DestinationResolver.currencyCode(forCountryCode: nil))
+        let trimmedBudgetCurrencyCode = budget.currencyCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        let budgetCurrencyCode = trimmedBudgetCurrencyCode.isEmpty ? "CNY" : trimmedBudgetCurrencyCode
+        if normalizedCurrencyCode == budgetCurrencyCode {
+            budget.exchangeRates.removeValue(forKey: normalizedCurrencyCode)
+        } else if rate > 0 {
+            budget.exchangeRates[normalizedCurrencyCode] = rate
+        } else {
+            budget.exchangeRates.removeValue(forKey: normalizedCurrencyCode)
         }
         trip.budgetPlan = budget
         persist()

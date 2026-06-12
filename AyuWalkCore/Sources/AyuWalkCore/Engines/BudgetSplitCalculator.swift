@@ -68,6 +68,30 @@ public enum BudgetSplitCalculator {
         }
     }
 
+    public static func convertedExpenseTotal(for budget: BudgetPlan) -> BudgetConvertedTotal {
+        let baseCurrencyCode = normalizedCurrencyCode(budget.currencyCode)
+        var amount = Decimal(0)
+        var missingCurrencyCodes = Set<String>()
+
+        for expense in budget.expenses {
+            let expenseCurrencyCode = normalizedCurrencyCode(expense.currencyCode.isEmpty ? baseCurrencyCode : expense.currencyCode)
+            let expenseAmount = max(expense.amount, 0)
+            if expenseCurrencyCode == baseCurrencyCode {
+                amount += expenseAmount
+            } else if let exchangeRate = exchangeRate(for: expenseCurrencyCode, in: budget), exchangeRate > 0 {
+                amount += expenseAmount * exchangeRate
+            } else {
+                missingCurrencyCodes.insert(expenseCurrencyCode)
+            }
+        }
+
+        return BudgetConvertedTotal(
+            amount: amount,
+            currencyCode: baseCurrencyCode,
+            missingCurrencyCodes: missingCurrencyCodes.sorted()
+        )
+    }
+
     public static func categoryProgress(for budget: BudgetPlan) -> [BudgetCategoryProgress] {
         var progressByKey: [BudgetCategoryProgressKey: BudgetCategoryProgress] = [:]
 
@@ -139,6 +163,17 @@ public enum BudgetSplitCalculator {
         return expense.participantIDs.first
     }
 
+    private static func exchangeRate(for currencyCode: String, in budget: BudgetPlan) -> Decimal? {
+        budget.exchangeRates[currencyCode] ?? budget.exchangeRates.first { item in
+            normalizedCurrencyCode(item.key) == currencyCode
+        }?.value
+    }
+
+    private static func normalizedCurrencyCode(_ currencyCode: String) -> String {
+        let trimmed = currencyCode.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "CNY" : trimmed.uppercased()
+    }
+
     private static func settlementTransfers(
         for balances: [UUID: Decimal],
         currencyCode: String
@@ -179,6 +214,18 @@ public enum BudgetSplitCalculator {
         }
 
         return transfers
+    }
+}
+
+public struct BudgetConvertedTotal: Equatable, Sendable {
+    public var amount: Decimal
+    public var currencyCode: String
+    public var missingCurrencyCodes: [String]
+
+    public init(amount: Decimal, currencyCode: String, missingCurrencyCodes: [String]) {
+        self.amount = amount
+        self.currencyCode = currencyCode
+        self.missingCurrencyCodes = missingCurrencyCodes
     }
 }
 

@@ -5,6 +5,7 @@ struct BudgetPlannerView: View {
     let trip: Trip
     let onUpdateBudget: (Decimal, String) -> Void
     let onUpdateCategoryBudget: (BudgetCategory, Decimal) -> Void
+    let onUpdateExchangeRate: (String, Decimal) -> Void
     let onAddParticipant: (String) -> Void
     let onUpdateParticipant: (UUID, String) -> Void
     let onDeleteParticipant: (UUID) -> Void
@@ -35,6 +36,10 @@ struct BudgetPlannerView: View {
 
     private var recordedTotalsByCurrency: [String: Decimal] {
         BudgetSplitCalculator.expenseTotalsByCurrency(for: budget.expenses)
+    }
+
+    private var convertedExpenseTotal: BudgetConvertedTotal {
+        BudgetSplitCalculator.convertedExpenseTotal(for: budget)
     }
 
     private var participantTotals: [UUID: Decimal] {
@@ -85,6 +90,15 @@ struct BudgetPlannerView: View {
                 perPersonText: format(amount: split.perPerson, currencyCode: split.currencyCode),
                 participantCount: trip.participants.count,
                 recordedTotalText: format(totalsByCurrency: recordedTotalsByCurrency)
+            )
+
+            AWBudgetExchangeRateCard(
+                convertedTotal: convertedExpenseTotal,
+                totalBudget: budget.total,
+                defaultCurrencyCode: budget.currencyCode,
+                exchangeRates: budget.exchangeRates,
+                expenseCurrencyCodes: Array(recordedTotalsByCurrency.keys),
+                onUpdateRate: onUpdateExchangeRate
             )
 
             AWBudgetCategoryProgressCard(
@@ -191,6 +205,7 @@ struct BudgetPlannerView: View {
         trip: SampleTripFactory.tokyoFiveDayTrip(),
         onUpdateBudget: { _, _ in },
         onUpdateCategoryBudget: { _, _ in },
+        onUpdateExchangeRate: { _, _ in },
         onAddParticipant: { _ in },
         onUpdateParticipant: { _, _ in },
         onDeleteParticipant: { _ in },

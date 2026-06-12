@@ -198,6 +198,165 @@ struct AWBudgetSplitCard: View {
     }
 }
 
+struct AWBudgetExchangeRateCard: View {
+    let convertedTotal: BudgetConvertedTotal
+    let totalBudget: Decimal
+    let defaultCurrencyCode: String
+    let exchangeRates: [String: Decimal]
+    let expenseCurrencyCodes: [String]
+    var onUpdateRate: (String, Decimal) -> Void
+
+    @State private var rateTexts: [String: String] = [:]
+
+    private var normalizedDefaultCurrencyCode: String {
+        defaultCurrencyCode.isEmpty ? "CNY" : defaultCurrencyCode.uppercased()
+    }
+
+    private var foreignCurrencyCodes: [String] {
+        Array(
+            Set(
+                expenseCurrencyCodes
+                    .map { normalizedCurrencyCode($0) }
+                    .filter { $0 != normalizedDefaultCurrencyCode }
+            )
+        )
+        .sorted()
+    }
+
+    var body: some View {
+        AWCardChrome(cornerRadius: AyuWalkRadii.panel) {
+            VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
+                HStack {
+                    Text("汇率折算")
+                        .font(AyuWalkTypography.sectionTitle)
+                        .foregroundStyle(AyuWalkTheme.ink)
+
+                    Spacer()
+
+                    Text("手动")
+                        .font(AyuWalkTypography.microStrong)
+                        .foregroundStyle(AyuWalkTheme.secondaryAccent)
+                }
+
+                VStack(alignment: .leading, spacing: AyuWalkSpacing.xs) {
+                    Text("折算已记录 \(convertedTotal.currencyCode) \(plainAmount(convertedTotal.amount)) / 总预算 \(normalizedDefaultCurrencyCode) \(plainAmount(totalBudget))")
+                        .font(AyuWalkTypography.captionStrong)
+                        .foregroundStyle(AyuWalkTheme.ink)
+
+                    if !convertedTotal.missingCurrencyCodes.isEmpty {
+                        Text("缺少 \(convertedTotal.missingCurrencyCodes.joined(separator: "、")) 汇率，暂未计入折算进度。")
+                            .font(AyuWalkTypography.caption)
+                            .foregroundStyle(AyuWalkTheme.accent)
+                    } else {
+                        Text("仅用于总预算进度，原始支出和 AA 结算保留原货币。")
+                            .font(AyuWalkTypography.caption)
+                            .foregroundStyle(AyuWalkTheme.mutedInk)
+                    }
+                }
+                .padding(AyuWalkSpacing.sm)
+                .background(AyuWalkTheme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+
+                if foreignCurrencyCodes.isEmpty {
+                    Text("当前没有外币支出，暂时不需要设置汇率。")
+                        .font(AyuWalkTypography.body)
+                        .foregroundStyle(AyuWalkTheme.mutedInk)
+                } else {
+                    ForEach(foreignCurrencyCodes, id: \.self) { currencyCode in
+                        exchangeRateRow(currencyCode)
+
+                        if currencyCode != foreignCurrencyCodes.last {
+                            Divider()
+                                .overlay(AyuWalkTheme.border)
+                        }
+                    }
+                }
+            }
+        }
+        .onAppear {
+            syncRateTexts()
+        }
+        .onChange(of: exchangeRates) { _, _ in
+            syncRateTexts()
+        }
+        .onChange(of: expenseCurrencyCodes) { _, _ in
+            syncRateTexts()
+        }
+    }
+
+    private func exchangeRateRow(_ currencyCode: String) -> some View {
+        HStack(spacing: AyuWalkSpacing.sm) {
+            Text("1 \(currencyCode) =")
+                .font(AyuWalkTypography.captionStrong)
+                .foregroundStyle(AyuWalkTheme.ink)
+
+            TextField(
+                normalizedDefaultCurrencyCode,
+                text: Binding(
+                    get: { rateTexts[currencyCode] ?? plainAmount(exchangeRate(for: currencyCode) ?? 0) },
+                    set: { rateTexts[currencyCode] = $0 }
+                )
+            )
+            .keyboardType(.decimalPad)
+            .textFieldStyle(.plain)
+            .font(AyuWalkTypography.bodyStrong)
+            .foregroundStyle(AyuWalkTheme.ink)
+            .padding(.horizontal, AyuWalkSpacing.sm)
+            .frame(height: AyuWalkSize.formControlHeight)
+            .background(AyuWalkTheme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+            .accessibilityLabel("\(currencyCode) 汇率")
+
+            Text(normalizedDefaultCurrencyCode)
+                .font(AyuWalkTypography.captionStrong)
+                .foregroundStyle(AyuWalkTheme.mutedInk)
+
+            Button {
+                let rate = decimal(from: rateTexts[currencyCode] ?? "") ?? 0
+                onUpdateRate(currencyCode, rate)
+            } label: {
+                Image(systemName: "checkmark")
+                    .font(AyuWalkTypography.icon(size: 14, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: AyuWalkSize.iconButton, height: AyuWalkSize.iconButton)
+                    .background(AyuWalkTheme.secondaryAccent)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("保存 \(currencyCode) 汇率")
+        }
+    }
+
+    private func syncRateTexts() {
+        for currencyCode in foreignCurrencyCodes {
+            rateTexts[currencyCode] = plainAmount(exchangeRate(for: currencyCode) ?? 0)
+        }
+    }
+
+    private func exchangeRate(for currencyCode: String) -> Decimal? {
+        exchangeRates[currencyCode] ?? exchangeRates.first { item in
+            normalizedCurrencyCode(item.key) == currencyCode
+        }?.value
+    }
+
+    private func normalizedCurrencyCode(_ currencyCode: String) -> String {
+        let trimmed = currencyCode.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "CNY" : trimmed.uppercased()
+    }
+
+    private func decimal(from text: String) -> Decimal? {
+        Decimal(string: text.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: ",", with: ""))
+    }
+
+    private func plainAmount(_ amount: Decimal) -> String {
+        let number = NSDecimalNumber(decimal: amount)
+        if amount == Decimal(number.intValue) {
+            return "\(number.intValue)"
+        }
+        return number.stringValue
+    }
+}
+
 struct AWBudgetCategoryProgressCard: View {
     let progress: [BudgetCategoryProgress]
     let defaultCurrencyCode: String

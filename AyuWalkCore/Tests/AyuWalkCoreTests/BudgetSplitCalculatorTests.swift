@@ -201,6 +201,107 @@ final class BudgetSplitCalculatorTests: XCTestCase {
         XCTAssertEqual(totals["JPY"], 2000)
     }
 
+    func testConvertedExpenseTotalUsesManualExchangeRates() {
+        let budget = BudgetPlan(
+            total: 1000,
+            currencyCode: "EUR",
+            exchangeRates: [
+                "JPY": Decimal(string: "0.006")!,
+                "USD": Decimal(string: "0.92")!
+            ],
+            expenses: [
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Dinner",
+                    amount: 100,
+                    category: .food,
+                    participantIDs: [],
+                    currencyCode: "EUR",
+                    notes: nil
+                ),
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Train",
+                    amount: 10000,
+                    category: .transport,
+                    participantIDs: [],
+                    currencyCode: "JPY",
+                    notes: nil
+                ),
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Museum",
+                    amount: 50,
+                    category: .ticket,
+                    participantIDs: [],
+                    currencyCode: "USD",
+                    notes: nil
+                )
+            ]
+        )
+
+        let total = BudgetSplitCalculator.convertedExpenseTotal(for: budget)
+
+        XCTAssertEqual(total, BudgetConvertedTotal(amount: 206, currencyCode: "EUR", missingCurrencyCodes: []))
+    }
+
+    func testConvertedExpenseTotalReportsMissingExchangeRatesWithoutMixingUnknownCurrencies() {
+        let budget = BudgetPlan(
+            total: 1000,
+            currencyCode: "EUR",
+            exchangeRates: ["JPY": Decimal(string: "0.006")!],
+            expenses: [
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Train",
+                    amount: 10000,
+                    category: .transport,
+                    participantIDs: [],
+                    currencyCode: "JPY",
+                    notes: nil
+                ),
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Hotel",
+                    amount: 200,
+                    category: .lodging,
+                    participantIDs: [],
+                    currencyCode: "USD",
+                    notes: nil
+                )
+            ]
+        )
+
+        let total = BudgetSplitCalculator.convertedExpenseTotal(for: budget)
+
+        XCTAssertEqual(total, BudgetConvertedTotal(amount: 60, currencyCode: "EUR", missingCurrencyCodes: ["USD"]))
+    }
+
+    func testUpdatingBudgetCurrencyClearsRelativeExchangeRates() {
+        var budget = BudgetPlan(
+            total: 1000,
+            currencyCode: "EUR",
+            exchangeRates: ["JPY": Decimal(string: "0.006")!],
+            expenses: [
+                BudgetExpense(
+                    id: UUID(),
+                    title: "Train",
+                    amount: 10000,
+                    category: .transport,
+                    participantIDs: [],
+                    currencyCode: "JPY",
+                    notes: nil
+                )
+            ]
+        )
+
+        budget.updateTotal(1000, currencyCode: "USD")
+        let total = BudgetSplitCalculator.convertedExpenseTotal(for: budget)
+
+        XCTAssertEqual(budget.exchangeRates, [:])
+        XCTAssertEqual(total, BudgetConvertedTotal(amount: 0, currencyCode: "USD", missingCurrencyCodes: ["JPY"]))
+    }
+
     func testCategoryProgressUsesConfiguredCategoryBudgets() {
         let budget = BudgetPlan(
             total: 1000,

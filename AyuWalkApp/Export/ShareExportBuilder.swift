@@ -37,6 +37,15 @@ struct ShareExportBuilder {
             let expenseTotals = BudgetSplitCalculator.expenseTotalsByCurrency(for: budget.expenses)
             if !expenseTotals.isEmpty {
                 lines.append("- 已记录：\(format(totalsByCurrency: expenseTotals))")
+                let convertedTotal = BudgetSplitCalculator.convertedExpenseTotal(for: budget)
+                lines.append("- 折算已记录：\(convertedTotal.currencyCode) \(amountText(convertedTotal.amount))")
+                if !convertedTotal.missingCurrencyCodes.isEmpty {
+                    lines.append("- 未折算币种：\(convertedTotal.missingCurrencyCodes.joined(separator: "、"))")
+                }
+                let exchangeRateTexts = exchangeRateTexts(for: budget)
+                if !exchangeRateTexts.isEmpty {
+                    lines.append("- 手动汇率：\(exchangeRateTexts.joined(separator: " / "))")
+                }
             }
 
             let categoryProgress = BudgetSplitCalculator.categoryProgress(for: budget)
@@ -158,6 +167,21 @@ struct ShareExportBuilder {
             return "\(number.intValue)"
         }
         return number.stringValue
+    }
+
+    private static func exchangeRateTexts(for budget: BudgetPlan) -> [String] {
+        let baseCurrencyCode = normalizedCurrencyCode(budget.currencyCode)
+        return budget.exchangeRates
+            .filter { normalizedCurrencyCode($0.key) != baseCurrencyCode && $0.value > 0 }
+            .sorted { $0.key < $1.key }
+            .map { currencyCode, rate in
+                "1 \(normalizedCurrencyCode(currencyCode)) = \(amountText(rate)) \(baseCurrencyCode)"
+            }
+    }
+
+    private static func normalizedCurrencyCode(_ currencyCode: String) -> String {
+        let trimmed = currencyCode.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "CNY" : trimmed.uppercased()
     }
 
     private static func participantName(for participantID: UUID, in trip: Trip) -> String {
