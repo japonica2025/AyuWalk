@@ -1,21 +1,22 @@
 import SwiftUI
 
 enum AyuWalkTheme {
-    static let pageBackground = Color(red: 0.95, green: 0.93, blue: 0.84)
-    static let canvas = Color(red: 0.97, green: 0.95, blue: 0.89)
-    static let surface = Color(red: 1.00, green: 0.98, blue: 0.90)
-    static let elevated = Color(red: 0.99, green: 0.96, blue: 0.84)
-    static let ink = Color(red: 0.11, green: 0.10, blue: 0.08)
-    static let mutedInk = Color(red: 0.43, green: 0.37, blue: 0.29)
-    static let accent = Color(red: 0.58, green: 0.20, blue: 0.06)
-    static let secondaryAccent = Color(red: 0.07, green: 0.33, blue: 0.41)
-    static let paper = Color(red: 0.98, green: 0.95, blue: 0.82)
-    static let border = Color(red: 0.58, green: 0.20, blue: 0.06).opacity(0.14)
-    static let hairline = Color(red: 0.30, green: 0.22, blue: 0.12).opacity(0.12)
-    static let softShadow = Color.black.opacity(0.08)
+    static let pageBackground = Color(red: 0.98, green: 0.97, blue: 0.96)
+    static let canvas = Color(red: 0.98, green: 0.97, blue: 0.95)
+    static let surface = Color(red: 1.00, green: 0.995, blue: 0.98)
+    static let elevated = Color(red: 0.96, green: 0.94, blue: 0.92)
+    static let ink = Color(red: 0.18, green: 0.15, blue: 0.13)
+    static let mutedInk = Color(red: 0.45, green: 0.42, blue: 0.39)
+    static let accent = Color(red: 0.54, green: 0.24, blue: 0.28)
+    static let secondaryAccent = Color(red: 0.38, green: 0.48, blue: 0.38)
+    static let paper = Color(red: 0.99, green: 0.97, blue: 0.94)
+    static let chipSurface = Color(red: 0.96, green: 0.94, blue: 0.90)
+    static let border = Color(red: 0.54, green: 0.24, blue: 0.28).opacity(0.13)
+    static let hairline = Color(red: 0.18, green: 0.15, blue: 0.13).opacity(0.10)
+    static let softShadow = Color(red: 0.18, green: 0.15, blue: 0.13).opacity(0.055)
 
-    static let cardRadius: CGFloat = 8
-    static let panelRadius: CGFloat = 22
+    static let cardRadius: CGFloat = 14
+    static let panelRadius: CGFloat = 28
     static let spacing: CGFloat = 16
 }
 
@@ -33,16 +34,22 @@ enum AyuWalkSpacing {
 
 enum AyuWalkRadii {
     static let chip: CGFloat = 999
-    static let smallCard: CGFloat = 8
-    static let card: CGFloat = 12
-    static let panel: CGFloat = 22
+    static let smallCard: CGFloat = 14
+    static let card: CGFloat = 18
+    static let panel: CGFloat = 28
     static let journalPage: CGFloat = 20
 }
 
 enum AyuWalkShadow {
-    static let card = Color.black.opacity(0.08)
-    static let floating = Color.black.opacity(0.12)
-    static let journal = AyuWalkTheme.ink.opacity(0.10)
+    static let card = AyuWalkTheme.ink.opacity(0.055)
+    static let floating = AyuWalkTheme.ink.opacity(0.10)
+    static let journal = AyuWalkTheme.ink.opacity(0.08)
+}
+
+enum AyuWalkTexture {
+    static let pageOpacity: Double = 0.025
+    static let sheetOpacity: Double = 0.022
+    static let cardOpacity: Double = 0.055
 }
 
 enum AyuWalkSize {
@@ -64,8 +71,8 @@ enum AyuWalkMotion {
 enum AyuWalkTypography {
     static let brand = Font.caption2.weight(.heavy)
     static let eyebrow = Font.caption.weight(.bold)
-    static let screenTitle = Font.system(.largeTitle, design: .rounded, weight: .bold)
-    static let pageTitle = Font.system(.title2, design: .rounded, weight: .bold)
+    static let screenTitle = Font.system(.largeTitle, design: .serif, weight: .bold)
+    static let pageTitle = Font.system(.title2, design: .serif, weight: .bold)
     static let sectionTitle = Font.headline.weight(.bold)
     static let cardTitle = Font.body.weight(.bold)
     static let body = Font.callout

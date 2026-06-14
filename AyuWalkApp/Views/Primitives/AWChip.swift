@@ -20,8 +20,12 @@ struct AWStatusPill: View {
         .foregroundStyle(isFilled ? .white : tint)
         .padding(.horizontal, AyuWalkSpacing.sm)
         .padding(.vertical, AyuWalkSpacing.xs - 1)
-        .background(isFilled ? tint : tint.opacity(0.10))
+        .background(isFilled ? tint : AyuWalkTheme.chipSurface)
         .clipShape(Capsule())
+        .overlay {
+            Capsule()
+                .stroke(isFilled ? Color.clear : tint.opacity(0.14), lineWidth: 1)
+        }
     }
 }
 
@@ -46,11 +50,11 @@ struct AWSelectableChip: View {
             .foregroundStyle(isSelected ? .white : AyuWalkTheme.ink)
             .padding(.horizontal, AyuWalkSpacing.sm + 1)
             .padding(.vertical, AyuWalkSpacing.xs)
-            .background(isSelected ? tint : AyuWalkTheme.paper)
+            .background(isSelected ? tint : AyuWalkTheme.chipSurface)
             .clipShape(Capsule())
             .overlay {
                 Capsule()
-                    .stroke(AyuWalkTheme.border, lineWidth: 1)
+                    .stroke(isSelected ? Color.clear : AyuWalkTheme.border, lineWidth: 1)
             }
         }
         .buttonStyle(.plain)
@@ -76,9 +80,16 @@ struct AWMetricTile: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, AyuWalkSpacing.md)
-        .padding(.vertical, AyuWalkSpacing.sm + 1)
-        .background(tint.opacity(0.08))
+        .padding(.vertical, AyuWalkSpacing.md)
+        .background {
+            AyuWalkTheme.surface
+            tint.opacity(0.045)
+        }
         .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous)
+                .stroke(AyuWalkTheme.hairline, lineWidth: 1)
+        }
         .contentShape(RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous))
     }
 }

@@ -261,7 +261,7 @@ struct PlanHomeView: View {
     }
 
     private func tripCover(scrollProxy: ScrollViewProxy) -> some View {
-        AWPanel(background: AyuWalkTheme.surface) {
+        AWPanel(background: AyuWalkTheme.surface, showsPaperTexture: true) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
@@ -369,26 +369,13 @@ struct PlanHomeView: View {
                 .buttonStyle(.plain)
             }
         }
-        .overlay {
-            RoundedRectangle(cornerRadius: AyuWalkTheme.panelRadius, style: .continuous)
-                .fill(.clear)
-                .background {
-                    Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
-                        .opacity(0.18)
-                        .blendMode(.multiply)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: AyuWalkTheme.panelRadius, style: .continuous))
-                .allowsHitTesting(false)
-        }
         .overlay(alignment: .topLeading) {
             Image.awWashiTapeRose
                 .resizable()
                 .scaledToFit()
-                .frame(width: 136)
+                .frame(width: 128)
                 .rotationEffect(.degrees(-2))
-                .offset(x: 28, y: -22)
+                .offset(x: 30, y: -20)
                 .shadow(color: AyuWalkTheme.ink.opacity(0.08), radius: 4, y: 2)
                 .allowsHitTesting(false)
         }
@@ -401,7 +388,7 @@ struct PlanHomeView: View {
             Image.awPaperTexture
                 .resizable()
                 .scaledToFill()
-                .opacity(0.16)
+                .opacity(AyuWalkTexture.pageOpacity)
                 .blendMode(.multiply)
                 .allowsHitTesting(false)
         }

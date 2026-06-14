@@ -34,35 +34,29 @@ struct RouteMapPreviewView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            header
+        AWPanel(background: AyuWalkTheme.surface, showsPaperTexture: true) {
+            VStack(alignment: .leading, spacing: 14) {
+                header
 
-            if routeMapItems.isEmpty {
-                fallbackRoutePreview
-                    .frame(height: 168)
-            } else {
-                mapPreview
-                    .frame(height: 188)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .overlay(alignment: .bottomLeading) {
-                        routeLegend
-                    }
-            }
+                if routeMapItems.isEmpty {
+                    fallbackRoutePreview
+                        .frame(height: 168)
+                } else {
+                    mapPreview
+                        .frame(height: 188)
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .overlay(alignment: .bottomLeading) {
+                            routeLegend
+                        }
+                }
 
-            if let previewDay {
-                Text("\(previewDay.dateLabel) · \(previewDay.title)")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(AyuWalkTheme.ink)
+                if let previewDay {
+                    Text("\(previewDay.dateLabel) · \(previewDay.title)")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(AyuWalkTheme.ink)
+                }
             }
         }
-        .padding(16)
-        .background(AyuWalkTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: AyuWalkTheme.panelRadius, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: AyuWalkTheme.panelRadius, style: .continuous)
-                .stroke(AyuWalkTheme.hairline, lineWidth: 1)
-        }
-        .shadow(color: AyuWalkTheme.softShadow, radius: 16, x: 0, y: 8)
     }
 
     private var header: some View {
@@ -96,7 +90,7 @@ struct RouteMapPreviewView: View {
                             .font(.caption.weight(.bold))
                             .foregroundStyle(.white)
                             .frame(width: 30, height: 30)
-                            .background(AyuWalkTheme.secondaryAccent)
+                            .background(AyuWalkTheme.accent)
                             .clipShape(Circle())
                             .shadow(color: AyuWalkTheme.ink.opacity(0.16), radius: 8, y: 4)
 
@@ -106,7 +100,7 @@ struct RouteMapPreviewView: View {
                             .lineLimit(1)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 3)
-                            .background(AyuWalkTheme.paper.opacity(0.92))
+                            .background(AyuWalkTheme.surface.opacity(0.92))
                             .clipShape(Capsule())
                     }
                 }
@@ -122,7 +116,7 @@ struct RouteMapPreviewView: View {
             .foregroundStyle(AyuWalkTheme.ink)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(AyuWalkTheme.paper.opacity(0.92))
+            .background(AyuWalkTheme.surface.opacity(0.92))
             .clipShape(Capsule())
             .padding(10)
     }
@@ -161,7 +155,7 @@ struct RouteMapPreviewView: View {
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.white)
                 .frame(width: 28, height: 28)
-                .background(AyuWalkTheme.secondaryAccent)
+                .background(AyuWalkTheme.accent)
                 .clipShape(Circle())
 
             Text(activity.title)

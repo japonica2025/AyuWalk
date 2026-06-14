@@ -3,7 +3,7 @@ import SwiftUI
 struct AWPrimaryButton: View {
     let title: String
     var systemImage: String?
-    var tint: Color = AyuWalkTheme.secondaryAccent
+    var tint: Color = AyuWalkTheme.accent
     var action: () -> Void
 
     var body: some View {
@@ -26,7 +26,8 @@ struct AWPrimaryButton: View {
             .padding(.horizontal, AyuWalkSpacing.lg)
             .padding(.vertical, AyuWalkSpacing.lg - 2)
             .background(tint)
-            .clipShape(RoundedRectangle(cornerRadius: AyuWalkTheme.cardRadius, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+            .shadow(color: tint.opacity(0.16), radius: 14, y: 7)
         }
         .buttonStyle(.plain)
     }
@@ -50,11 +51,11 @@ struct AWActionCapsuleButton: View {
             .foregroundStyle(isProminent ? .white : tint)
             .padding(.horizontal, AyuWalkSpacing.md)
             .padding(.vertical, AyuWalkSpacing.sm)
-            .background(isProminent ? tint : AyuWalkTheme.paper)
+            .background(isProminent ? tint : AyuWalkTheme.chipSurface)
             .clipShape(Capsule())
             .overlay {
                 Capsule()
-                    .stroke(isProminent ? Color.clear : AyuWalkTheme.border, lineWidth: 1)
+                    .stroke(isProminent ? Color.clear : tint.opacity(0.16), lineWidth: 1)
             }
         }
         .buttonStyle(.plain)
@@ -78,8 +79,9 @@ struct AWPlainIconButton: View {
                 .clipShape(Circle())
                 .overlay {
                     Circle()
-                        .stroke(AyuWalkTheme.hairline, lineWidth: 1)
+                        .stroke(tint.opacity(0.14), lineWidth: 1)
                 }
+                .shadow(color: AyuWalkTheme.softShadow, radius: 10, y: 5)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)

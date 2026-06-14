@@ -8,10 +8,14 @@ struct AWIconBadge: View {
     var body: some View {
         Image(systemName: systemImage)
             .font(AyuWalkTypography.icon(size: size * 0.42))
-            .foregroundStyle(.white)
+            .foregroundStyle(tint)
             .frame(width: size, height: size)
-            .background(tint)
+            .background(AyuWalkTheme.chipSurface)
             .clipShape(Circle())
+            .overlay {
+                Circle()
+                    .stroke(tint.opacity(0.18), lineWidth: 1)
+            }
     }
 }
 
@@ -82,18 +86,28 @@ struct AWInfoRow: View {
 
 struct AWPanel<Content: View>: View {
     var background: Color = AyuWalkTheme.surface
+    var showsPaperTexture = false
     @ViewBuilder let content: Content
 
     var body: some View {
         content
             .padding(AyuWalkSpacing.lg)
-            .background(background)
+            .background {
+                background
+                if showsPaperTexture {
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.cardOpacity)
+                        .blendMode(.multiply)
+                }
+            }
             .clipShape(RoundedRectangle(cornerRadius: AyuWalkTheme.panelRadius, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: AyuWalkTheme.panelRadius, style: .continuous)
                     .stroke(AyuWalkTheme.hairline, lineWidth: 1)
             }
-            .shadow(color: AyuWalkTheme.softShadow, radius: 18, x: 0, y: 8)
+            .shadow(color: AyuWalkTheme.softShadow, radius: 22, x: 0, y: 10)
     }
 }
 
@@ -121,7 +135,7 @@ struct AWEmptyState: View {
         }
         .frame(maxWidth: .infinity)
         .padding(AyuWalkSpacing.xl)
-        .background(AyuWalkTheme.paper)
+        .background(AyuWalkTheme.surface)
         .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
@@ -135,18 +149,28 @@ struct AWCardChrome<Content: View>: View {
     var cornerRadius: CGFloat = AyuWalkRadii.card
     var padding: CGFloat = AyuWalkSpacing.lg
     var showsShadow = false
+    var showsPaperTexture = false
     @ViewBuilder let content: Content
 
     var body: some View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(background)
+            .background {
+                background
+                if showsPaperTexture {
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.cardOpacity)
+                        .blendMode(.multiply)
+                }
+            }
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(AyuWalkTheme.border, lineWidth: 1)
             }
-            .shadow(color: showsShadow ? AyuWalkShadow.card : .clear, radius: 14, y: 8)
+            .shadow(color: showsShadow ? AyuWalkShadow.card : .clear, radius: 16, y: 8)
     }
 }

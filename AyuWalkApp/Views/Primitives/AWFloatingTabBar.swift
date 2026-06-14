@@ -31,14 +31,14 @@ struct AWFloatingTabBar<Selection: Hashable>: View {
         .padding(.bottom, AyuWalkSpacing.xxs)
         .background {
             Capsule()
-                .fill(AyuWalkTheme.paper.opacity(0.86))
+                .fill(AyuWalkTheme.surface.opacity(0.92))
                 .background(.ultraThinMaterial, in: Capsule())
                 .overlay {
                     Capsule()
                         .stroke(AyuWalkTheme.border, lineWidth: 1)
                 }
         }
-        .shadow(color: AyuWalkShadow.floating, radius: 12, y: 6)
+        .shadow(color: AyuWalkShadow.floating, radius: 18, y: 8)
     }
 
     private var actionButton: some View {
@@ -49,7 +49,7 @@ struct AWFloatingTabBar<Selection: Hashable>: View {
                 .frame(width: AyuWalkSize.largeIconButton, height: AyuWalkSize.largeIconButton)
                 .background(AyuWalkTheme.accent)
                 .clipShape(Circle())
-                .shadow(color: AyuWalkTheme.accent.opacity(0.22), radius: 9, y: 5)
+                .shadow(color: AyuWalkTheme.accent.opacity(0.20), radius: 12, y: 6)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(actionLabel)

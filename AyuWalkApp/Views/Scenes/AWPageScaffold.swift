@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AWPageScaffold<Content: View>: View {
     var background: Color = AyuWalkTheme.canvas
+    var showsPaperTexture = true
     var horizontalPadding: CGFloat = AyuWalkSpacing.lg
     var topPadding: CGFloat = AyuWalkSpacing.md
     var bottomPadding: CGFloat = 132
@@ -16,7 +17,17 @@ struct AWPageScaffold<Content: View>: View {
             .padding(.top, topPadding)
             .padding(.bottom, bottomPadding)
         }
-        .background(background)
+        .background {
+            background
+            if showsPaperTexture {
+                Image.awPaperTexture
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.pageOpacity)
+                    .blendMode(.multiply)
+                    .ignoresSafeArea()
+            }
+        }
     }
 }
 
@@ -28,6 +39,12 @@ struct AWSheetScaffold<Content: View>: View {
         NavigationStack {
             ZStack {
                 AyuWalkTheme.pageBackground
+                    .ignoresSafeArea()
+                Image.awPaperTexture
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.sheetOpacity)
+                    .blendMode(.multiply)
                     .ignoresSafeArea()
 
                 ScrollView {
