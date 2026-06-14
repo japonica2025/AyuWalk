@@ -28,6 +28,8 @@
 		A50000000000000000000012 /* AWJournalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000011 /* AWJournalComponents.swift */; };
 		A50000000000000000000016 /* AWBudgetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000015 /* AWBudgetComponents.swift */; };
 		A50000000000000000000019 /* AWPackingComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000018 /* AWPackingComponents.swift */; };
+		A60000000000000000000001 /* AyuWalkDecorAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60000000000000000000002 /* AyuWalkDecorAssets.swift */; };
+		A60000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A60000000000000000000004 /* Assets.xcassets */; };
 		93AB1CD143FB63B93BEDF6DD /* JournalPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8A90D49A0F90CE3E981578 /* JournalPreviewView.swift */; };
 		9E36F96D849DD2537C07861F /* PlanHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B652B36108C1B3E2E39F99A3 /* PlanHomeView.swift */; };
 		A18FBC3652D9696F0EE6CE59 /* PackingListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D52EAE7983E1632B12CF82 /* PackingListView.swift */; };
@@ -72,6 +74,8 @@
 		A50000000000000000000011 /* AWJournalComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWJournalComponents.swift; sourceTree = "<group>"; };
 		A50000000000000000000015 /* AWBudgetComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWBudgetComponents.swift; sourceTree = "<group>"; };
 		A50000000000000000000018 /* AWPackingComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWPackingComponents.swift; sourceTree = "<group>"; };
+		A60000000000000000000002 /* AyuWalkDecorAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AyuWalkDecorAssets.swift; sourceTree = "<group>"; };
+		A60000000000000000000004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		94CD86CA241A290EB5AEA9A7 /* StickerPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerPickerView.swift; sourceTree = "<group>"; };
 		96841A45869C8496DBA976F2 /* JournalModulePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalModulePickerView.swift; sourceTree = "<group>"; };
 		9EBFC112A9D4E7BB82163E7D /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -230,6 +234,8 @@
 		7503131776FAEB991D0DFF85 /* Design */ = {
 			isa = PBXGroup;
 			children = (
+				A60000000000000000000004 /* Assets.xcassets */,
+				A60000000000000000000002 /* AyuWalkDecorAssets.swift */,
 				54CAD4F7F9DCA3DE5BAFF91F /* AyuWalkTheme.swift */,
 			);
 			path = Design;
@@ -302,6 +308,7 @@
 			buildPhases = (
 				7B945352FA59F5CFAFCD2254 /* Sources */,
 				220F17F806031C24B1F79EC9 /* Frameworks */,
+				A60000000000000000000005 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -346,6 +353,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		A60000000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A60000000000000000000003 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		7B945352FA59F5CFAFCD2254 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -355,6 +373,7 @@
 				F250D3644A1CAB3826FF1910 /* AppState.swift in Sources */,
 				BE03E366A56093E733A83013 /* AyuWalkApp.swift in Sources */,
 				D0A61B3FC1582BC9B28A3F77 /* AyuWalkTheme.swift in Sources */,
+				A60000000000000000000001 /* AyuWalkDecorAssets.swift in Sources */,
 				8F93B01D4D6E4F82A7C42001 /* AyuWalkComponents.swift in Sources */,
 				A50000000000000000000003 /* AWButton.swift in Sources */,
 				A50000000000000000000005 /* AWCard.swift in Sources */,
