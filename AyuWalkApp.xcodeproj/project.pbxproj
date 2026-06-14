@@ -534,7 +534,6 @@
 		C5A0D4A147E46634FBE64238 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = RZYM56XV77;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -555,7 +554,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4B9D4B71A7FFE23BE583A12A /* Secrets.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = RZYM56XV77;
 				GENERATE_INFOPLIST_FILE = NO;

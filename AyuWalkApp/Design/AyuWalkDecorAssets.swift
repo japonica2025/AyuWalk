@@ -4,6 +4,9 @@ enum AyuWalkDecorAssets {
     static let paperTexture = "AWPaperTexture"
     static let paperCardSurface = "AWPaperCardSurface"
     static let washiTapeStrips = "AWWashiTapeStrips"
+    static let washiTapeRose = "AWWashiTapeRose"
+    static let washiTapeSage = "AWWashiTapeSage"
+    static let washiTapeCream = "AWWashiTapeCream"
 }
 
 extension Image {
@@ -17,5 +20,17 @@ extension Image {
 
     static var awWashiTapeStrips: Image {
         Image(AyuWalkDecorAssets.washiTapeStrips)
+    }
+
+    static var awWashiTapeRose: Image {
+        Image(AyuWalkDecorAssets.washiTapeRose)
+    }
+
+    static var awWashiTapeSage: Image {
+        Image(AyuWalkDecorAssets.washiTapeSage)
+    }
+
+    static var awWashiTapeCream: Image {
+        Image(AyuWalkDecorAssets.washiTapeCream)
     }
 }

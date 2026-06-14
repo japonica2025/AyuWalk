@@ -110,7 +110,7 @@ struct PlanHomeView: View {
                     .padding(.top, 12)
                     .padding(.bottom, 132)
                 }
-                .background(AyuWalkTheme.canvas)
+                .background(homePaperBackground)
             }
             .navigationTitle("织步记")
             .fullScreenCover(isPresented: $isShowingRouteMap) {
@@ -369,6 +369,43 @@ struct PlanHomeView: View {
                 .buttonStyle(.plain)
             }
         }
+        .overlay {
+            RoundedRectangle(cornerRadius: AyuWalkTheme.panelRadius, style: .continuous)
+                .fill(.clear)
+                .background {
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(0.18)
+                        .blendMode(.multiply)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: AyuWalkTheme.panelRadius, style: .continuous))
+                .allowsHitTesting(false)
+        }
+        .overlay(alignment: .topLeading) {
+            Image.awWashiTapeRose
+                .resizable()
+                .scaledToFit()
+                .frame(width: 136)
+                .rotationEffect(.degrees(-2))
+                .offset(x: 28, y: -22)
+                .shadow(color: AyuWalkTheme.ink.opacity(0.08), radius: 4, y: 2)
+                .allowsHitTesting(false)
+        }
+    }
+
+    private var homePaperBackground: some View {
+        ZStack {
+            AyuWalkTheme.canvas
+
+            Image.awPaperTexture
+                .resizable()
+                .scaledToFill()
+                .opacity(0.16)
+                .blendMode(.multiply)
+                .allowsHitTesting(false)
+        }
+        .ignoresSafeArea()
     }
 
     private var routeActivities: [Activity] {
