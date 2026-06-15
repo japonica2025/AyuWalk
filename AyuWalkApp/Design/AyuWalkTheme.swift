@@ -73,6 +73,7 @@ enum AyuWalkTypography {
 
     static let brand = custom(size: 12, relativeTo: .caption2).weight(.heavy)
     static let eyebrow = custom(size: 13, relativeTo: .caption).weight(.bold)
+    static let editorialTitle = custom(size: 40, relativeTo: .largeTitle).weight(.bold)
     static let screenTitle = custom(size: 34, relativeTo: .largeTitle).weight(.bold)
     static let pageTitle = custom(size: 26, relativeTo: .title2).weight(.bold)
     static let sectionTitle = custom(size: 17, relativeTo: .headline).weight(.bold)

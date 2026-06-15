@@ -47,6 +47,19 @@ struct AWPaperBackground: View {
     }
 }
 
+struct AWEditorialPageTitle: View {
+    let title: String
+    var color: Color = AyuWalkTheme.ink
+
+    var body: some View {
+        Text(title)
+            .font(AyuWalkTypography.editorialTitle)
+            .foregroundStyle(color)
+            .lineLimit(1)
+            .minimumScaleFactor(0.78)
+    }
+}
+
 struct AWSheetScaffold<Content: View>: View {
     let title: String
     @ViewBuilder let content: Content

@@ -17,9 +17,7 @@ struct PlanHomeView: View {
             ScrollViewReader { scrollProxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        Text("织步记")
-                            .font(AyuWalkTypography.custom(size: 40, relativeTo: .largeTitle).weight(.bold))
-                            .foregroundStyle(AyuWalkTheme.ink)
+                        AWEditorialPageTitle(title: "织步记")
 
                         tripCover(scrollProxy: scrollProxy)
 
