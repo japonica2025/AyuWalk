@@ -587,8 +587,18 @@ private struct AIAdjustmentSheetView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: AyuWalkSpacing.xl) {
-                    AWPanel(background: AyuWalkTheme.surface) {
+                    AWPaperSurface(
+                        background: AyuWalkTheme.surface,
+                        tint: AyuWalkTheme.accent,
+                        cornerRadius: AyuWalkTheme.panelRadius,
+                        padding: AyuWalkSpacing.lg,
+                        borderOpacity: 0.10,
+                        shadowRadius: 14,
+                        shadowY: 7
+                    ) {
                         VStack(alignment: .leading, spacing: AyuWalkSpacing.sm) {
+                            AWStickerIconTray(systemImages: ["sparkles", "map.fill"], tint: AyuWalkTheme.accent)
+
                             Text("告诉 AI 想怎么调整")
                                 .font(AyuWalkTypography.sectionTitle)
                                 .foregroundStyle(AyuWalkTheme.ink)
@@ -597,14 +607,31 @@ private struct AIAdjustmentSheetView: View {
                                 .foregroundStyle(AyuWalkTheme.mutedInk)
                         }
                     }
+                    .overlay(alignment: .topLeading) {
+                        Image.awWashiTapeRose
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 78, height: 24)
+                            .opacity(0.48)
+                            .offset(x: 26, y: -12)
+                            .allowsHitTesting(false)
+                    }
 
                     TextEditor(text: $request)
                         .font(AyuWalkTypography.body)
                         .foregroundStyle(AyuWalkTheme.ink)
                         .scrollContentBackground(.hidden)
                         .frame(minHeight: 140)
-                        .padding(AyuWalkSpacing.md)
-                        .background(AyuWalkTheme.paper)
+                        .padding(AyuWalkSpacing.lg)
+                        .background {
+                            AyuWalkTheme.paper
+
+                            Image.awPaperCardSurface
+                                .resizable()
+                                .scaledToFill()
+                                .opacity(AyuWalkTexture.cardOpacity)
+                                .blendMode(.multiply)
+                        }
                         .clipShape(RoundedRectangle(cornerRadius: AyuWalkTheme.cardRadius, style: .continuous))
                         .overlay {
                             RoundedRectangle(cornerRadius: AyuWalkTheme.cardRadius, style: .continuous)
@@ -612,7 +639,15 @@ private struct AIAdjustmentSheetView: View {
                         }
 
                     if let proposal {
-                        AWCardChrome(background: AyuWalkTheme.elevated) {
+                        AWPaperSurface(
+                            background: AyuWalkTheme.surface,
+                            tint: proposal.source == .remoteAI ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent,
+                            cornerRadius: AyuWalkRadii.card,
+                            padding: AyuWalkSpacing.lg,
+                            borderOpacity: 0.10,
+                            shadowRadius: 8,
+                            shadowY: 4
+                        ) {
                             VStack(alignment: .leading, spacing: AyuWalkSpacing.sm) {
                                 AWStatusPill(
                                     text: "上次规划置信度 \(Int(proposal.confidence * 100))%",
@@ -648,7 +683,9 @@ private struct AIAdjustmentSheetView: View {
                 }
                 .padding(AyuWalkSpacing.pageInset)
             }
-            .background(AyuWalkTheme.canvas)
+            .background {
+                AWPaperBackground()
+            }
             .navigationTitle("AI 调整行程")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -679,9 +716,41 @@ private struct TripLibrarySheetView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: AyuWalkSpacing.xl) {
-                    AWPrimaryButton(title: "新建行程", systemImage: "plus") {
-                        onCreateTrip()
-                        dismiss()
+                    AWPaperSurface(
+                        background: AyuWalkTheme.surface,
+                        tint: AyuWalkTheme.accent,
+                        cornerRadius: AyuWalkTheme.panelRadius,
+                        padding: AyuWalkSpacing.lg,
+                        borderOpacity: 0.10,
+                        shadowRadius: 14,
+                        shadowY: 7
+                    ) {
+                        VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
+                            AWStickerIconTray(systemImages: ["map.fill", "book.pages.fill"], tint: AyuWalkTheme.accent)
+
+                            Text("管理你的旅行手帐")
+                                .font(AyuWalkTypography.sectionTitle)
+                                .foregroundStyle(AyuWalkTheme.ink)
+
+                            Text("切换、复制、归档或重命名行程，不会改变当前页面的导航结构。")
+                                .font(AyuWalkTypography.caption)
+                                .foregroundStyle(AyuWalkTheme.mutedInk)
+
+                            AWPrimaryButton(title: "新建行程", systemImage: "plus") {
+                                onCreateTrip()
+                                dismiss()
+                            }
+                        }
+                    }
+                    .overlay(alignment: .topLeading) {
+                        Image.awWashiTapeCream
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 82, height: 26)
+                            .rotationEffect(.degrees(-4))
+                            .opacity(0.52)
+                            .offset(x: 28, y: -13)
+                            .allowsHitTesting(false)
                     }
 
                     workspaceSection(title: "当前与进行中", workspaces: activeWorkspaces)
@@ -692,7 +761,9 @@ private struct TripLibrarySheetView: View {
                 }
                 .padding(AyuWalkSpacing.pageInset)
             }
-            .background(AyuWalkTheme.canvas)
+            .background {
+                AWPaperBackground()
+            }
             .navigationTitle("行程库")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -750,9 +821,7 @@ private struct TripLibrarySheetView: View {
 
     @ViewBuilder
     private func workspaceSection(title: String, workspaces: [TripWorkspace]) -> some View {
-        VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
-            AWSectionHeader(title: title, accessory: "\(workspaces.count)")
-
+        AWPaperSection(title: title, accessory: "\(workspaces.count)") {
             ForEach(workspaces) { workspace in
                 tripRow(workspace)
             }
@@ -760,18 +829,26 @@ private struct TripLibrarySheetView: View {
     }
 
     private func tripRow(_ workspace: TripWorkspace) -> some View {
-        AWCardChrome(background: workspace.id == activeTripID ? AyuWalkTheme.elevated : AyuWalkTheme.surface) {
+        AWPaperSurface(
+            background: workspace.id == activeTripID ? AyuWalkTheme.paper : AyuWalkTheme.surface,
+            tint: workspace.id == activeTripID ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent,
+            cornerRadius: AyuWalkRadii.card,
+            padding: AyuWalkSpacing.md + 2,
+            borderOpacity: workspace.id == activeTripID ? 0.16 : 0.09,
+            shadowRadius: 8,
+            shadowY: 4
+        ) {
             HStack(spacing: AyuWalkSpacing.md) {
                 Button {
                     onSelectTrip(workspace.id)
                     dismiss()
                 } label: {
-                    AWInfoRow(
+                    AWInlineActionRow(
                         title: workspace.trip.title,
                         subtitle: "\(workspace.trip.destination) · \(workspace.trip.days.count) 天",
                         systemImage: workspace.isArchived ? "archivebox.fill" : "map.fill",
                         tint: workspace.id == activeTripID ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.accent,
-                        trailingSystemImage: workspace.id == activeTripID ? "checkmark.circle.fill" : nil
+                        trailingSystemImage: workspace.id == activeTripID ? "checkmark.circle.fill" : "chevron.right"
                     )
                 }
                 .buttonStyle(.plain)
