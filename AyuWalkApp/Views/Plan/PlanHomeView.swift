@@ -16,8 +16,18 @@ struct PlanHomeView: View {
         NavigationStack {
             ScrollViewReader { scrollProxy in
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        AWEditorialPageTitle(title: "织步记")
+                    VStack(alignment: .leading, spacing: 22) {
+                        AWHomeGreetingHeader(
+                            title: "织步记",
+                            subtitle: headerMessage,
+                            statusText: appState.isGeneratingTrip ? "生成中" : "可编辑",
+                            statusSystemImage: appState.isGeneratingTrip ? "sparkles" : "checkmark.seal.fill",
+                            statusTint: appState.isGeneratingTrip ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent,
+                            isStatusFilled: appState.isGeneratingTrip,
+                            onOpenTrips: {
+                                activeSheet = .trips
+                            }
+                        )
 
                         tripCover(scrollProxy: scrollProxy)
 
@@ -109,7 +119,7 @@ struct PlanHomeView: View {
                         )
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 84)
+                    .padding(.top, 72)
                     .padding(.bottom, 132)
                 }
                 .background(homePaperBackground)

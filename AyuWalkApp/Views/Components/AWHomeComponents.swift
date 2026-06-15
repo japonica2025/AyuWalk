@@ -41,7 +41,103 @@ struct AWScrapbookMetricTile: View {
             RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
                 .stroke(tint.opacity(0.12), lineWidth: 1)
         }
+        .overlay(alignment: .top) {
+            Image.awWashiTapeRose
+                .resizable()
+                .scaledToFit()
+                .frame(width: 54, height: 18)
+                .opacity(0.48)
+                .offset(y: -9)
+                .allowsHitTesting(false)
+        }
+        .overlay(alignment: .topTrailing) {
+            AWCornerSticker(systemImage: systemImage, tint: tint)
+                .scaleEffect(0.82)
+                .offset(x: 7, y: -8)
+        }
         .contentShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+    }
+}
+
+struct AWHomeGreetingHeader: View {
+    let title: String
+    let subtitle: String
+    let statusText: String
+    let statusSystemImage: String
+    var statusTint: Color = AyuWalkTheme.secondaryAccent
+    var isStatusFilled = false
+    var onOpenTrips: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AyuWalkSpacing.lg) {
+            HStack(alignment: .center, spacing: AyuWalkSpacing.md) {
+                avatar
+
+                VStack(alignment: .leading, spacing: AyuWalkSpacing.xxs) {
+                    Text(title)
+                        .font(AyuWalkTypography.pageTitle)
+                        .foregroundStyle(AyuWalkTheme.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+
+                    Text(subtitle)
+                        .font(AyuWalkTypography.caption)
+                        .foregroundStyle(AyuWalkTheme.mutedInk)
+                        .lineLimit(2)
+                }
+
+                Spacer(minLength: AyuWalkSpacing.sm)
+
+                AWPlainIconButton(
+                    systemImage: "rectangle.stack.fill",
+                    label: "打开行程库",
+                    tint: AyuWalkTheme.secondaryAccent,
+                    action: onOpenTrips
+                )
+            }
+
+            HStack(spacing: AyuWalkSpacing.md) {
+                AWDecorDivider(tint: AyuWalkTheme.secondaryAccent)
+                AWStatusPill(
+                    text: statusText,
+                    systemImage: statusSystemImage,
+                    tint: statusTint,
+                    isFilled: isStatusFilled
+                )
+                .fixedSize()
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            AWHandwrittenScribble(tint: AyuWalkTheme.accent)
+                .offset(x: -2, y: -8)
+        }
+    }
+
+    private var avatar: some View {
+        ZStack {
+            Circle()
+                .fill(AyuWalkTheme.surface)
+                .frame(width: 66, height: 66)
+                .shadow(color: AyuWalkTheme.softShadow, radius: 10, y: 5)
+
+            Circle()
+                .fill(AyuWalkTheme.accent.opacity(0.10))
+                .frame(width: 52, height: 52)
+
+            Image(systemName: "figure.walk")
+                .font(AyuWalkTypography.icon(size: 23, weight: .bold))
+                .foregroundStyle(AyuWalkTheme.accent)
+        }
+        .overlay {
+            Circle()
+                .stroke(.white.opacity(0.86), lineWidth: 2)
+        }
+        .overlay(alignment: .topTrailing) {
+            Circle()
+                .fill(AyuWalkTheme.accent.opacity(0.72))
+                .frame(width: 11, height: 11)
+                .offset(x: -4, y: 5)
+        }
     }
 }
 
@@ -69,19 +165,37 @@ struct AWTripCoverCard<RoutePreview: View>: View {
     @ViewBuilder var routePreview: RoutePreview
 
     var body: some View {
-        AWPanel(background: AyuWalkTheme.surface, showsPaperTexture: true) {
-            VStack(alignment: .leading, spacing: AyuWalkSpacing.lg) {
+        AWPaperSurface(
+            background: AyuWalkTheme.surface,
+            tint: AyuWalkTheme.accent,
+            cornerRadius: AyuWalkTheme.panelRadius,
+            padding: AyuWalkSpacing.lg,
+            borderOpacity: 0.10,
+            shadowRadius: 20,
+            shadowY: 10
+        ) {
+            VStack(alignment: .leading, spacing: AyuWalkSpacing.lg + 2) {
                 header
                 titleBlock
                 metadataChips
                 controls
-                metricTiles
                 routeButton
+                metricTiles
             }
         }
         .overlay(alignment: .topLeading) {
             AWWashiTape()
                 .offset(x: 30, y: -20)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            Image.awWashiTapeSage
+                .resizable()
+                .scaledToFit()
+                .frame(width: 84, height: 34)
+                .rotationEffect(.degrees(-9))
+                .opacity(0.36)
+                .offset(x: -18, y: -10)
+                .allowsHitTesting(false)
         }
     }
 
@@ -98,18 +212,9 @@ struct AWTripCoverCard<RoutePreview: View>: View {
 
             Spacer()
 
-            AWPlainIconButton(
-                systemImage: "rectangle.stack.fill",
-                label: "打开行程库",
-                tint: AyuWalkTheme.secondaryAccent,
-                action: onOpenTrips
-            )
-
-            AWStatusPill(
-                text: statusText,
-                systemImage: statusSystemImage,
-                tint: statusTint,
-                isFilled: isStatusFilled
+            AWStickerIconTray(
+                systemImages: ["suitcase.fill", "sparkle"],
+                tint: AyuWalkTheme.secondaryAccent
             )
         }
     }
