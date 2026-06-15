@@ -47,8 +47,8 @@ enum AyuWalkShadow {
 }
 
 enum AyuWalkTexture {
-    static let pageOpacity: Double = 0.025
-    static let sheetOpacity: Double = 0.022
+    static let pageOpacity: Double = 0.10
+    static let sheetOpacity: Double = 0.07
     static let cardOpacity: Double = 0.055
 }
 
@@ -69,22 +69,28 @@ enum AyuWalkMotion {
 }
 
 enum AyuWalkTypography {
-    static let brand = Font.caption2.weight(.heavy)
-    static let eyebrow = Font.caption.weight(.bold)
-    static let screenTitle = Font.system(.largeTitle, design: .serif, weight: .bold)
-    static let pageTitle = Font.system(.title2, design: .serif, weight: .bold)
-    static let sectionTitle = Font.headline.weight(.bold)
-    static let cardTitle = Font.body.weight(.bold)
-    static let body = Font.callout
-    static let bodyStrong = Font.body.weight(.semibold)
-    static let caption = Font.caption
-    static let captionStrong = Font.caption.weight(.semibold)
-    static let micro = Font.caption2
-    static let microStrong = Font.caption2.weight(.bold)
-    static let button = Font.headline.weight(.bold)
-    static let metric = Font.subheadline.weight(.bold)
+    static let fontName = "CorpSrcWinSong"
+
+    static let brand = custom(size: 12, relativeTo: .caption2).weight(.heavy)
+    static let eyebrow = custom(size: 13, relativeTo: .caption).weight(.bold)
+    static let screenTitle = custom(size: 34, relativeTo: .largeTitle).weight(.bold)
+    static let pageTitle = custom(size: 26, relativeTo: .title2).weight(.bold)
+    static let sectionTitle = custom(size: 17, relativeTo: .headline).weight(.bold)
+    static let cardTitle = custom(size: 16, relativeTo: .body).weight(.bold)
+    static let body = custom(size: 16, relativeTo: .callout)
+    static let bodyStrong = custom(size: 17, relativeTo: .body).weight(.semibold)
+    static let caption = custom(size: 12, relativeTo: .caption)
+    static let captionStrong = custom(size: 12, relativeTo: .caption).weight(.semibold)
+    static let micro = custom(size: 11, relativeTo: .caption2)
+    static let microStrong = custom(size: 11, relativeTo: .caption2).weight(.bold)
+    static let button = custom(size: 17, relativeTo: .headline).weight(.bold)
+    static let metric = custom(size: 15, relativeTo: .subheadline).weight(.bold)
 
     static func icon(size: CGFloat, weight: Font.Weight = .semibold) -> Font {
         .system(size: size, weight: weight)
+    }
+
+    static func custom(size: CGFloat, relativeTo textStyle: Font.TextStyle) -> Font {
+        .custom(fontName, size: size, relativeTo: textStyle)
     }
 }

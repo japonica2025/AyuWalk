@@ -28,6 +28,10 @@
 	<true/>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Ayu Walk 需要添加照片权限，用来把导出的旅行卡片图和长图保存到系统相册。</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>CorpSrcWinSong.ttf</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

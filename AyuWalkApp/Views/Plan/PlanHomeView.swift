@@ -17,6 +17,10 @@ struct PlanHomeView: View {
             ScrollViewReader { scrollProxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
+                        Text("织步记")
+                            .font(AyuWalkTypography.custom(size: 40, relativeTo: .largeTitle).weight(.bold))
+                            .foregroundStyle(AyuWalkTheme.ink)
+
                         tripCover(scrollProxy: scrollProxy)
 
                         AWSectionHeader(
@@ -107,12 +111,12 @@ struct PlanHomeView: View {
                         )
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 12)
+                    .padding(.top, 84)
                     .padding(.bottom, 132)
                 }
                 .background(homePaperBackground)
             }
-            .navigationTitle("织步记")
+            .toolbar(.hidden, for: .navigationBar)
             .fullScreenCover(isPresented: $isShowingRouteMap) {
                 RouteMapDetailView(
                     days: appState.trip.days,

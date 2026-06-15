@@ -50,7 +50,7 @@ struct ItineraryTimelineView: View {
                         onAddActivity(day)
                     } label: {
                         Label("新增", systemImage: "plus")
-                            .font(.caption.weight(.bold))
+                            .font(AyuWalkTypography.captionStrong)
                             .foregroundStyle(AyuWalkTheme.secondaryAccent)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 7)
@@ -63,7 +63,7 @@ struct ItineraryTimelineView: View {
                         onRescheduleDay(day)
                     } label: {
                         Label("重排当天", systemImage: "arrow.triangle.2.circlepath")
-                            .font(.caption.weight(.bold))
+                            .font(AyuWalkTypography.captionStrong)
                             .foregroundStyle(AyuWalkTheme.accent)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 7)
@@ -127,12 +127,12 @@ struct ItineraryTimelineView: View {
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 8) {
                         Text("\(day.dateLabel)｜\(day.title)")
-                            .font(.headline)
+                            .font(AyuWalkTypography.sectionTitle)
                             .foregroundStyle(AyuWalkTheme.ink)
 
                         if day.dayNumber == currentDayNumber {
                             Text("当天")
-                                .font(.caption2.weight(.bold))
+                                .font(AyuWalkTypography.microStrong)
                                 .foregroundStyle(AyuWalkTheme.secondaryAccent)
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 4)
@@ -142,14 +142,14 @@ struct ItineraryTimelineView: View {
                     }
 
                     Text("\(day.activities.count) 个行程")
-                        .font(.caption)
+                        .font(AyuWalkTypography.caption)
                         .foregroundStyle(AyuWalkTheme.mutedInk)
                 }
 
                 Spacer()
 
                 Image(systemName: "chevron.down")
-                    .font(.caption.weight(.bold))
+                    .font(AyuWalkTypography.icon(size: 12, weight: .bold))
                     .foregroundStyle(AyuWalkTheme.mutedInk)
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
             }
@@ -184,13 +184,13 @@ struct ItineraryTimelineView: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(activity.title)
-                        .font(.body.weight(.semibold))
+                        .font(AyuWalkTypography.bodyStrong)
                         .foregroundStyle(activityTitleColor(isCompleted: isCompleted, isMissed: isMissed))
                         .strikethrough(isMissed, color: AyuWalkTheme.mutedInk)
 
                     if ScheduleConflictDetector.isLockedFixedNode(activity) {
                         Label("已锁定", systemImage: "lock.fill")
-                            .font(.caption2.weight(.bold))
+                            .font(AyuWalkTypography.microStrong)
                             .foregroundStyle(AyuWalkTheme.secondaryAccent)
                             .labelStyle(.titleAndIcon)
                             .padding(.horizontal, 7)
@@ -202,16 +202,16 @@ struct ItineraryTimelineView: View {
 
                 if let time = timeLabel(for: activity) {
                     Text(time)
-                        .font(.caption)
+                        .font(AyuWalkTypography.caption)
                         .foregroundStyle(AyuWalkTheme.secondaryAccent)
                 }
 
                 if let travelText = travelText(before: activity) {
                     HStack(spacing: 6) {
                         Image(systemName: "figure.walk.motion")
-                            .font(.caption2.weight(.bold))
+                            .font(AyuWalkTypography.icon(size: 11, weight: .bold))
                         Text(travelText)
-                            .font(.caption.weight(.semibold))
+                            .font(AyuWalkTypography.captionStrong)
                     }
                     .foregroundStyle(AyuWalkTheme.secondaryAccent)
                     .padding(.horizontal, 9)
@@ -222,7 +222,7 @@ struct ItineraryTimelineView: View {
 
                 if let notes = activity.notes {
                     Text(notes)
-                        .font(.callout)
+                        .font(AyuWalkTypography.body)
                         .foregroundStyle(AyuWalkTheme.mutedInk)
                 }
 
@@ -230,9 +230,9 @@ struct ItineraryTimelineView: View {
                     HStack(spacing: 8) {
                         HStack(spacing: 6) {
                             Image(systemName: "clock")
-                                .font(.caption2.weight(.bold))
+                                .font(AyuWalkTypography.icon(size: 11, weight: .bold))
                             Text(countdownText)
-                                .font(.caption.weight(.semibold))
+                                .font(AyuWalkTypography.captionStrong)
                                 .lineLimit(2)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -247,7 +247,7 @@ struct ItineraryTimelineView: View {
                             onEnableReminder(day, activity)
                         } label: {
                             Image(systemName: enabledReminderActivityIDs.contains(activity.id) ? "bell.fill" : "bell")
-                                .font(.caption.weight(.bold))
+                                .font(AyuWalkTypography.icon(size: 12, weight: .bold))
                                 .foregroundStyle(
                                     enabledReminderActivityIDs.contains(activity.id)
                                         ? AyuWalkTheme.accent
@@ -269,9 +269,9 @@ struct ItineraryTimelineView: View {
                 if let conflict {
                     HStack(spacing: 6) {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.caption2.weight(.bold))
+                            .font(AyuWalkTypography.icon(size: 11, weight: .bold))
                         Text(conflict.message)
-                            .font(.caption.weight(.semibold))
+                            .font(AyuWalkTypography.captionStrong)
                     }
                     .foregroundStyle(AyuWalkTheme.accent)
                     .padding(.horizontal, 9)
@@ -288,7 +288,7 @@ struct ItineraryTimelineView: View {
                     onToggleCompletion(day, activity)
                 } label: {
                     Image(systemName: isCompleted ? "checkmark.circle.fill" : "checkmark.circle")
-                        .font(.body.weight(.bold))
+                        .font(AyuWalkTypography.icon(size: 17, weight: .bold))
                         .foregroundStyle(isCompleted ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.mutedInk)
                         .frame(width: 32, height: 32)
                         .background(AyuWalkTheme.pageBackground)
@@ -301,7 +301,7 @@ struct ItineraryTimelineView: View {
                     onEditActivity(day, activity)
                 } label: {
                     Image(systemName: "pencil")
-                        .font(.caption.weight(.bold))
+                        .font(AyuWalkTypography.icon(size: 12, weight: .bold))
                         .foregroundStyle(AyuWalkTheme.accent)
                         .frame(width: 32, height: 32)
                         .background(AyuWalkTheme.pageBackground)
@@ -343,7 +343,7 @@ struct ItineraryTimelineView: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis")
-                        .font(.caption.weight(.bold))
+                        .font(AyuWalkTypography.icon(size: 12, weight: .bold))
                         .foregroundStyle(AyuWalkTheme.ink)
                         .frame(width: 32, height: 32)
                         .background(AyuWalkTheme.pageBackground)
@@ -406,7 +406,7 @@ struct ItineraryTimelineView: View {
 
     private func routeBadge(_ order: Int) -> some View {
         Text(String(order))
-            .font(.caption.weight(.bold))
+            .font(AyuWalkTypography.captionStrong)
             .foregroundStyle(.white)
             .frame(width: 26, height: 26)
             .background(AyuWalkTheme.secondaryAccent)
@@ -415,7 +415,7 @@ struct ItineraryTimelineView: View {
 
     private var lockedBadge: some View {
         Image(systemName: "lock.fill")
-            .font(.caption.weight(.bold))
+            .font(AyuWalkTypography.icon(size: 12, weight: .bold))
             .foregroundStyle(.white)
             .frame(width: 26, height: 26)
             .background(AyuWalkTheme.accent)
@@ -424,7 +424,7 @@ struct ItineraryTimelineView: View {
 
     private var unroutedBadge: some View {
         Image(systemName: "minus")
-            .font(.caption.weight(.bold))
+            .font(AyuWalkTypography.icon(size: 12, weight: .bold))
             .foregroundStyle(AyuWalkTheme.mutedInk)
             .frame(width: 26, height: 26)
             .background(AyuWalkTheme.pageBackground)

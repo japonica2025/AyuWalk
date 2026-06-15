@@ -52,7 +52,7 @@ struct RouteMapPreviewView: View {
 
                 if let previewDay {
                     Text("\(previewDay.dateLabel) · \(previewDay.title)")
-                        .font(.subheadline.weight(.semibold))
+                        .font(AyuWalkTypography.bodyStrong)
                         .foregroundStyle(AyuWalkTheme.ink)
                 }
             }
@@ -63,10 +63,10 @@ struct RouteMapPreviewView: View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("路线地图")
-                    .font(.headline.weight(.bold))
+                    .font(AyuWalkTypography.sectionTitle)
                     .foregroundStyle(AyuWalkTheme.ink)
                 Text(routeMapItems.isEmpty ? "缺少坐标时展示路线顺序" : "仅预览当天路线，完整路线点进地图查看")
-                    .font(.caption)
+                    .font(AyuWalkTypography.caption)
                     .foregroundStyle(AyuWalkTheme.mutedInk)
             }
 
@@ -87,7 +87,7 @@ struct RouteMapPreviewView: View {
                 Annotation(item.title, coordinate: item.coordinate) {
                     VStack(spacing: 4) {
                         Text(String(item.order))
-                            .font(.caption.weight(.bold))
+                            .font(AyuWalkTypography.captionStrong)
                             .foregroundStyle(.white)
                             .frame(width: 30, height: 30)
                             .background(AyuWalkTheme.accent)
@@ -95,7 +95,7 @@ struct RouteMapPreviewView: View {
                             .shadow(color: AyuWalkTheme.ink.opacity(0.16), radius: 8, y: 4)
 
                         Text(item.title)
-                            .font(.caption2.weight(.semibold))
+                            .font(AyuWalkTypography.microStrong)
                             .foregroundStyle(AyuWalkTheme.ink)
                             .lineLimit(1)
                             .padding(.horizontal, 6)
@@ -112,7 +112,7 @@ struct RouteMapPreviewView: View {
 
     private var routeLegend: some View {
         Text("\(previewDay?.dateLabel ?? "路线") · \(routeMapItems.count) 个点位")
-            .font(.caption2.weight(.bold))
+            .font(AyuWalkTypography.microStrong)
             .foregroundStyle(AyuWalkTheme.ink)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
@@ -152,14 +152,14 @@ struct RouteMapPreviewView: View {
     private func routePoint(activity: Activity, fallbackIndex: Int) -> some View {
         VStack(spacing: 5) {
             Text(String(fallbackIndex))
-                .font(.caption.weight(.bold))
+                .font(AyuWalkTypography.captionStrong)
                 .foregroundStyle(.white)
                 .frame(width: 28, height: 28)
                 .background(AyuWalkTheme.accent)
                 .clipShape(Circle())
 
             Text(activity.title)
-                .font(.caption2.weight(.semibold))
+                .font(AyuWalkTypography.microStrong)
                 .foregroundStyle(AyuWalkTheme.ink)
                 .lineLimit(1)
                 .frame(width: 88)

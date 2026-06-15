@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum AyuWalkDecorAssets {
-    static let paperTexture = "AWPaperTexture"
+    static let paperTexture = "AWReferencePaperTexture"
     static let paperCardSurface = "AWPaperCardSurface"
     static let washiTapeStrips = "AWWashiTapeStrips"
     static let washiTapeRose = "AWWashiTapeRose"

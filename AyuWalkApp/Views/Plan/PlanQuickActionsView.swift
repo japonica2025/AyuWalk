@@ -47,17 +47,17 @@ struct PlanQuickActionsView: View {
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text("查看电子手帐")
-                            .font(.body.weight(.bold))
+                            .font(AyuWalkTypography.bodyStrong)
                             .foregroundStyle(AyuWalkTheme.ink)
                         Text("已根据当前行程生成每日页面草稿")
-                            .font(.caption)
+                            .font(AyuWalkTypography.caption)
                             .foregroundStyle(AyuWalkTheme.mutedInk)
                     }
 
                     Spacer()
 
                     Image(systemName: "chevron.right")
-                        .font(.caption.weight(.bold))
+                        .font(AyuWalkTypography.icon(size: 12, weight: .bold))
                         .foregroundStyle(AyuWalkTheme.mutedInk)
                 }
                 .padding(14)
@@ -115,17 +115,17 @@ struct PlanQuickActionsView: View {
             AWIconBadge(systemImage: systemImage, tint: tint, size: 34)
 
             Text(title)
-                .font(.caption.weight(.semibold))
+                .font(AyuWalkTypography.captionStrong)
                 .foregroundStyle(AyuWalkTheme.mutedInk)
 
             Text(value)
-                .font(.headline.weight(.bold))
+                .font(AyuWalkTypography.sectionTitle)
                 .foregroundStyle(AyuWalkTheme.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
 
             Text(detail)
-                .font(.caption2)
+                .font(AyuWalkTypography.micro)
                 .foregroundStyle(AyuWalkTheme.mutedInk)
                 .lineLimit(2)
         }
