@@ -86,22 +86,8 @@ struct RouteMapPreviewView: View {
             ForEach(routeMapItems) { item in
                 Annotation(item.title, coordinate: item.coordinate) {
                     VStack(spacing: 4) {
-                        Text(String(item.order))
-                            .font(AyuWalkTypography.captionStrong)
-                            .foregroundStyle(.white)
-                            .frame(width: 30, height: 30)
-                            .background(AyuWalkTheme.accent)
-                            .clipShape(Circle())
-                            .shadow(color: AyuWalkTheme.ink.opacity(0.16), radius: 8, y: 4)
-
-                        Text(item.title)
-                            .font(AyuWalkTypography.microStrong)
-                            .foregroundStyle(AyuWalkTheme.ink)
-                            .lineLimit(1)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(AyuWalkTheme.surface.opacity(0.92))
-                            .clipShape(Capsule())
+                        AWMapMarkerBadge(text: String(item.order), tint: AyuWalkTheme.accent)
+                        AWMapFloatingLabel(text: item.title)
                     }
                 }
             }
@@ -111,13 +97,7 @@ struct RouteMapPreviewView: View {
     }
 
     private var routeLegend: some View {
-        Text("\(previewDay?.dateLabel ?? "路线") · \(routeMapItems.count) 个点位")
-            .font(AyuWalkTypography.microStrong)
-            .foregroundStyle(AyuWalkTheme.ink)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(AyuWalkTheme.surface.opacity(0.92))
-            .clipShape(Capsule())
+        AWMapFloatingLabel(text: "\(previewDay?.dateLabel ?? "路线") · \(routeMapItems.count) 个点位")
             .padding(10)
     }
 
@@ -151,12 +131,7 @@ struct RouteMapPreviewView: View {
 
     private func routePoint(activity: Activity, fallbackIndex: Int) -> some View {
         VStack(spacing: 5) {
-            Text(String(fallbackIndex))
-                .font(AyuWalkTypography.captionStrong)
-                .foregroundStyle(.white)
-                .frame(width: 28, height: 28)
-                .background(AyuWalkTheme.accent)
-                .clipShape(Circle())
+            AWMapMarkerBadge(text: String(fallbackIndex), tint: AyuWalkTheme.accent, size: 28)
 
             Text(activity.title)
                 .font(AyuWalkTypography.microStrong)

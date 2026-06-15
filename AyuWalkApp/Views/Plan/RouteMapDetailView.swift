@@ -67,86 +67,60 @@ struct RouteMapDetailView: View {
     private func mapMarker(for item: RouteMapDetailItem) -> some View {
         VStack(spacing: 4) {
             markerBadge(for: item)
-
-            Text(item.title)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(AyuWalkTheme.ink)
-                .lineLimit(1)
-                .padding(.horizontal, 7)
-                .padding(.vertical, 4)
-                .background(AyuWalkTheme.surface.opacity(0.94))
-                .clipShape(Capsule())
+            AWMapFloatingLabel(text: item.title)
         }
     }
 
     @ViewBuilder
     private func markerBadge(for item: RouteMapDetailItem) -> some View {
         if item.isLocked {
-            Image(systemName: "lock.fill")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(.white)
-                .frame(width: 32, height: 32)
-                .background(AyuWalkTheme.accent)
-                .clipShape(Circle())
-                .shadow(color: AyuWalkTheme.ink.opacity(0.18), radius: 8, y: 4)
+            AWMapMarkerBadge(systemImage: "lock.fill", tint: AyuWalkTheme.accent, size: 32)
         } else {
-            Text(String(item.order ?? 0))
-                .font(.caption.weight(.bold))
-                .foregroundStyle(.white)
-                .frame(width: 32, height: 32)
-                .background(AyuWalkTheme.secondaryAccent)
-                .clipShape(Circle())
-                .shadow(color: AyuWalkTheme.ink.opacity(0.18), radius: 8, y: 4)
+            AWMapMarkerBadge(text: String(item.order ?? 0), tint: AyuWalkTheme.secondaryAccent, size: 32)
         }
     }
 
     private var routeDrawer: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Capsule()
-                .fill(AyuWalkTheme.hairline)
-                .frame(width: 44, height: 5)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 2)
+        AWRouteDrawerSurface {
+            VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
+                Capsule()
+                    .fill(AyuWalkTheme.hairline)
+                    .frame(width: 44, height: 5)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 2)
 
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Day \(selectedDayNumber) 路线")
-                        .font(.title3.weight(.bold))
-                        .foregroundStyle(AyuWalkTheme.ink)
-                    Text("普通点位可拖动排序，锁定节点保留固定时间")
-                        .font(.caption)
-                        .foregroundStyle(AyuWalkTheme.mutedInk)
-                }
-
-                Spacer()
-
-                AWStatusPill(
-                    text: "\(displayedRouteItems.filter { $0.coordinate != nil }.count) 点",
-                    systemImage: "mappin.circle.fill",
-                    tint: AyuWalkTheme.secondaryAccent
-                )
-            }
-
-            dayPicker
-
-            ScrollView {
-                LazyVStack(spacing: 8) {
-                    ForEach(displayedRouteItems) { item in
-                        routeDraggableRow(item)
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Day \(selectedDayNumber) 路线")
+                            .font(AyuWalkTypography.pageTitle)
+                            .foregroundStyle(AyuWalkTheme.ink)
+                        Text("普通点位可拖动排序，锁定节点保留固定时间")
+                            .font(AyuWalkTypography.caption)
+                            .foregroundStyle(AyuWalkTheme.mutedInk)
                     }
+
+                    Spacer()
+
+                    AWStatusPill(
+                        text: "\(displayedRouteItems.filter { $0.coordinate != nil }.count) 点",
+                        systemImage: "mappin.circle.fill",
+                        tint: AyuWalkTheme.secondaryAccent
+                    )
                 }
-                .padding(.vertical, 2)
+
+                dayPicker
+
+                ScrollView {
+                    LazyVStack(spacing: AyuWalkSpacing.xs) {
+                        ForEach(displayedRouteItems) { item in
+                            routeDraggableRow(item)
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+                .frame(maxHeight: 292)
             }
-            .frame(maxHeight: 292)
         }
-        .padding(16)
-        .background(AyuWalkTheme.surface.opacity(0.98))
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .stroke(AyuWalkTheme.hairline, lineWidth: 1)
-        }
-        .shadow(color: AyuWalkTheme.softShadow, radius: 20, x: 0, y: 10)
         .padding(.horizontal, 14)
         .padding(.bottom, 14)
     }
@@ -242,19 +216,12 @@ struct RouteMapDetailView: View {
     @ViewBuilder
     private func routeRowBadge(for item: RouteMapDetailItem) -> some View {
         if item.isLocked {
-            Image(systemName: "lock.fill")
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(.white)
-                .frame(width: 30, height: 30)
-                .background(AyuWalkTheme.accent)
-                .clipShape(Circle())
+            AWMapMarkerBadge(systemImage: "lock.fill", tint: AyuWalkTheme.accent)
         } else {
-            Text(String(item.order ?? 0))
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(.white)
-                .frame(width: 30, height: 30)
-                .background(item.coordinate == nil ? AyuWalkTheme.mutedInk : AyuWalkTheme.secondaryAccent)
-                .clipShape(Circle())
+            AWMapMarkerBadge(
+                text: String(item.order ?? 0),
+                tint: item.coordinate == nil ? AyuWalkTheme.mutedInk : AyuWalkTheme.secondaryAccent
+            )
         }
     }
 
