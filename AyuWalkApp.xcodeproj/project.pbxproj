@@ -24,6 +24,7 @@
 		A50000000000000000000005 /* AWCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000004 /* AWCard.swift */; };
 		A50000000000000000000007 /* AWChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000006 /* AWChip.swift */; };
 		A5000000000000000000001B /* AWMapChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5000000000000000000001A /* AWMapChrome.swift */; };
+		A5000000000000000000001D /* AWPaperComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5000000000000000000001C /* AWPaperComponents.swift */; };
 		A50000000000000000000009 /* AWTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000008 /* AWTextField.swift */; };
 		A5000000000000000000000B /* AWFloatingTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5000000000000000000000A /* AWFloatingTabBar.swift */; };
 		A5000000000000000000000E /* AWPageScaffold.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5000000000000000000000D /* AWPageScaffold.swift */; };
@@ -73,6 +74,7 @@
 		A50000000000000000000004 /* AWCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWCard.swift; sourceTree = "<group>"; };
 		A50000000000000000000006 /* AWChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWChip.swift; sourceTree = "<group>"; };
 		A5000000000000000000001A /* AWMapChrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWMapChrome.swift; sourceTree = "<group>"; };
+		A5000000000000000000001C /* AWPaperComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWPaperComponents.swift; sourceTree = "<group>"; };
 		A50000000000000000000008 /* AWTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWTextField.swift; sourceTree = "<group>"; };
 		A5000000000000000000000A /* AWFloatingTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWFloatingTabBar.swift; sourceTree = "<group>"; };
 		A5000000000000000000000D /* AWPageScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWPageScaffold.swift; sourceTree = "<group>"; };
@@ -182,6 +184,7 @@
 				A50000000000000000000004 /* AWCard.swift */,
 				A50000000000000000000006 /* AWChip.swift */,
 				A5000000000000000000001A /* AWMapChrome.swift */,
+				A5000000000000000000001C /* AWPaperComponents.swift */,
 				A50000000000000000000008 /* AWTextField.swift */,
 				A5000000000000000000000A /* AWFloatingTabBar.swift */,
 			);
@@ -398,6 +401,7 @@
 				A50000000000000000000005 /* AWCard.swift in Sources */,
 				A50000000000000000000007 /* AWChip.swift in Sources */,
 				A5000000000000000000001B /* AWMapChrome.swift in Sources */,
+				A5000000000000000000001D /* AWPaperComponents.swift in Sources */,
 				A50000000000000000000009 /* AWTextField.swift in Sources */,
 				A5000000000000000000000B /* AWFloatingTabBar.swift in Sources */,
 				A5000000000000000000000E /* AWPageScaffold.swift in Sources */,

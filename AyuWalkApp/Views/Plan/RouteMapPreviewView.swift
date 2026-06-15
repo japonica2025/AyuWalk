@@ -34,45 +34,29 @@ struct RouteMapPreviewView: View {
     }
 
     var body: some View {
-        AWPanel(background: AyuWalkTheme.surface, showsPaperTexture: true) {
-            VStack(alignment: .leading, spacing: 14) {
-                header
-
-                if routeMapItems.isEmpty {
-                    fallbackRoutePreview
-                        .frame(height: 168)
-                } else {
-                    mapPreview
-                        .frame(height: 188)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                        .overlay(alignment: .bottomLeading) {
-                            routeLegend
-                        }
-                }
-
-                if let previewDay {
-                    Text("\(previewDay.dateLabel) · \(previewDay.title)")
-                        .font(AyuWalkTypography.bodyStrong)
-                        .foregroundStyle(AyuWalkTheme.ink)
-                }
-            }
-        }
-    }
-
-    private var header: some View {
-        HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("路线地图")
-                    .font(AyuWalkTypography.sectionTitle)
-                    .foregroundStyle(AyuWalkTheme.ink)
-                Text(routeMapItems.isEmpty ? "缺少坐标时展示路线顺序" : "仅预览当天路线，完整路线点进地图查看")
-                    .font(AyuWalkTypography.caption)
-                    .foregroundStyle(AyuWalkTheme.mutedInk)
-            }
-
-            Spacer()
-
+        AWHomeMapCard(
+            title: "路线地图",
+            subtitle: routeMapItems.isEmpty ? "缺少坐标时展示路线顺序" : "仅预览当天路线，完整路线点进地图查看"
+        ) {
             AWStatusPill(text: routeOrderText, systemImage: "map.fill", tint: AyuWalkTheme.accent)
+        } content: {
+            if routeMapItems.isEmpty {
+                fallbackRoutePreview
+                    .frame(height: 168)
+            } else {
+                mapPreview
+                    .frame(height: 188)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(alignment: .bottomLeading) {
+                        routeLegend
+                    }
+            }
+        } footer: {
+            if let previewDay {
+                Text("\(previewDay.dateLabel) · \(previewDay.title)")
+                    .font(AyuWalkTypography.bodyStrong)
+                    .foregroundStyle(AyuWalkTheme.ink)
+            }
         }
     }
 

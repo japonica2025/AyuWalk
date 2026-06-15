@@ -8,16 +8,14 @@ struct PlanQuickActionsView: View {
     let onOpenJournal: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            AWSectionHeader(
-                title: "出行管理",
-                subtitle: "预算、行李和手帐从同一份行程生成",
-                accessory: trip.budgetPlan?.currencyCode
-            )
-
+        AWPaperSection(
+            title: "出行管理",
+            subtitle: "预算、行李和手帐从同一份行程生成",
+            accessory: trip.budgetPlan?.currencyCode
+        ) {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 Button(action: onOpenBudget) {
-                    summaryCard(
+                    AWQuickActionCard(
                         title: "预算规划",
                         value: budgetText,
                         detail: budgetDetail,
@@ -29,7 +27,7 @@ struct PlanQuickActionsView: View {
                 .accessibilityLabel("预算规划")
 
                 Button(action: onOpenPacking) {
-                    summaryCard(
+                    AWQuickActionCard(
                         title: "行李清单",
                         value: "\(trip.packingList?.items.count ?? 0) 件",
                         detail: packingDetail,
@@ -42,25 +40,21 @@ struct PlanQuickActionsView: View {
             }
 
             Button(action: onOpenJournal) {
-                AWCardChrome(background: AyuWalkTheme.surface, padding: AyuWalkSpacing.md + 2, showsPaperTexture: true) {
-                    HStack(spacing: 12) {
-                        AWIconBadge(systemImage: "book.pages.fill", tint: AyuWalkTheme.accent, size: 42)
-
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("查看电子手帐")
-                                .font(AyuWalkTypography.bodyStrong)
-                                .foregroundStyle(AyuWalkTheme.ink)
-                            Text("已根据当前行程生成每日页面草稿")
-                                .font(AyuWalkTypography.caption)
-                                .foregroundStyle(AyuWalkTheme.mutedInk)
-                        }
-
-                        Spacer()
-
-                        Image(systemName: "chevron.right")
-                            .font(AyuWalkTypography.icon(size: 12, weight: .bold))
-                            .foregroundStyle(AyuWalkTheme.mutedInk)
-                    }
+                AWPaperSurface(
+                    background: AyuWalkTheme.surface,
+                    tint: AyuWalkTheme.accent,
+                    cornerRadius: AyuWalkRadii.card,
+                    padding: AyuWalkSpacing.md + 2,
+                    borderOpacity: 0.10,
+                    shadowRadius: 8,
+                    shadowY: 4
+                ) {
+                    AWInlineActionRow(
+                        title: "查看电子手帐",
+                        subtitle: "已根据当前行程生成每日页面草稿",
+                        systemImage: "book.pages.fill",
+                        tint: AyuWalkTheme.accent
+                    )
                 }
             }
             .buttonStyle(.plain)
@@ -97,36 +91,6 @@ struct PlanQuickActionsView: View {
 
         let packedCount = items.filter(\.isPacked).count
         return "\(packedCount)/\(items.count) 已完成"
-    }
-
-    private func summaryCard(
-        title: String,
-        value: String,
-        detail: String,
-        systemImage: String,
-        tint: Color
-    ) -> some View {
-        AWCardChrome(background: AyuWalkTheme.surface, cornerRadius: AyuWalkRadii.smallCard, padding: AyuWalkSpacing.md + 2, showsPaperTexture: true) {
-            VStack(alignment: .leading, spacing: 10) {
-                AWIconBadge(systemImage: systemImage, tint: tint, size: 34)
-
-                Text(title)
-                    .font(AyuWalkTypography.captionStrong)
-                    .foregroundStyle(AyuWalkTheme.mutedInk)
-
-                Text(value)
-                    .font(AyuWalkTypography.sectionTitle)
-                    .foregroundStyle(AyuWalkTheme.ink)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-
-                Text(detail)
-                    .font(AyuWalkTypography.micro)
-                    .foregroundStyle(AyuWalkTheme.mutedInk)
-                    .lineLimit(2)
-            }
-            .frame(maxWidth: .infinity, minHeight: 134, alignment: .topLeading)
-        }
     }
 }
 
