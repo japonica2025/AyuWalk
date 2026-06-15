@@ -62,6 +62,7 @@ struct AWEditorialPageTitle: View {
 
 struct AWSheetScaffold<Content: View>: View {
     let title: String
+    var maxContentWidth: CGFloat = 430
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -76,7 +77,11 @@ struct AWSheetScaffold<Content: View>: View {
                     VStack(alignment: .leading, spacing: AyuWalkSpacing.lg) {
                         content
                     }
-                    .padding(AyuWalkSpacing.xl)
+                    .frame(maxWidth: maxContentWidth, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal, AyuWalkSpacing.pageInset)
+                    .padding(.top, AyuWalkSpacing.xl)
+                    .padding(.bottom, AyuWalkSpacing.xxl)
                 }
             }
             .navigationTitle(title)
