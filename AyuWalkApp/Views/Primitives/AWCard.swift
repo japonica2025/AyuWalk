@@ -111,6 +111,22 @@ struct AWPanel<Content: View>: View {
     }
 }
 
+struct AWWashiTape: View {
+    var image: Image = .awWashiTapeRose
+    var width: CGFloat = 128
+    var rotation: Angle = .degrees(-2)
+
+    var body: some View {
+        image
+            .resizable()
+            .scaledToFit()
+            .frame(width: width)
+            .rotationEffect(rotation)
+            .shadow(color: AyuWalkTheme.ink.opacity(0.08), radius: 4, y: 2)
+            .allowsHitTesting(false)
+    }
+}
+
 struct AWEmptyState: View {
     let title: String
     var subtitle: String?

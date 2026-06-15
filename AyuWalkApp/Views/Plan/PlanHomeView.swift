@@ -372,14 +372,8 @@ struct PlanHomeView: View {
             }
         }
         .overlay(alignment: .topLeading) {
-            Image.awWashiTapeRose
-                .resizable()
-                .scaledToFit()
-                .frame(width: 128)
-                .rotationEffect(.degrees(-2))
+            AWWashiTape()
                 .offset(x: 30, y: -20)
-                .shadow(color: AyuWalkTheme.ink.opacity(0.08), radius: 4, y: 2)
-                .allowsHitTesting(false)
         }
     }
 
