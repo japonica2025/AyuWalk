@@ -18,16 +18,32 @@ struct AWPageScaffold<Content: View>: View {
             .padding(.bottom, bottomPadding)
         }
         .background {
-            background
-            if showsPaperTexture {
+            AWPaperBackground(
+                color: background,
+                textureOpacity: showsPaperTexture ? AyuWalkTexture.pageOpacity : 0
+            )
+        }
+    }
+}
+
+struct AWPaperBackground: View {
+    var color: Color = AyuWalkTheme.canvas
+    var textureOpacity: Double = AyuWalkTexture.pageOpacity
+
+    var body: some View {
+        ZStack {
+            color
+
+            if textureOpacity > 0 {
                 Image.awPaperTexture
                     .resizable()
                     .scaledToFill()
-                    .opacity(AyuWalkTexture.pageOpacity)
+                    .opacity(textureOpacity)
                     .blendMode(.multiply)
-                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
             }
         }
+        .ignoresSafeArea()
     }
 }
 
@@ -38,14 +54,10 @@ struct AWSheetScaffold<Content: View>: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AyuWalkTheme.pageBackground
-                    .ignoresSafeArea()
-                Image.awPaperTexture
-                    .resizable()
-                    .scaledToFill()
-                    .opacity(AyuWalkTexture.sheetOpacity)
-                    .blendMode(.multiply)
-                    .ignoresSafeArea()
+                AWPaperBackground(
+                    color: AyuWalkTheme.pageBackground,
+                    textureOpacity: AyuWalkTexture.sheetOpacity
+                )
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: AyuWalkSpacing.lg) {

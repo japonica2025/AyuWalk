@@ -386,17 +386,7 @@ struct PlanHomeView: View {
     }
 
     private var homePaperBackground: some View {
-        ZStack {
-            AyuWalkTheme.canvas
-
-            Image.awPaperTexture
-                .resizable()
-                .scaledToFill()
-                .opacity(AyuWalkTexture.pageOpacity)
-                .blendMode(.multiply)
-                .allowsHitTesting(false)
-        }
-        .ignoresSafeArea()
+        AWPaperBackground()
     }
 
     private var routeActivities: [Activity] {
