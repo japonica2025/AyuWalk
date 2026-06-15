@@ -24,7 +24,7 @@ struct ItineraryTimelineView: View {
     @State private var userCollapsedDayIDs: Set<UUID> = []
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: AyuWalkSpacing.lg) {
             ForEach(orderedDays) { day in
                 daySection(day)
                     .id(day.id)
@@ -39,8 +39,16 @@ struct ItineraryTimelineView: View {
             by: \.activityID
         )
 
-        return AWCardChrome(background: AyuWalkTheme.surface, showsPaperTexture: true) {
-            VStack(alignment: .leading, spacing: 12) {
+        return AWPaperSurface(
+            background: AyuWalkTheme.surface,
+            tint: day.dayNumber == currentDayNumber ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent,
+            cornerRadius: AyuWalkTheme.panelRadius,
+            padding: AyuWalkSpacing.lg,
+            borderOpacity: day.dayNumber == currentDayNumber ? 0.14 : 0.09,
+            shadowRadius: 14,
+            shadowY: 7
+        ) {
+            VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
                 dayHeader(day, isExpanded: isExpanded)
 
                 if isExpanded {
@@ -67,6 +75,16 @@ struct ItineraryTimelineView: View {
                     activityList(day, conflictsByActivityID: conflictsByActivityID)
                 }
             }
+        }
+        .overlay(alignment: .topLeading) {
+            Image.awWashiTapeCream
+                .resizable()
+                .scaledToFit()
+                .frame(width: 72, height: 24)
+                .rotationEffect(.degrees(-3))
+                .opacity(day.dayNumber == currentDayNumber ? 0.62 : 0.42)
+                .offset(x: 22, y: -12)
+                .allowsHitTesting(false)
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.88), value: isExpanded)
     }
@@ -102,13 +120,35 @@ struct ItineraryTimelineView: View {
         .environment(\.editMode, .constant(.active))
         .frame(height: activityListHeight(for: activities.count))
         .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
+                .stroke(AyuWalkTheme.hairline, lineWidth: 1)
+        }
     }
 
     private func dayHeader(_ day: TripDay, isExpanded: Bool) -> some View {
         Button {
             toggleDay(day)
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: AyuWalkSpacing.md) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            day.dayNumber == currentDayNumber
+                                ? AyuWalkTheme.accent.opacity(0.14)
+                                : AyuWalkTheme.secondaryAccent.opacity(0.12)
+                        )
+                        .frame(width: 42, height: 42)
+
+                    Text("\(day.dayNumber)")
+                        .font(AyuWalkTypography.captionStrong)
+                        .foregroundStyle(
+                            day.dayNumber == currentDayNumber
+                                ? AyuWalkTheme.accent
+                                : AyuWalkTheme.secondaryAccent
+                        )
+                }
+
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 8) {
                         Text("\(day.dateLabel)｜\(day.title)")
@@ -127,10 +167,11 @@ struct ItineraryTimelineView: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.down")
-                    .font(AyuWalkTypography.icon(size: 12, weight: .bold))
-                    .foregroundStyle(AyuWalkTheme.mutedInk)
-                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                AWStickerIconTray(
+                    systemImages: isExpanded ? ["chevron.up"] : ["chevron.down"],
+                    tint: day.dayNumber == currentDayNumber ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent
+                )
+                .scaleEffect(0.82)
             }
             .contentShape(Rectangle())
         }
@@ -249,7 +290,7 @@ struct ItineraryTimelineView: View {
                         .font(AyuWalkTypography.icon(size: 17, weight: .bold))
                         .foregroundStyle(isCompleted ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.mutedInk)
                         .frame(width: 32, height: 32)
-                        .background(AyuWalkTheme.pageBackground)
+                        .background(AyuWalkTheme.chipSurface)
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -262,7 +303,7 @@ struct ItineraryTimelineView: View {
                         .font(AyuWalkTypography.icon(size: 12, weight: .bold))
                         .foregroundStyle(AyuWalkTheme.accent)
                         .frame(width: 32, height: 32)
-                        .background(AyuWalkTheme.pageBackground)
+                        .background(AyuWalkTheme.chipSurface)
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -304,21 +345,32 @@ struct ItineraryTimelineView: View {
                         .font(AyuWalkTypography.icon(size: 12, weight: .bold))
                         .foregroundStyle(AyuWalkTheme.ink)
                         .frame(width: 32, height: 32)
-                        .background(AyuWalkTheme.pageBackground)
+                        .background(AyuWalkTheme.chipSurface)
                         .clipShape(Circle())
                 }
                 .accessibilityLabel("管理\(activity.title)")
             }
         }
-        .padding(10)
-        .background(
+        .padding(AyuWalkSpacing.md)
+        .background {
             RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
-                .fill(activity.id == highlightedActivityID ? AyuWalkTheme.secondaryAccent.opacity(0.12) : Color.clear)
-        )
+                .fill(
+                    activity.id == highlightedActivityID
+                        ? AyuWalkTheme.secondaryAccent.opacity(0.12)
+                        : AyuWalkTheme.surface.opacity(0.82)
+                )
+
+            Image.awPaperCardSurface
+                .resizable()
+                .scaledToFill()
+                .opacity(AyuWalkTexture.cardOpacity * 0.75)
+                .blendMode(.multiply)
+                .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+        }
         .overlay {
             RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
                 .stroke(
-                    activity.id == highlightedActivityID ? AyuWalkTheme.secondaryAccent.opacity(0.45) : Color.clear,
+                    activity.id == highlightedActivityID ? AyuWalkTheme.secondaryAccent.opacity(0.45) : AyuWalkTheme.hairline,
                     lineWidth: 1
                 )
         }
@@ -367,7 +419,7 @@ struct ItineraryTimelineView: View {
             .font(AyuWalkTypography.captionStrong)
             .foregroundStyle(.white)
             .frame(width: 26, height: 26)
-            .background(AyuWalkTheme.secondaryAccent)
+            .background(AyuWalkTheme.accent)
             .clipShape(Circle())
     }
 
