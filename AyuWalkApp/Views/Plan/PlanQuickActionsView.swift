@@ -42,30 +42,25 @@ struct PlanQuickActionsView: View {
             }
 
             Button(action: onOpenJournal) {
-                HStack(spacing: 12) {
-                    AWIconBadge(systemImage: "book.pages.fill", tint: AyuWalkTheme.accent, size: 42)
+                AWCardChrome(background: AyuWalkTheme.surface, padding: AyuWalkSpacing.md + 2, showsPaperTexture: true) {
+                    HStack(spacing: 12) {
+                        AWIconBadge(systemImage: "book.pages.fill", tint: AyuWalkTheme.accent, size: 42)
 
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("查看电子手帐")
-                            .font(AyuWalkTypography.bodyStrong)
-                            .foregroundStyle(AyuWalkTheme.ink)
-                        Text("已根据当前行程生成每日页面草稿")
-                            .font(AyuWalkTypography.caption)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("查看电子手帐")
+                                .font(AyuWalkTypography.bodyStrong)
+                                .foregroundStyle(AyuWalkTheme.ink)
+                            Text("已根据当前行程生成每日页面草稿")
+                                .font(AyuWalkTypography.caption)
+                                .foregroundStyle(AyuWalkTheme.mutedInk)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(AyuWalkTypography.icon(size: 12, weight: .bold))
                             .foregroundStyle(AyuWalkTheme.mutedInk)
                     }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(AyuWalkTypography.icon(size: 12, weight: .bold))
-                        .foregroundStyle(AyuWalkTheme.mutedInk)
-                }
-                .padding(14)
-                .background(AyuWalkTheme.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(AyuWalkTheme.hairline, lineWidth: 1)
                 }
             }
             .buttonStyle(.plain)
@@ -111,31 +106,26 @@ struct PlanQuickActionsView: View {
         systemImage: String,
         tint: Color
     ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            AWIconBadge(systemImage: systemImage, tint: tint, size: 34)
+        AWCardChrome(background: AyuWalkTheme.surface, cornerRadius: AyuWalkRadii.smallCard, padding: AyuWalkSpacing.md + 2, showsPaperTexture: true) {
+            VStack(alignment: .leading, spacing: 10) {
+                AWIconBadge(systemImage: systemImage, tint: tint, size: 34)
 
-            Text(title)
-                .font(AyuWalkTypography.captionStrong)
-                .foregroundStyle(AyuWalkTheme.mutedInk)
+                Text(title)
+                    .font(AyuWalkTypography.captionStrong)
+                    .foregroundStyle(AyuWalkTheme.mutedInk)
 
-            Text(value)
-                .font(AyuWalkTypography.sectionTitle)
-                .foregroundStyle(AyuWalkTheme.ink)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                Text(value)
+                    .font(AyuWalkTypography.sectionTitle)
+                    .foregroundStyle(AyuWalkTheme.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
 
-            Text(detail)
-                .font(AyuWalkTypography.micro)
-                .foregroundStyle(AyuWalkTheme.mutedInk)
-                .lineLimit(2)
-        }
-        .frame(maxWidth: .infinity, minHeight: 134, alignment: .topLeading)
-        .padding(14)
-        .background(AyuWalkTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(AyuWalkTheme.hairline, lineWidth: 1)
+                Text(detail)
+                    .font(AyuWalkTypography.micro)
+                    .foregroundStyle(AyuWalkTheme.mutedInk)
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity, minHeight: 134, alignment: .topLeading)
         }
     }
 }

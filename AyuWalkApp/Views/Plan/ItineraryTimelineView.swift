@@ -39,50 +39,35 @@ struct ItineraryTimelineView: View {
             by: \.activityID
         )
 
-        return VStack(alignment: .leading, spacing: 12) {
-            dayHeader(day, isExpanded: isExpanded)
+        return AWCardChrome(background: AyuWalkTheme.surface, showsPaperTexture: true) {
+            VStack(alignment: .leading, spacing: 12) {
+                dayHeader(day, isExpanded: isExpanded)
 
-            if isExpanded {
-                HStack {
-                    Spacer()
+                if isExpanded {
+                    HStack {
+                        Spacer()
 
-                    Button {
-                        onAddActivity(day)
-                    } label: {
-                        Label("新增", systemImage: "plus")
-                            .font(AyuWalkTypography.captionStrong)
-                            .foregroundStyle(AyuWalkTheme.secondaryAccent)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 7)
-                            .background(AyuWalkTheme.pageBackground)
-                            .clipShape(Capsule())
+                        AWActionCapsuleButton(
+                            title: "新增",
+                            systemImage: "plus",
+                            tint: AyuWalkTheme.secondaryAccent
+                        ) {
+                            onAddActivity(day)
+                        }
+
+                        AWActionCapsuleButton(
+                            title: "重排当天",
+                            systemImage: "arrow.triangle.2.circlepath",
+                            tint: AyuWalkTheme.accent
+                        ) {
+                            onRescheduleDay(day)
+                        }
                     }
-                    .buttonStyle(.plain)
 
-                    Button {
-                        onRescheduleDay(day)
-                    } label: {
-                        Label("重排当天", systemImage: "arrow.triangle.2.circlepath")
-                            .font(AyuWalkTypography.captionStrong)
-                            .foregroundStyle(AyuWalkTheme.accent)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 7)
-                            .background(AyuWalkTheme.pageBackground)
-                            .clipShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
+                    activityList(day, conflictsByActivityID: conflictsByActivityID)
                 }
-
-                activityList(day, conflictsByActivityID: conflictsByActivityID)
             }
         }
-        .padding()
-        .background(AyuWalkTheme.paper)
-        .clipShape(RoundedRectangle(cornerRadius: AyuWalkTheme.cardRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: AyuWalkTheme.cardRadius)
-                .stroke(AyuWalkTheme.border)
-        )
         .animation(.spring(response: 0.35, dampingFraction: 0.88), value: isExpanded)
     }
 
