@@ -263,117 +263,52 @@ struct PlanHomeView: View {
     }
 
     private func tripCover(scrollProxy: ScrollViewProxy) -> some View {
-        AWPanel(background: AyuWalkTheme.surface, showsPaperTexture: true) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("AYU WALK")
-                            .font(AyuWalkTypography.brand)
-                            .foregroundStyle(AyuWalkTheme.accent)
-                        Text("织步记")
-                            .font(AyuWalkTypography.captionStrong)
-                            .foregroundStyle(AyuWalkTheme.mutedInk)
-                    }
-
-                    Spacer()
-
-                    AWPlainIconButton(
-                        systemImage: "rectangle.stack.fill",
-                        label: "打开行程库",
-                        tint: AyuWalkTheme.secondaryAccent
-                    ) {
-                        activeSheet = .trips
-                    }
-
-                    AWStatusPill(
-                        text: appState.isGeneratingTrip ? "生成中" : "可编辑",
-                        systemImage: appState.isGeneratingTrip ? "sparkles" : "checkmark.seal.fill",
-                        tint: appState.isGeneratingTrip ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent,
-                        isFilled: appState.isGeneratingTrip
-                    )
+        AWTripCoverCard(
+            brandTitle: "AYU WALK",
+            brandSubtitle: "织步记",
+            title: appState.trip.title,
+            message: headerMessage,
+            statusText: appState.isGeneratingTrip ? "生成中" : "可编辑",
+            statusSystemImage: appState.isGeneratingTrip ? "sparkles" : "checkmark.seal.fill",
+            statusTint: appState.isGeneratingTrip ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent,
+            isStatusFilled: appState.isGeneratingTrip,
+            destination: appState.trip.destination,
+            dateLabel: currentDateLabel,
+            dayLabel: "Day \(currentDayNumber)",
+            budgetSummary: budgetSummary,
+            packingSummary: packingSummary,
+            nextStopTitle: nextRouteTitle,
+            onOpenTrips: {
+                activeSheet = .trips
+            },
+            onAIAdjust: {
+                activeSheet = .aiAdjustment
+            },
+            onOpenBudget: {
+                activeSheet = .budget
+            },
+            onOpenPacking: {
+                activeSheet = .packing
+            },
+            onJumpNext: {
+                guard let day = currentTripDay,
+                      let activity = nextRouteActivity else { return }
+                highlightedActivityID = activity.id
+                withAnimation(.spring(response: 0.45, dampingFraction: 0.88)) {
+                    scrollProxy.scrollTo(day.id, anchor: .top)
                 }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(appState.trip.title)
-                        .font(AyuWalkTypography.screenTitle)
-                        .foregroundStyle(AyuWalkTheme.ink)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.78)
-
-                    Text(headerMessage)
-                        .font(AyuWalkTypography.body)
-                        .foregroundStyle(AyuWalkTheme.mutedInk)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        AWStatusPill(text: appState.trip.destination, systemImage: "mappin.and.ellipse", tint: AyuWalkTheme.accent)
-                        AWStatusPill(text: currentDateLabel, systemImage: "calendar", tint: AyuWalkTheme.secondaryAccent)
-                        AWStatusPill(text: "Day \(currentDayNumber)", systemImage: "rectangle.stack.fill", tint: AyuWalkTheme.secondaryAccent)
+                Task {
+                    try? await Task.sleep(for: .seconds(2))
+                    if highlightedActivityID == activity.id {
+                        highlightedActivityID = nil
                     }
                 }
-
-                AWActionCapsuleButton(
-                    title: "AI 调整",
-                    systemImage: "sparkles",
-                    tint: AyuWalkTheme.accent,
-                    isProminent: false
-                ) {
-                    activeSheet = .aiAdjustment
-                }
-
-                HStack(spacing: 10) {
-                    Button {
-                        activeSheet = .budget
-                    } label: {
-                        AWMetricTile(title: "预算规划", value: budgetSummary, tint: AyuWalkTheme.secondaryAccent)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("打开预算规划")
-
-                    Button {
-                        activeSheet = .packing
-                    } label: {
-                        AWMetricTile(title: "行李清单", value: packingSummary, tint: AyuWalkTheme.accent)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("打开行李清单")
-
-                    Button {
-                        guard let day = currentTripDay,
-                              let activity = nextRouteActivity else { return }
-                        highlightedActivityID = activity.id
-                        withAnimation(.spring(response: 0.45, dampingFraction: 0.88)) {
-                            scrollProxy.scrollTo(day.id, anchor: .top)
-                        }
-                        Task {
-                            try? await Task.sleep(for: .seconds(2))
-                            if highlightedActivityID == activity.id {
-                                highlightedActivityID = nil
-                            }
-                        }
-                    } label: {
-                        AWMetricTile(title: "下一站", value: nextRouteTitle, tint: AyuWalkTheme.ink)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("跳到下一站")
-                }
-
-                Button {
-                    isShowingRouteMap = true
-                } label: {
-                    RouteMapPreviewView(days: appState.trip.days, previewDayNumber: currentDayNumber)
-                }
-                .buttonStyle(.plain)
+            },
+            onOpenRouteMap: {
+                isShowingRouteMap = true
             }
-        }
-        .overlay(alignment: .topLeading) {
-            AWWashiTape()
-                .offset(x: 30, y: -20)
+        ) {
+            RouteMapPreviewView(days: appState.trip.days, previewDayNumber: currentDayNumber)
         }
     }
 

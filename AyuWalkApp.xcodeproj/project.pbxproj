@@ -19,6 +19,7 @@
 		867E98218DC92BC1761B1940 /* RouteMapPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D215303CEB1E58B096AA5E /* RouteMapPreviewView.swift */; };
 		8F4A61D047F14B4FAF9400C1 /* RouteMapDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4A61CF47F14B4FAF9400C1 /* RouteMapDetailView.swift */; };
 		8F93B01D4D6E4F82A7C42001 /* AyuWalkComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F93B01C4D6E4F82A7C42001 /* AyuWalkComponents.swift */; };
+		8F93B0234D6E4F82A7C42001 /* AWHomeComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F93B0224D6E4F82A7C42001 /* AWHomeComponents.swift */; };
 		A50000000000000000000003 /* AWButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000002 /* AWButton.swift */; };
 		A50000000000000000000005 /* AWCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000004 /* AWCard.swift */; };
 		A50000000000000000000007 /* AWChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50000000000000000000006 /* AWChip.swift */; };
@@ -67,6 +68,7 @@
 		8F4A61CF47F14B4FAF9400C1 /* RouteMapDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteMapDetailView.swift; sourceTree = "<group>"; };
 		8F93B01C4D6E4F82A7C42001 /* AyuWalkComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AyuWalkComponents.swift; sourceTree = "<group>"; };
 		8F93B0214D6E4F82A7C42001 /* AWJournalComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWJournalComponents.swift; sourceTree = "<group>"; };
+		8F93B0224D6E4F82A7C42001 /* AWHomeComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWHomeComponents.swift; sourceTree = "<group>"; };
 		A50000000000000000000002 /* AWButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWButton.swift; sourceTree = "<group>"; };
 		A50000000000000000000004 /* AWCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWCard.swift; sourceTree = "<group>"; };
 		A50000000000000000000006 /* AWChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AWChip.swift; sourceTree = "<group>"; };
@@ -166,6 +168,7 @@
 			isa = PBXGroup;
 			children = (
 				8F93B01C4D6E4F82A7C42001 /* AyuWalkComponents.swift */,
+				8F93B0224D6E4F82A7C42001 /* AWHomeComponents.swift */,
 				8F93B0214D6E4F82A7C42001 /* AWJournalComponents.swift */,
 				C92935F5A0F09732F47EA0B5 /* JournalPageCard.swift */,
 			);
@@ -390,6 +393,7 @@
 				D0A61B3FC1582BC9B28A3F77 /* AyuWalkTheme.swift in Sources */,
 				A60000000000000000000001 /* AyuWalkDecorAssets.swift in Sources */,
 				8F93B01D4D6E4F82A7C42001 /* AyuWalkComponents.swift in Sources */,
+				8F93B0234D6E4F82A7C42001 /* AWHomeComponents.swift in Sources */,
 				A50000000000000000000003 /* AWButton.swift in Sources */,
 				A50000000000000000000005 /* AWCard.swift in Sources */,
 				A50000000000000000000007 /* AWChip.swift in Sources */,
