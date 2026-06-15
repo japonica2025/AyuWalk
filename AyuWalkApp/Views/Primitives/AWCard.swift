@@ -86,7 +86,7 @@ struct AWInfoRow: View {
 
 struct AWPanel<Content: View>: View {
     var background: Color = AyuWalkTheme.surface
-    var showsPaperTexture = false
+    var showsPaperTexture = true
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -151,7 +151,14 @@ struct AWEmptyState: View {
         }
         .frame(maxWidth: .infinity)
         .padding(AyuWalkSpacing.xl)
-        .background(AyuWalkTheme.surface)
+        .background {
+            AyuWalkTheme.surface
+            Image.awPaperCardSurface
+                .resizable()
+                .scaledToFill()
+                .opacity(AyuWalkTexture.cardOpacity)
+                .blendMode(.multiply)
+        }
         .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
@@ -161,11 +168,13 @@ struct AWEmptyState: View {
 }
 
 struct AWCardChrome<Content: View>: View {
-    var background: Color = AyuWalkTheme.paper
+    var background: Color = AyuWalkTheme.surface
     var cornerRadius: CGFloat = AyuWalkRadii.card
     var padding: CGFloat = AyuWalkSpacing.lg
-    var showsShadow = false
-    var showsPaperTexture = false
+    var showsShadow = true
+    var showsPaperTexture = true
+    var borderTint: Color = AyuWalkTheme.accent
+    var borderOpacity: Double = 0.10
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -185,8 +194,8 @@ struct AWCardChrome<Content: View>: View {
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(AyuWalkTheme.border, lineWidth: 1)
+                    .stroke(borderTint.opacity(borderOpacity), lineWidth: 1)
             }
-            .shadow(color: showsShadow ? AyuWalkShadow.card : .clear, radius: 16, y: 8)
+            .shadow(color: showsShadow ? AyuWalkShadow.card : .clear, radius: 14, y: 7)
     }
 }

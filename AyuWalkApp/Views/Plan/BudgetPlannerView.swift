@@ -60,6 +60,43 @@ struct BudgetPlannerView: View {
 
     var body: some View {
         AWSheetScaffold(title: "预算规划") {
+            AWPaperSurface(
+                background: AyuWalkTheme.surface,
+                tint: AyuWalkTheme.accent,
+                cornerRadius: AyuWalkTheme.panelRadius,
+                padding: AyuWalkSpacing.lg,
+                borderOpacity: 0.10,
+                shadowRadius: 14,
+                shadowY: 7
+            ) {
+                VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
+                    HStack {
+                        AWStickerIconTray(systemImages: ["creditcard.fill", "person.2.fill"], tint: AyuWalkTheme.accent)
+                        Spacer()
+                        AWPaperTab(title: budget.currencyCode, systemImage: "banknote", tint: AyuWalkTheme.secondaryAccent)
+                    }
+
+                    Text("预算像旅行账本一样整理")
+                        .font(AyuWalkTypography.sectionTitle)
+                        .foregroundStyle(AyuWalkTheme.ink)
+
+                    Text("总预算、AA、汇率和支出记录仍然使用同一份行程数据。")
+                        .font(AyuWalkTypography.caption)
+                        .foregroundStyle(AyuWalkTheme.mutedInk)
+
+                    AWDecorDivider(tint: AyuWalkTheme.accent)
+                }
+            }
+            .overlay(alignment: .topLeading) {
+                Image.awWashiTapeRose
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 76, height: 24)
+                    .opacity(0.48)
+                    .offset(x: 26, y: -12)
+                    .allowsHitTesting(false)
+            }
+
             AWBudgetTotalCard(
                 currencyCode: budget.currencyCode,
                 participants: trip.participants,

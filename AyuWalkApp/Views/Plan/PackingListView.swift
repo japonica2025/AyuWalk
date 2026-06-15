@@ -57,6 +57,43 @@ struct PackingListView: View {
 
     var body: some View {
         AWSheetScaffold(title: "行李清单") {
+            AWPaperSurface(
+                background: AyuWalkTheme.surface,
+                tint: AyuWalkTheme.secondaryAccent,
+                cornerRadius: AyuWalkTheme.panelRadius,
+                padding: AyuWalkSpacing.lg,
+                borderOpacity: 0.10,
+                shadowRadius: 14,
+                shadowY: 7
+            ) {
+                VStack(alignment: .leading, spacing: AyuWalkSpacing.md) {
+                    HStack {
+                        AWStickerIconTray(systemImages: ["suitcase.fill", "checkmark.circle.fill"], tint: AyuWalkTheme.secondaryAccent)
+                        Spacer()
+                        AWPaperTab(title: "\(packedCount)/\(items.count)", systemImage: "checklist", tint: AyuWalkTheme.accent)
+                    }
+
+                    Text("把行李当作出发前的小清单")
+                        .font(AyuWalkTypography.sectionTitle)
+                        .foregroundStyle(AyuWalkTheme.ink)
+
+                    Text("模板、提醒、手动添加和批量管理都保留原来的操作方式。")
+                        .font(AyuWalkTypography.caption)
+                        .foregroundStyle(AyuWalkTheme.mutedInk)
+
+                    AWDecorDivider(tint: AyuWalkTheme.secondaryAccent)
+                }
+            }
+            .overlay(alignment: .topLeading) {
+                Image.awWashiTapeSage
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 78, height: 24)
+                    .opacity(0.46)
+                    .offset(x: 28, y: -12)
+                    .allowsHitTesting(false)
+            }
+
             AWPackingProgressCard(
                 packedCount: packedCount,
                 itemCount: items.count,
