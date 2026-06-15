@@ -116,13 +116,7 @@ struct ItineraryTimelineView: View {
                             .foregroundStyle(AyuWalkTheme.ink)
 
                         if day.dayNumber == currentDayNumber {
-                            Text("当天")
-                                .font(AyuWalkTypography.microStrong)
-                                .foregroundStyle(AyuWalkTheme.secondaryAccent)
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 4)
-                                .background(AyuWalkTheme.pageBackground)
-                                .clipShape(Capsule())
+                            AWStatusPill(text: "当天", tint: AyuWalkTheme.secondaryAccent)
                         }
                     }
 
@@ -174,14 +168,11 @@ struct ItineraryTimelineView: View {
                         .strikethrough(isMissed, color: AyuWalkTheme.mutedInk)
 
                     if ScheduleConflictDetector.isLockedFixedNode(activity) {
-                        Label("已锁定", systemImage: "lock.fill")
-                            .font(AyuWalkTypography.microStrong)
-                            .foregroundStyle(AyuWalkTheme.secondaryAccent)
-                            .labelStyle(.titleAndIcon)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 4)
-                            .background(AyuWalkTheme.pageBackground)
-                            .clipShape(Capsule())
+                        AWStatusPill(
+                            text: "已锁定",
+                            systemImage: "lock.fill",
+                            tint: AyuWalkTheme.secondaryAccent
+                        )
                     }
                 }
 
@@ -192,17 +183,11 @@ struct ItineraryTimelineView: View {
                 }
 
                 if let travelText = travelText(before: activity) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "figure.walk.motion")
-                            .font(AyuWalkTypography.icon(size: 11, weight: .bold))
-                        Text(travelText)
-                            .font(AyuWalkTypography.captionStrong)
-                    }
-                    .foregroundStyle(AyuWalkTheme.secondaryAccent)
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 6)
-                    .background(AyuWalkTheme.pageBackground)
-                    .clipShape(Capsule())
+                    AWStatusPill(
+                        text: travelText,
+                        systemImage: "figure.walk.motion",
+                        tint: AyuWalkTheme.secondaryAccent
+                    )
                 }
 
                 if let notes = activity.notes {
@@ -213,19 +198,12 @@ struct ItineraryTimelineView: View {
 
                 if let countdownText = countdownText(for: activity, on: day) {
                     HStack(spacing: 8) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "clock")
-                                .font(AyuWalkTypography.icon(size: 11, weight: .bold))
-                            Text(countdownText)
-                                .font(AyuWalkTypography.captionStrong)
-                                .lineLimit(2)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .foregroundStyle(AyuWalkTheme.secondaryAccent)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 6)
-                        .background(AyuWalkTheme.pageBackground)
-                        .clipShape(Capsule())
+                        AWStatusPill(
+                            text: countdownText,
+                            systemImage: "clock",
+                            tint: AyuWalkTheme.secondaryAccent,
+                            lineLimit: 2
+                        )
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                         Button {
@@ -252,17 +230,12 @@ struct ItineraryTimelineView: View {
                 }
 
                 if let conflict {
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(AyuWalkTypography.icon(size: 11, weight: .bold))
-                        Text(conflict.message)
-                            .font(AyuWalkTypography.captionStrong)
-                    }
-                    .foregroundStyle(AyuWalkTheme.accent)
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 6)
-                    .background(AyuWalkTheme.accent.opacity(0.10))
-                    .clipShape(Capsule())
+                    AWStatusPill(
+                        text: conflict.message,
+                        systemImage: "exclamationmark.triangle.fill",
+                        tint: AyuWalkTheme.accent,
+                        lineLimit: 2
+                    )
                 }
             }
 

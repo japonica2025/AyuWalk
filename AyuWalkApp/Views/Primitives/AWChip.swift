@@ -5,6 +5,7 @@ struct AWStatusPill: View {
     var systemImage: String?
     var tint: Color = AyuWalkTheme.secondaryAccent
     var isFilled = false
+    var lineLimit: Int? = 1
 
     var body: some View {
         HStack(spacing: AyuWalkSpacing.xxs) {
@@ -14,7 +15,7 @@ struct AWStatusPill: View {
             }
 
             Text(text)
-                .lineLimit(1)
+                .lineLimit(lineLimit)
         }
         .font(AyuWalkTypography.captionStrong)
         .foregroundStyle(isFilled ? .white : tint)
