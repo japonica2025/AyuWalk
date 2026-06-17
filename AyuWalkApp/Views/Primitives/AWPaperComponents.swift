@@ -51,22 +51,69 @@ struct AWPaperSection<Content: View>: View {
 
 struct AWDecorDivider: View {
     var tint: Color = AyuWalkTheme.accent
+    var style: Style = .dots
+
+    enum Style {
+        case dots
+        case stitchedLeaf
+    }
 
     var body: some View {
-        HStack(spacing: AyuWalkSpacing.xs) {
-            Circle()
-                .fill(tint.opacity(0.42))
-                .frame(width: 4, height: 4)
+        Group {
+            switch style {
+            case .dots:
+                HStack(spacing: AyuWalkSpacing.xs) {
+                    Circle()
+                        .fill(tint.opacity(0.42))
+                        .frame(width: 4, height: 4)
 
-            Rectangle()
-                .fill(tint.opacity(0.14))
-                .frame(height: 1)
+                    Rectangle()
+                        .fill(tint.opacity(0.14))
+                        .frame(height: 1)
 
-            Circle()
-                .fill(tint.opacity(0.28))
-                .frame(width: 4, height: 4)
+                    Circle()
+                        .fill(tint.opacity(0.28))
+                        .frame(width: 4, height: 4)
+                }
+            case .stitchedLeaf:
+                HStack(spacing: AyuWalkSpacing.sm) {
+                    stitchedLine
+                    leafMark
+                    stitchedLine
+                }
+            }
         }
         .allowsHitTesting(false)
+    }
+
+    private var stitchedLine: some View {
+        Rectangle()
+            .stroke(
+                tint.opacity(0.22),
+                style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [5, 6])
+            )
+            .frame(height: 1)
+    }
+
+    private var leafMark: some View {
+        ZStack {
+            Capsule()
+                .stroke(tint.opacity(0.28), lineWidth: 1)
+                .frame(width: 8, height: 14)
+                .rotationEffect(.degrees(-34))
+
+            Capsule()
+                .stroke(tint.opacity(0.22), lineWidth: 1)
+                .frame(width: 8, height: 14)
+                .rotationEffect(.degrees(34))
+                .offset(x: 6)
+
+            Rectangle()
+                .fill(tint.opacity(0.22))
+                .frame(width: 1, height: 13)
+                .offset(x: 3, y: 4)
+        }
+        .frame(width: 24, height: 18)
     }
 }
 
@@ -128,7 +175,14 @@ struct AWStickerIconTray: View {
 struct AWPhotoFrame<Content: View>: View {
     var cornerRadius: CGFloat = AyuWalkRadii.card
     var tint: Color = AyuWalkTheme.accent
+    var tape: Tape? = nil
     @ViewBuilder let content: Content
+
+    enum Tape {
+        case rose
+        case sage
+        case cream
+    }
 
     var body: some View {
         AWPaperSurface(
@@ -142,6 +196,53 @@ struct AWPhotoFrame<Content: View>: View {
         ) {
             content
                 .clipShape(RoundedRectangle(cornerRadius: max(cornerRadius - 6, 8), style: .continuous))
+        }
+        .overlay(alignment: .top) {
+            if let tape {
+                tape.image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 76, height: 24)
+                    .rotationEffect(tape.rotation)
+                    .opacity(tape.opacity)
+                    .offset(y: -13)
+                    .allowsHitTesting(false)
+            }
+        }
+    }
+}
+
+private extension AWPhotoFrame.Tape {
+    var image: Image {
+        switch self {
+        case .rose:
+            return .awWashiTapeRose
+        case .sage:
+            return .awWashiTapeSage
+        case .cream:
+            return .awWashiTapeCream
+        }
+    }
+
+    var rotation: Angle {
+        switch self {
+        case .rose:
+            return .degrees(-3)
+        case .sage:
+            return .degrees(2)
+        case .cream:
+            return .degrees(-1)
+        }
+    }
+
+    var opacity: Double {
+        switch self {
+        case .rose:
+            return 0.46
+        case .sage:
+            return 0.40
+        case .cream:
+            return 0.50
         }
     }
 }

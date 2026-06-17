@@ -97,7 +97,7 @@ struct AWHomeGreetingHeader: View {
             }
 
             HStack(spacing: AyuWalkSpacing.md) {
-                AWDecorDivider(tint: AyuWalkTheme.secondaryAccent)
+                AWDecorDivider(tint: AyuWalkTheme.secondaryAccent, style: .stitchedLeaf)
                 AWStatusPill(
                     text: statusText,
                     systemImage: statusSystemImage,
@@ -332,7 +332,7 @@ struct AWHomeMapCard<Accessory: View, Content: View, Footer: View>: View {
                     accessory
                 }
 
-                AWPhotoFrame(cornerRadius: AyuWalkRadii.card, tint: AyuWalkTheme.accent) {
+                AWPhotoFrame(cornerRadius: AyuWalkRadii.card, tint: AyuWalkTheme.accent, tape: .sage) {
                     content
                 }
 
