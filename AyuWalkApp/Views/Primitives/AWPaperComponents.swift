@@ -265,7 +265,15 @@ struct AWCalloutNote: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(AyuWalkSpacing.md)
-        .background(AyuWalkTheme.chipSurface.opacity(0.72))
+        .background {
+            AyuWalkTheme.chipSurface.opacity(0.72)
+
+            Image.awPaperCardSurface
+                .resizable()
+                .scaledToFill()
+                .opacity(AyuWalkTexture.cardOpacity)
+                .blendMode(.multiply)
+        }
         .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous)
@@ -362,12 +370,23 @@ struct AWCornerSticker: View {
             .font(AyuWalkTypography.icon(size: 12, weight: .bold))
             .foregroundStyle(tint)
             .padding(AyuWalkSpacing.xs)
-            .background(AyuWalkTheme.chipSurface)
+            .background {
+                Circle()
+                    .fill(AyuWalkTheme.chipSurface)
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.cardOpacity)
+                    .blendMode(.multiply)
+                    .clipShape(Circle())
+            }
             .clipShape(Circle())
             .overlay {
                 Circle()
                     .stroke(tint.opacity(0.12), lineWidth: 1)
             }
+            .shadow(color: tint.opacity(0.08), radius: 6, y: 3)
             .rotationEffect(.degrees(-4))
             .allowsHitTesting(false)
     }

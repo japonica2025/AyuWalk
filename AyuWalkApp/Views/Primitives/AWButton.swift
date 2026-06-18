@@ -51,7 +51,19 @@ struct AWActionCapsuleButton: View {
             .foregroundStyle(isProminent ? .white : tint)
             .padding(.horizontal, AyuWalkSpacing.md)
             .padding(.vertical, AyuWalkSpacing.sm)
-            .background(isProminent ? tint : AyuWalkTheme.chipSurface)
+            .background {
+                if isProminent {
+                    tint
+                } else {
+                    AyuWalkTheme.chipSurface
+
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.cardOpacity)
+                        .blendMode(.multiply)
+                }
+            }
             .clipShape(Capsule())
             .overlay {
                 Capsule()
@@ -75,7 +87,17 @@ struct AWPlainIconButton: View {
                 .font(AyuWalkTypography.icon(size: 18))
                 .foregroundStyle(tint)
                 .frame(width: AyuWalkSize.iconButton, height: AyuWalkSize.iconButton)
-                .background(AyuWalkTheme.surface)
+                .background {
+                    Circle()
+                        .fill(AyuWalkTheme.surface)
+
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.cardOpacity)
+                        .blendMode(.multiply)
+                        .clipShape(Circle())
+                }
                 .clipShape(Circle())
                 .overlay {
                     Circle()
