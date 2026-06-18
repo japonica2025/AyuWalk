@@ -38,6 +38,7 @@ struct AWActionCapsuleButton: View {
     let systemImage: String
     var tint: Color = AyuWalkTheme.accent
     var isProminent = false
+    var fillsWidth = false
     var action: () -> Void
 
     var body: some View {
@@ -48,12 +49,19 @@ struct AWActionCapsuleButton: View {
                 Text(title)
                     .font(AyuWalkTypography.captionStrong)
             }
+            .frame(maxWidth: fillsWidth ? .infinity : nil)
             .foregroundStyle(isProminent ? .white : tint)
             .padding(.horizontal, AyuWalkSpacing.md)
             .padding(.vertical, AyuWalkSpacing.sm)
             .background {
                 if isProminent {
                     tint
+
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.cardOpacity * 0.6)
+                        .blendMode(.softLight)
                 } else {
                     AyuWalkTheme.chipSurface
 

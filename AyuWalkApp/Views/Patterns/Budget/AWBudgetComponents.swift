@@ -110,16 +110,14 @@ struct AWBudgetTotalCard: View {
                 }
                 .padding(.vertical, AyuWalkSpacing.xxs - 1)
 
-                Button(action: onSave) {
-                    Label("保存预算", systemImage: "checkmark.circle.fill")
-                        .font(AyuWalkTypography.metric)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, AyuWalkSpacing.md)
-                        .background(AyuWalkTheme.accent)
-                        .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
+                AWActionCapsuleButton(
+                    title: "保存预算",
+                    systemImage: "checkmark.circle.fill",
+                    tint: AyuWalkTheme.accent,
+                    isProminent: true,
+                    fillsWidth: true,
+                    action: onSave
+                )
 
                 Text("先用总预算撑起 AA 估算，后续再拆交通、酒店、餐饮和购物。")
                     .font(AyuWalkTypography.body)
@@ -589,16 +587,14 @@ struct AWBudgetExpenseEntryCard: View {
 
                 AWTextField(placeholder: "备注，可不填", text: $notes, font: AyuWalkTypography.body)
 
-                Button(action: onAdd) {
-                    Label("添加支出", systemImage: "plus.circle.fill")
-                        .font(AyuWalkTypography.metric)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, AyuWalkSpacing.md)
-                        .background(AyuWalkTheme.accent)
-                        .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
+                AWActionCapsuleButton(
+                    title: "添加支出",
+                    systemImage: "plus.circle.fill",
+                    tint: AyuWalkTheme.accent,
+                    isProminent: true,
+                    fillsWidth: true,
+                    action: onAdd
+                )
             }
         }
     }

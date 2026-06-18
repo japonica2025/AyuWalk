@@ -75,16 +75,14 @@ struct AWPackingTemplatePicker: View {
                 }
             }
 
-            Button(action: onAddSelected) {
-                Label("添加所选模板", systemImage: "plus.circle.fill")
-                    .font(AyuWalkTypography.metric)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, AyuWalkSpacing.md)
-                    .background(selectedTemplateIDs.isEmpty ? AyuWalkTheme.mutedInk : AyuWalkTheme.secondaryAccent)
-                    .clipShape(Capsule())
-            }
-            .buttonStyle(.plain)
+            AWActionCapsuleButton(
+                title: "添加所选模板",
+                systemImage: "plus.circle.fill",
+                tint: selectedTemplateIDs.isEmpty ? AyuWalkTheme.mutedInk : AyuWalkTheme.secondaryAccent,
+                isProminent: true,
+                fillsWidth: true,
+                action: onAddSelected
+            )
             .disabled(selectedTemplateIDs.isEmpty)
         }
     }
