@@ -36,8 +36,7 @@ struct AWPaperBackground: View {
 
             if textureOpacity > 0 {
                 Image.awPaperTexture
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(textureOpacity)
                     .blendMode(.multiply)
                     .allowsHitTesting(false)
