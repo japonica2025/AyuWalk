@@ -127,18 +127,11 @@ struct StickerPickerView: View {
                 .font(.headline.weight(.bold))
                 .foregroundStyle(AyuWalkTheme.secondaryAccent)
                 .frame(width: 34, height: 34)
-                .background {
-                    Circle()
-                        .fill(AyuWalkTheme.secondaryAccent.opacity(0.10))
-
-                    Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
-                        .opacity(AyuWalkTexture.cardOpacity)
-                        .blendMode(.multiply)
-                        .clipShape(Circle())
-                }
-                .clipShape(Circle())
+                .awPaperCircleBackground(
+                    fill: AyuWalkTheme.secondaryAccent.opacity(0.10),
+                    borderTint: AyuWalkTheme.secondaryAccent,
+                    borderOpacity: 0.10
+                )
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("上传图片贴纸")
@@ -194,22 +187,11 @@ private struct FlowStickerRow: View {
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 9)
                     .padding(.vertical, 8)
-                    .background {
-                        Capsule()
-                            .fill(AyuWalkTheme.surface)
-
-                        Image.awPaperCardSurface
-                            .resizable()
-                            .scaledToFill()
-                            .opacity(AyuWalkTexture.cardOpacity)
-                            .blendMode(.multiply)
-                            .clipShape(Capsule())
-                    }
-                    .clipShape(Capsule())
-                    .overlay {
-                        Capsule()
-                            .stroke(AyuWalkTheme.border, lineWidth: 1)
-                    }
+                    .awPaperCapsuleBackground(
+                        fill: AyuWalkTheme.surface,
+                        borderTint: AyuWalkTheme.accent,
+                        borderOpacity: 0.08
+                    )
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("移除\(sticker.title)")

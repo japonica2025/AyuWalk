@@ -610,22 +610,11 @@ struct CreateTripView: View {
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(isDisabled ? AyuWalkTheme.mutedInk.opacity(0.45) : AyuWalkTheme.secondaryAccent)
                 .frame(width: 34, height: 34)
-                .background {
-                    Circle()
-                        .fill(AyuWalkTheme.pageBackground)
-
-                    Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
-                        .opacity(AyuWalkTexture.cardOpacity)
-                        .blendMode(.multiply)
-                        .clipShape(Circle())
-                }
-                .clipShape(Circle())
-                .overlay {
-                    Circle()
-                        .stroke(AyuWalkTheme.secondaryAccent.opacity(isDisabled ? 0.04 : 0.10), lineWidth: 1)
-                }
+                .awPaperCircleBackground(
+                    fill: AyuWalkTheme.pageBackground,
+                    borderTint: AyuWalkTheme.secondaryAccent,
+                    borderOpacity: isDisabled ? 0.04 : 0.10
+                )
         }
         .disabled(isDisabled)
     }

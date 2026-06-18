@@ -418,22 +418,11 @@ struct AWStickerToken: View {
         .foregroundStyle(AyuWalkTheme.ink)
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background {
-            Capsule()
-                .fill(AyuWalkTheme.surface.opacity(0.92))
-
-            Image.awPaperCardSurface
-                .resizable()
-                .scaledToFill()
-                .opacity(AyuWalkTexture.cardOpacity)
-                .blendMode(.multiply)
-                .clipShape(Capsule())
-        }
-        .clipShape(Capsule())
-        .overlay {
-            Capsule()
-                .stroke(AyuWalkTheme.border, lineWidth: 1)
-        }
+        .awPaperCapsuleBackground(
+            fill: AyuWalkTheme.surface.opacity(0.92),
+            borderTint: AyuWalkTheme.accent,
+            borderOpacity: 0.08
+        )
         .shadow(color: AyuWalkShadow.journal, radius: 8, x: 0, y: 4)
     }
 }
