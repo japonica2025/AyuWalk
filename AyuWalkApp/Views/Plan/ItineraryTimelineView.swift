@@ -471,30 +471,15 @@ struct ItineraryTimelineView: View {
     }
 
     private func routeBadge(_ order: Int) -> some View {
-        Text(String(order))
-            .font(AyuWalkTypography.captionStrong)
-            .foregroundStyle(.white)
-            .frame(width: 26, height: 26)
-            .background(AyuWalkTheme.accent)
-            .clipShape(Circle())
+        AWMapMarkerBadge(text: String(order), tint: AyuWalkTheme.accent, size: 26)
     }
 
     private var lockedBadge: some View {
-        Image(systemName: "lock.fill")
-            .font(AyuWalkTypography.icon(size: 12, weight: .bold))
-            .foregroundStyle(.white)
-            .frame(width: 26, height: 26)
-            .background(AyuWalkTheme.accent)
-            .clipShape(Circle())
+        AWMapMarkerBadge(systemImage: "lock.fill", tint: AyuWalkTheme.accent, size: 26)
     }
 
     private var unroutedBadge: some View {
-        Image(systemName: "minus")
-            .font(AyuWalkTypography.icon(size: 12, weight: .bold))
-            .foregroundStyle(AyuWalkTheme.mutedInk)
-            .frame(width: 26, height: 26)
-            .background(AyuWalkTheme.pageBackground)
-            .clipShape(Circle())
+        AWMapMarkerBadge(systemImage: "minus", tint: AyuWalkTheme.mutedInk, size: 26)
     }
 
     private func routeIndex(for activity: Activity, in day: TripDay) -> Int? {

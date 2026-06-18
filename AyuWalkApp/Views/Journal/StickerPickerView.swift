@@ -52,24 +52,13 @@ struct StickerPickerView: View {
                                             .foregroundStyle(isSelected(sticker.id) ? .white : AyuWalkTheme.ink)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 14)
-                                            .background {
-                                                if isSelected(sticker.id) {
-                                                    AyuWalkTheme.secondaryAccent
-                                                } else {
-                                                    AyuWalkTheme.paper
-
-                                                    Image.awPaperCardSurface
-                                                        .resizable()
-                                                        .scaledToFill()
-                                                        .opacity(AyuWalkTexture.cardOpacity)
-                                                        .blendMode(.multiply)
-                                                }
-                                            }
-                                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                                            .overlay {
-                                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                                    .stroke(AyuWalkTheme.border, lineWidth: 1)
-                                            }
+                                            .awPaperInsetBackground(
+                                                cornerRadius: AyuWalkRadii.card,
+                                                fill: isSelected(sticker.id) ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.paper,
+                                                borderTint: isSelected(sticker.id) ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.accent,
+                                                borderOpacity: isSelected(sticker.id) ? 0 : 0.10,
+                                                textureOpacity: isSelected(sticker.id) ? 0 : AyuWalkTexture.cardOpacity
+                                            )
                                         }
                                         .accessibilityLabel(sticker.title)
                                     }
@@ -106,8 +95,11 @@ struct StickerPickerView: View {
                     .foregroundStyle(AyuWalkTheme.secondaryAccent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(AyuWalkTheme.secondaryAccent.opacity(0.10))
-                    .clipShape(Capsule())
+                    .awPaperCapsuleBackground(
+                        fill: AyuWalkTheme.pageBackground,
+                        borderTint: AyuWalkTheme.secondaryAccent,
+                        borderOpacity: 0.12
+                    )
             }
 
             if selectedStickers.isEmpty {
@@ -164,18 +156,11 @@ struct StickerPickerView: View {
                 .foregroundStyle(AyuWalkTheme.mutedInk)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 5)
-                .background {
-                    Capsule()
-                        .fill(AyuWalkTheme.pageBackground)
-
-                    Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
-                        .opacity(AyuWalkTexture.cardOpacity)
-                        .blendMode(.multiply)
-                        .clipShape(Capsule())
-                }
-                .clipShape(Capsule())
+                .awPaperCapsuleBackground(
+                    fill: AyuWalkTheme.pageBackground,
+                    borderTint: AyuWalkTheme.accent,
+                    borderOpacity: 0.08
+                )
         }
         .padding(12)
         .awPaperInsetBackground(

@@ -95,11 +95,14 @@ struct AWJournalBlockCard: View {
                     if block.isDefaultSelected {
                         Text("默认")
                             .font(AyuWalkTypography.microStrong)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AyuWalkTheme.secondaryAccent)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 3)
-                            .background(AyuWalkTheme.secondaryAccent)
-                            .clipShape(Capsule())
+                            .awPaperCapsuleBackground(
+                                fill: AyuWalkTheme.pageBackground,
+                                borderTint: AyuWalkTheme.secondaryAccent,
+                                borderOpacity: 0.12
+                            )
                     }
                 }
                 .foregroundStyle(AyuWalkTheme.secondaryAccent)

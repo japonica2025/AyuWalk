@@ -44,12 +44,15 @@ struct JournalModulePickerView: View {
 
                                         if block.isDefaultSelected {
                                             Text("默认")
-                                                .font(.caption2.weight(.bold))
-                                                .foregroundStyle(.white)
+                                                .font(AyuWalkTypography.microStrong)
+                                                .foregroundStyle(AyuWalkTheme.secondaryAccent)
                                                 .padding(.horizontal, 7)
                                                 .padding(.vertical, 4)
-                                                .background(AyuWalkTheme.secondaryAccent)
-                                                .clipShape(Capsule())
+                                                .awPaperCapsuleBackground(
+                                                    fill: AyuWalkTheme.pageBackground,
+                                                    borderTint: AyuWalkTheme.secondaryAccent,
+                                                    borderOpacity: 0.12
+                                                )
                                         }
                                     }
                                     .padding(14)
