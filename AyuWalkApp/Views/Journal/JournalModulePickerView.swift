@@ -53,12 +53,12 @@ struct JournalModulePickerView: View {
                                         }
                                     }
                                     .padding(14)
-                                    .background(AyuWalkTheme.paper)
-                                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                            .stroke(AyuWalkTheme.border, lineWidth: 1)
-                                    }
+                                    .awPaperInsetBackground(
+                                        cornerRadius: 18,
+                                        fill: AyuWalkTheme.paper,
+                                        borderTint: isSelected(block.id) ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.accent,
+                                        borderOpacity: isSelected(block.id) ? 0.22 : 0.10
+                                    )
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityLabel(block.title ?? block.kind.displayName)

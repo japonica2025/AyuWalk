@@ -258,8 +258,22 @@ struct ItineraryTimelineView: View {
                                         : AyuWalkTheme.secondaryAccent
                                 )
                                 .frame(width: 28, height: 28)
-                                .background(AyuWalkTheme.pageBackground)
+                                .background {
+                                    Circle()
+                                        .fill(AyuWalkTheme.pageBackground)
+
+                                    Image.awPaperCardSurface
+                                        .resizable()
+                                        .scaledToFill()
+                                        .opacity(AyuWalkTexture.cardOpacity)
+                                        .blendMode(.multiply)
+                                        .clipShape(Circle())
+                                }
                                 .clipShape(Circle())
+                                .overlay {
+                                    Circle()
+                                        .stroke(AyuWalkTheme.secondaryAccent.opacity(0.10), lineWidth: 1)
+                                }
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(
@@ -290,8 +304,22 @@ struct ItineraryTimelineView: View {
                         .font(AyuWalkTypography.icon(size: 17, weight: .bold))
                         .foregroundStyle(isCompleted ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.mutedInk)
                         .frame(width: 32, height: 32)
-                        .background(AyuWalkTheme.chipSurface)
+                        .background {
+                            Circle()
+                                .fill(AyuWalkTheme.chipSurface)
+
+                            Image.awPaperCardSurface
+                                .resizable()
+                                .scaledToFill()
+                                .opacity(AyuWalkTexture.cardOpacity)
+                                .blendMode(.multiply)
+                                .clipShape(Circle())
+                        }
                         .clipShape(Circle())
+                        .overlay {
+                            Circle()
+                                .stroke(AyuWalkTheme.secondaryAccent.opacity(isCompleted ? 0.16 : 0.08), lineWidth: 1)
+                        }
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(isCompleted ? "取消完成\(activity.title)" : "标记完成\(activity.title)")
@@ -303,8 +331,22 @@ struct ItineraryTimelineView: View {
                         .font(AyuWalkTypography.icon(size: 12, weight: .bold))
                         .foregroundStyle(AyuWalkTheme.accent)
                         .frame(width: 32, height: 32)
-                        .background(AyuWalkTheme.chipSurface)
+                        .background {
+                            Circle()
+                                .fill(AyuWalkTheme.chipSurface)
+
+                            Image.awPaperCardSurface
+                                .resizable()
+                                .scaledToFill()
+                                .opacity(AyuWalkTexture.cardOpacity)
+                                .blendMode(.multiply)
+                                .clipShape(Circle())
+                        }
                         .clipShape(Circle())
+                        .overlay {
+                            Circle()
+                                .stroke(AyuWalkTheme.accent.opacity(0.10), lineWidth: 1)
+                        }
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("编辑\(activity.title)")
@@ -345,8 +387,22 @@ struct ItineraryTimelineView: View {
                         .font(AyuWalkTypography.icon(size: 12, weight: .bold))
                         .foregroundStyle(AyuWalkTheme.ink)
                         .frame(width: 32, height: 32)
-                        .background(AyuWalkTheme.chipSurface)
+                        .background {
+                            Circle()
+                                .fill(AyuWalkTheme.chipSurface)
+
+                            Image.awPaperCardSurface
+                                .resizable()
+                                .scaledToFill()
+                                .opacity(AyuWalkTexture.cardOpacity)
+                                .blendMode(.multiply)
+                                .clipShape(Circle())
+                        }
                         .clipShape(Circle())
+                        .overlay {
+                            Circle()
+                                .stroke(AyuWalkTheme.hairline, lineWidth: 1)
+                        }
                 }
                 .accessibilityLabel("管理\(activity.title)")
             }

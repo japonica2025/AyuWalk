@@ -284,8 +284,22 @@ struct ActivityEditorView: View {
                     .font(.title3.weight(.bold))
                     .foregroundStyle(AyuWalkTheme.secondaryAccent)
                     .frame(width: 32, height: 32)
-                    .background(AyuWalkTheme.pageBackground)
+                    .background {
+                        Circle()
+                            .fill(AyuWalkTheme.pageBackground)
+
+                        Image.awPaperCardSurface
+                            .resizable()
+                            .scaledToFill()
+                            .opacity(AyuWalkTexture.cardOpacity)
+                            .blendMode(.multiply)
+                            .clipShape(Circle())
+                    }
                     .clipShape(Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(AyuWalkTheme.secondaryAccent.opacity(0.10), lineWidth: 1)
+                    }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("固定时间提醒")
