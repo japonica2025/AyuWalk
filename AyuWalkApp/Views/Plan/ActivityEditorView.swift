@@ -122,7 +122,15 @@ struct ActivityEditorView: View {
                 .disabled(draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
-                .background(AyuWalkTheme.pageBackground)
+                .background {
+                    AyuWalkTheme.pageBackground
+
+                    Image.awPaperTexture
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.pageOpacity)
+                        .blendMode(.multiply)
+                }
                 .accessibilityLabel(isCreating ? "添加日程" : "保存修改")
             }
         }

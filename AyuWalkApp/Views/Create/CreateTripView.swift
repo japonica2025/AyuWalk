@@ -749,7 +749,15 @@ private struct CreateTripPlanningReviewView: View {
                 }
                 .padding(AyuWalkSpacing.pageInset)
             }
-            .background(AyuWalkTheme.canvas)
+            .background {
+                AyuWalkTheme.canvas
+
+                Image.awPaperTexture
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.pageOpacity)
+                    .blendMode(.multiply)
+            }
             .navigationTitle("确认 AI 规划")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
