@@ -52,7 +52,19 @@ struct StickerPickerView: View {
                                             .foregroundStyle(isSelected(sticker.id) ? .white : AyuWalkTheme.ink)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 14)
-                                            .background(isSelected(sticker.id) ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.paper)
+                                            .background {
+                                                if isSelected(sticker.id) {
+                                                    AyuWalkTheme.secondaryAccent
+                                                } else {
+                                                    AyuWalkTheme.paper
+
+                                                    Image.awPaperCardSurface
+                                                        .resizable()
+                                                        .scaledToFill()
+                                                        .opacity(AyuWalkTexture.cardOpacity)
+                                                        .blendMode(.multiply)
+                                                }
+                                            }
                                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                                             .overlay {
                                                 RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -104,12 +116,11 @@ struct StickerPickerView: View {
                     .foregroundStyle(AyuWalkTheme.mutedInk)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
-                    .background(AyuWalkTheme.paper)
-                    .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
-                            .stroke(AyuWalkTheme.border, lineWidth: 1)
-                    }
+                    .awPaperInsetBackground(
+                        cornerRadius: AyuWalkRadii.card,
+                        fill: AyuWalkTheme.paper,
+                        borderTint: AyuWalkTheme.accent
+                    )
             } else {
                 FlowStickerRow(stickers: selectedStickers) { sticker in
                     onToggle(sticker.id)
@@ -124,7 +135,17 @@ struct StickerPickerView: View {
                 .font(.headline.weight(.bold))
                 .foregroundStyle(AyuWalkTheme.secondaryAccent)
                 .frame(width: 34, height: 34)
-                .background(AyuWalkTheme.secondaryAccent.opacity(0.10))
+                .background {
+                    Circle()
+                        .fill(AyuWalkTheme.secondaryAccent.opacity(0.10))
+
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.cardOpacity)
+                        .blendMode(.multiply)
+                        .clipShape(Circle())
+                }
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 3) {
@@ -143,16 +164,25 @@ struct StickerPickerView: View {
                 .foregroundStyle(AyuWalkTheme.mutedInk)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 5)
-                .background(AyuWalkTheme.pageBackground)
+                .background {
+                    Capsule()
+                        .fill(AyuWalkTheme.pageBackground)
+
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.cardOpacity)
+                        .blendMode(.multiply)
+                        .clipShape(Capsule())
+                }
                 .clipShape(Capsule())
         }
         .padding(12)
-        .background(AyuWalkTheme.paper.opacity(0.82))
-        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
-                .stroke(AyuWalkTheme.border, lineWidth: 1)
-        }
+        .awPaperInsetBackground(
+            cornerRadius: AyuWalkRadii.card,
+            fill: AyuWalkTheme.paper.opacity(0.82),
+            borderTint: AyuWalkTheme.accent
+        )
     }
 }
 
@@ -179,7 +209,17 @@ private struct FlowStickerRow: View {
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 9)
                     .padding(.vertical, 8)
-                    .background(AyuWalkTheme.surface)
+                    .background {
+                        Capsule()
+                            .fill(AyuWalkTheme.surface)
+
+                        Image.awPaperCardSurface
+                            .resizable()
+                            .scaledToFill()
+                            .opacity(AyuWalkTexture.cardOpacity)
+                            .blendMode(.multiply)
+                            .clipShape(Capsule())
+                    }
                     .clipShape(Capsule())
                     .overlay {
                         Capsule()

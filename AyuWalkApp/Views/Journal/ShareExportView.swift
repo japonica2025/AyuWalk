@@ -179,7 +179,17 @@ struct ShareExportView: View {
                                 .foregroundStyle(AyuWalkTheme.ink)
                                 .padding(.horizontal, 11)
                                 .padding(.vertical, 8)
-                                .background(AyuWalkTheme.pageBackground)
+                                .background {
+                                    Capsule()
+                                        .fill(AyuWalkTheme.pageBackground)
+
+                                    Image.awPaperCardSurface
+                                        .resizable()
+                                        .scaledToFill()
+                                        .opacity(AyuWalkTexture.cardOpacity)
+                                        .blendMode(.multiply)
+                                        .clipShape(Capsule())
+                                }
                                 .clipShape(Capsule())
                                 .overlay {
                                     Capsule()
@@ -194,7 +204,17 @@ struct ShareExportView: View {
                             .foregroundStyle(AyuWalkTheme.accent)
                             .padding(.horizontal, 11)
                             .padding(.vertical, 8)
-                            .background(AyuWalkTheme.paper)
+                            .background {
+                                Capsule()
+                                    .fill(AyuWalkTheme.paper)
+
+                                Image.awPaperCardSurface
+                                    .resizable()
+                                    .scaledToFill()
+                                    .opacity(AyuWalkTexture.cardOpacity)
+                                    .blendMode(.multiply)
+                                    .clipShape(Capsule())
+                            }
                             .clipShape(Capsule())
                             .overlay {
                                 Capsule()
@@ -226,8 +246,11 @@ struct ShareExportView: View {
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 180)
                     .padding(8)
-                    .background(AyuWalkTheme.pageBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .awPaperInsetBackground(
+                        cornerRadius: 14,
+                        fill: AyuWalkTheme.pageBackground,
+                        borderTint: AyuWalkTheme.secondaryAccent
+                    )
             } else {
                 Text(content.wrappedValue)
                     .font(.footnote)
@@ -235,12 +258,23 @@ struct ShareExportView: View {
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
-                    .background(AyuWalkTheme.pageBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .awPaperInsetBackground(
+                        cornerRadius: 14,
+                        fill: AyuWalkTheme.pageBackground,
+                        borderTint: AyuWalkTheme.secondaryAccent
+                    )
             }
         }
         .padding(16)
-        .background(AyuWalkTheme.paper)
+        .background {
+            AyuWalkTheme.paper
+
+            Image.awPaperCardSurface
+                .resizable()
+                .scaledToFill()
+                .opacity(AyuWalkTexture.cardOpacity)
+                .blendMode(.multiply)
+        }
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)

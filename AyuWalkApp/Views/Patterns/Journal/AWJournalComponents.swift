@@ -12,6 +12,14 @@ struct AWJournalBookFrame<Content: View>: View {
             .background {
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
                     .fill(AyuWalkTheme.surface)
+                    .overlay {
+                        Image.awPaperCardSurface
+                            .resizable()
+                            .scaledToFill()
+                            .opacity(AyuWalkTexture.cardOpacity)
+                            .blendMode(.multiply)
+                            .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+                    }
                     .overlay(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2, style: .continuous)
                             .fill(AyuWalkTheme.accent.opacity(0.16))
@@ -51,6 +59,12 @@ struct AWJournalPageSurface<Content: View>: View {
     private var journalPaperTexture: some View {
         ZStack {
             AyuWalkTheme.paper
+
+            Image.awPaperCardSurface
+                .resizable()
+                .scaledToFill()
+                .opacity(AyuWalkTexture.cardOpacity)
+                .blendMode(.multiply)
 
             VStack(spacing: 28) {
                 ForEach(0..<16, id: \.self) { _ in
@@ -98,12 +112,11 @@ struct AWJournalBlockCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AyuWalkSpacing.md)
-        .background(AyuWalkTheme.surface.opacity(0.62))
-        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous)
-                .stroke(AyuWalkTheme.border, lineWidth: 1)
-        }
+        .awPaperInsetBackground(
+            cornerRadius: AyuWalkRadii.smallCard,
+            fill: AyuWalkTheme.surface.opacity(0.62),
+            borderTint: AyuWalkTheme.accent
+        )
     }
 
     private var iconName: String {
@@ -348,7 +361,17 @@ struct AWStickerLayer: View {
             .font(.system(size: 9, weight: .bold))
             .foregroundStyle(AyuWalkTheme.secondaryAccent)
             .frame(width: 22, height: 22)
-            .background(AyuWalkTheme.surface)
+            .background {
+                Circle()
+                    .fill(AyuWalkTheme.surface)
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.cardOpacity)
+                    .blendMode(.multiply)
+                    .clipShape(Circle())
+            }
             .clipShape(Circle())
             .overlay {
                 Circle()
@@ -382,7 +405,17 @@ struct AWStickerToken: View {
         .foregroundStyle(AyuWalkTheme.ink)
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(AyuWalkTheme.surface.opacity(0.92))
+        .background {
+            Capsule()
+                .fill(AyuWalkTheme.surface.opacity(0.92))
+
+            Image.awPaperCardSurface
+                .resizable()
+                .scaledToFill()
+                .opacity(AyuWalkTexture.cardOpacity)
+                .blendMode(.multiply)
+                .clipShape(Capsule())
+        }
         .clipShape(Capsule())
         .overlay {
             Capsule()
