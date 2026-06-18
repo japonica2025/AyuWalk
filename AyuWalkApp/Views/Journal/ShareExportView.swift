@@ -173,54 +173,20 @@ struct ShareExportView: View {
                     if assetKind.isRasterImage,
                        let saveLabel,
                        let onSave {
-                        Button(action: onSave) {
-                            Text(saveLabel)
-                                .font(.caption.weight(.bold))
-                                .foregroundStyle(AyuWalkTheme.ink)
-                                .padding(.horizontal, 11)
-                                .padding(.vertical, 8)
-                                .background {
-                                    Capsule()
-                                        .fill(AyuWalkTheme.pageBackground)
-
-                                    Image.awPaperCardSurface
-                                        .resizable()
-                                        .scaledToFill()
-                                        .opacity(AyuWalkTexture.cardOpacity)
-                                        .blendMode(.multiply)
-                                        .clipShape(Capsule())
-                                }
-                                .clipShape(Capsule())
-                                .overlay {
-                                    Capsule()
-                                        .stroke(AyuWalkTheme.border, lineWidth: 1)
-                                }
-                        }
+                        AWActionCapsuleButton(
+                            title: saveLabel,
+                            systemImage: "square.and.arrow.down",
+                            tint: AyuWalkTheme.ink,
+                            action: onSave
+                        )
                     }
 
-                    Button(action: onShare) {
-                        Text(shareLabel)
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(AyuWalkTheme.accent)
-                            .padding(.horizontal, 11)
-                            .padding(.vertical, 8)
-                            .background {
-                                Capsule()
-                                    .fill(AyuWalkTheme.paper)
-
-                                Image.awPaperCardSurface
-                                    .resizable()
-                                    .scaledToFill()
-                                    .opacity(AyuWalkTexture.cardOpacity)
-                                    .blendMode(.multiply)
-                                    .clipShape(Capsule())
-                            }
-                            .clipShape(Capsule())
-                            .overlay {
-                                Capsule()
-                                    .stroke(AyuWalkTheme.border, lineWidth: 1)
-                            }
-                    }
+                    AWActionCapsuleButton(
+                        title: shareLabel,
+                        systemImage: "square.and.arrow.up",
+                        tint: AyuWalkTheme.accent,
+                        action: onShare
+                    )
 
                     if let copyLabel {
                         AWActionCapsuleButton(

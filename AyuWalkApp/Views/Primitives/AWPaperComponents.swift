@@ -267,15 +267,12 @@ struct AWPaperTab: View {
         .foregroundStyle(tint)
         .padding(.horizontal, AyuWalkSpacing.md)
         .padding(.vertical, AyuWalkSpacing.xs)
-        .background {
-            AyuWalkTheme.chipSurface
-            tint.opacity(0.035)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous)
-                .stroke(tint.opacity(0.14), lineWidth: 1)
-        }
+        .awPaperInsetBackground(
+            cornerRadius: AyuWalkRadii.smallCard,
+            fill: AyuWalkTheme.chipSurface,
+            borderTint: tint,
+            borderOpacity: 0.14
+        )
     }
 }
 

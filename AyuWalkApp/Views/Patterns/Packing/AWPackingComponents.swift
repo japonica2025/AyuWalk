@@ -160,16 +160,13 @@ struct AWPackingReminderCard: View {
                             onUpdateReminder(updatedReminder)
                         }
 
-                        Button(role: .destructive) {
+                        AWPlainIconButton(
+                            systemImage: "trash",
+                            label: "删除打包提醒",
+                            tint: AyuWalkTheme.accent
+                        ) {
                             onUpdateReminder(nil)
-                        } label: {
-                            Image(systemName: "trash")
-                                .font(AyuWalkTypography.icon(size: 15, weight: .bold))
-                                .frame(width: AyuWalkSize.compactIconButton, height: AyuWalkSize.compactIconButton)
                         }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(AyuWalkTheme.accent)
-                        .accessibilityLabel("删除打包提醒")
                     } else if let suggestedReminder {
                         AWActionCapsuleButton(
                             title: "使用建议",
@@ -311,12 +308,12 @@ struct AWPackingChecklistCard: View {
                     Spacer()
 
                     if isManaging && !selectedItemIDs.isEmpty {
-                        Button(action: onRequestDeleteSelected) {
-                            Image(systemName: "trash")
-                                .foregroundStyle(AyuWalkTheme.accent)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("删除所选物品")
+                        AWPlainIconButton(
+                            systemImage: "trash",
+                            label: "删除所选物品",
+                            tint: AyuWalkTheme.accent,
+                            action: onRequestDeleteSelected
+                        )
                     }
 
                     Button {
