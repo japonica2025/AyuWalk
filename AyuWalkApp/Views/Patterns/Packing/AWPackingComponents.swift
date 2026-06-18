@@ -278,16 +278,14 @@ struct AWPackingAddItemCard: View {
                 AWTextField(placeholder: "物品名称", text: $title)
                 AWTextField(placeholder: "备注，可不填", text: $notes, font: AyuWalkTypography.body)
 
-                Button(action: onAdd) {
-                    Label("添加到清单", systemImage: "plus.circle.fill")
-                        .font(AyuWalkTypography.metric)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, AyuWalkSpacing.md)
-                        .background(AyuWalkTheme.secondaryAccent)
-                        .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
+                AWActionCapsuleButton(
+                    title: "添加到清单",
+                    systemImage: "plus.circle.fill",
+                    tint: AyuWalkTheme.secondaryAccent,
+                    isProminent: true,
+                    fillsWidth: true,
+                    action: onAdd
+                )
             }
         }
     }

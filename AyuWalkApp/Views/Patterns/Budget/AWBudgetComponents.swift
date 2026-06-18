@@ -139,16 +139,12 @@ struct AWBudgetTotalCard: View {
             HStack(spacing: AyuWalkSpacing.sm) {
                 AWTextField(placeholder: "添加参与人", text: $newParticipantName)
 
-                Button(action: onAddParticipant) {
-                    Image(systemName: "plus")
-                        .font(AyuWalkTypography.icon(size: 17, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(width: AyuWalkSize.largeIconButton, height: AyuWalkSize.largeIconButton)
-                        .background(AyuWalkTheme.secondaryAccent)
-                        .clipShape(Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("添加参与人")
+                AWPlainIconButton(
+                    systemImage: "plus",
+                    label: "添加参与人",
+                    tint: AyuWalkTheme.secondaryAccent,
+                    action: onAddParticipant
+                )
             }
 
             if participants.isEmpty {
@@ -322,19 +318,14 @@ struct AWBudgetExchangeRateCard: View {
                 .font(AyuWalkTypography.captionStrong)
                 .foregroundStyle(AyuWalkTheme.mutedInk)
 
-            Button {
+            AWPlainIconButton(
+                systemImage: "checkmark",
+                label: "保存 \(currencyCode) 汇率",
+                tint: AyuWalkTheme.secondaryAccent
+            ) {
                 let rate = decimal(from: rateTexts[currencyCode] ?? "") ?? 0
                 onUpdateRate(currencyCode, rate)
-            } label: {
-                Image(systemName: "checkmark")
-                    .font(AyuWalkTypography.icon(size: 14, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: AyuWalkSize.iconButton, height: AyuWalkSize.iconButton)
-                    .background(AyuWalkTheme.secondaryAccent)
-                    .clipShape(Circle())
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("保存 \(currencyCode) 汇率")
         }
     }
 
@@ -450,19 +441,14 @@ struct AWBudgetCategoryProgressCard: View {
                 )
                 .accessibilityLabel("\(category.displayName)分类预算")
 
-                Button {
+                AWPlainIconButton(
+                    systemImage: "checkmark",
+                    label: "保存\(category.displayName)分类预算",
+                    tint: AyuWalkTheme.secondaryAccent
+                ) {
                     let amount = decimal(from: budgetTexts[category] ?? "") ?? 0
                     onUpdateBudget(category, amount)
-                } label: {
-                    Image(systemName: "checkmark")
-                        .font(AyuWalkTypography.icon(size: 14, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(width: AyuWalkSize.iconButton, height: AyuWalkSize.iconButton)
-                        .background(AyuWalkTheme.secondaryAccent)
-                        .clipShape(Circle())
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("保存\(category.displayName)分类预算")
             }
 
             ProgressView(value: progressValue(for: item))

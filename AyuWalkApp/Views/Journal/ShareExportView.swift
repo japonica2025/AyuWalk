@@ -223,17 +223,14 @@ struct ShareExportView: View {
                     }
 
                     if let copyLabel {
-                        Button {
+                        AWActionCapsuleButton(
+                            title: copiedLabel == copyLabel ? "已复制" : copyLabel,
+                            systemImage: copiedLabel == copyLabel ? "checkmark" : "doc.on.doc",
+                            tint: AyuWalkTheme.accent,
+                            isProminent: true
+                        ) {
                             UIPasteboard.general.string = content.wrappedValue
                             copiedLabel = copyLabel
-                        } label: {
-                            Text(copiedLabel == copyLabel ? "已复制" : copyLabel)
-                                .font(.caption.weight(.bold))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 11)
-                                .padding(.vertical, 8)
-                                .background(AyuWalkTheme.accent)
-                                .clipShape(Capsule())
                         }
                     }
                 }
