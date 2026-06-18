@@ -25,6 +25,13 @@ struct AWStatusPill: View {
             if isFilled {
                 Capsule()
                     .fill(tint)
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.cardOpacity * 0.6)
+                    .blendMode(.softLight)
+                    .clipShape(Capsule())
             } else {
                 Capsule()
                     .fill(AyuWalkTheme.chipSurface)
@@ -70,6 +77,13 @@ struct AWSelectableChip: View {
                 if isSelected {
                     Capsule()
                         .fill(tint)
+
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.cardOpacity * 0.6)
+                        .blendMode(.softLight)
+                        .clipShape(Capsule())
                 } else {
                     Capsule()
                         .fill(AyuWalkTheme.chipSurface)
