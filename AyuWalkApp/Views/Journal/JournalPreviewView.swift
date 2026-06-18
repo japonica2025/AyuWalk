@@ -289,8 +289,32 @@ struct JournalPreviewView: View {
                                 .foregroundStyle(selectedStickerCategoryID == category.id ? .white : AyuWalkTheme.secondaryAccent)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
-                                .background(selectedStickerCategoryID == category.id ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.pageBackground)
+                                .background {
+                                    if selectedStickerCategoryID == category.id {
+                                        Capsule()
+                                            .fill(AyuWalkTheme.secondaryAccent)
+                                    } else {
+                                        Capsule()
+                                            .fill(AyuWalkTheme.pageBackground)
+
+                                        Image.awPaperCardSurface
+                                            .resizable()
+                                            .scaledToFill()
+                                            .opacity(AyuWalkTexture.cardOpacity)
+                                            .blendMode(.multiply)
+                                            .clipShape(Capsule())
+                                    }
+                                }
                                 .clipShape(Capsule())
+                                .overlay {
+                                    Capsule()
+                                        .stroke(
+                                            selectedStickerCategoryID == category.id
+                                                ? Color.clear
+                                                : AyuWalkTheme.secondaryAccent.opacity(0.10),
+                                            lineWidth: 1
+                                        )
+                                }
                         }
                         .buttonStyle(.plain)
                     }
@@ -345,12 +369,12 @@ struct JournalPreviewView: View {
             }
             .foregroundStyle(AyuWalkTheme.ink)
             .frame(width: 86, height: 70)
-            .background(AyuWalkTheme.surface.opacity(0.95))
-            .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
-                    .stroke(AyuWalkTheme.border, lineWidth: 1)
-            }
+            .awPaperInsetBackground(
+                cornerRadius: AyuWalkRadii.card,
+                fill: AyuWalkTheme.surface.opacity(0.95),
+                borderTint: AyuWalkTheme.accent,
+                borderOpacity: 0.10
+            )
             .shadow(color: AyuWalkShadow.journal, radius: 8, x: 0, y: 4)
             .contentShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
         }
@@ -396,7 +420,15 @@ struct JournalPreviewView: View {
             }
             .foregroundStyle(AyuWalkTheme.mutedInk)
             .frame(width: 86, height: 70)
-            .background(AyuWalkTheme.pageBackground.opacity(0.8))
+            .background {
+                AyuWalkTheme.pageBackground.opacity(0.8)
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.cardOpacity)
+                    .blendMode(.multiply)
+            }
             .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
