@@ -18,7 +18,17 @@ struct AWMapMarkerBadge: View {
         }
         .foregroundStyle(.white)
         .frame(width: size, height: size)
-        .background(tint)
+        .background {
+            Circle()
+                .fill(tint)
+
+            Image.awPaperCardSurface
+                .resizable()
+                .scaledToFill()
+                .opacity(AyuWalkTexture.cardOpacity * 0.6)
+                .blendMode(.softLight)
+                .clipShape(Circle())
+        }
         .clipShape(Circle())
         .shadow(color: AyuWalkTheme.ink.opacity(0.16), radius: 8, y: 4)
     }

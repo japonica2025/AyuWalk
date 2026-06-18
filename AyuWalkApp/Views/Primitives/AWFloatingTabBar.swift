@@ -75,7 +75,17 @@ struct AWFloatingTabBar<Selection: Hashable>: View {
                 .font(AyuWalkTypography.icon(size: 18, weight: .bold))
                 .foregroundStyle(.white)
                 .frame(width: AyuWalkSize.largeIconButton + 2, height: AyuWalkSize.largeIconButton + 2)
-                .background(AyuWalkTheme.accent)
+                .background {
+                    Circle()
+                        .fill(AyuWalkTheme.accent)
+
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.cardOpacity * 0.6)
+                        .blendMode(.softLight)
+                        .clipShape(Circle())
+                }
                 .clipShape(Circle())
                 .shadow(color: AyuWalkTheme.accent.opacity(0.20), radius: 12, y: 6)
         }

@@ -25,7 +25,17 @@ struct AWPrimaryButton: View {
             .foregroundStyle(.white)
             .padding(.horizontal, AyuWalkSpacing.lg)
             .padding(.vertical, AyuWalkSpacing.lg - 2)
-            .background(tint)
+            .background {
+                RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
+                    .fill(tint)
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.cardOpacity * 0.6)
+                    .blendMode(.softLight)
+                    .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+            }
             .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
             .shadow(color: tint.opacity(0.16), radius: 14, y: 7)
         }
