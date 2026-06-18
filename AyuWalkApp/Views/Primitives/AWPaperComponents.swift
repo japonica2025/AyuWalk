@@ -287,22 +287,11 @@ struct AWStickerIconTray: View {
                     .font(AyuWalkTypography.icon(size: 13, weight: .bold))
                     .foregroundStyle(tint)
                     .frame(width: AyuWalkSize.compactIconButton, height: AyuWalkSize.compactIconButton)
-                    .background {
-                        Circle()
-                            .fill(AyuWalkTheme.surface)
-
-                        Image.awPaperCardSurface
-                            .resizable()
-                            .scaledToFill()
-                            .opacity(AyuWalkTexture.cardOpacity)
-                            .blendMode(.multiply)
-                            .clipShape(Circle())
-                    }
-                    .clipShape(Circle())
-                    .overlay {
-                        Circle()
-                            .stroke(tint.opacity(0.14), lineWidth: 1)
-                    }
+                    .awPaperCircleBackground(
+                        fill: AyuWalkTheme.surface,
+                        borderTint: tint,
+                        borderOpacity: 0.14
+                    )
             }
         }
         .padding(AyuWalkSpacing.xxs)

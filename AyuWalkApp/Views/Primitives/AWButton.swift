@@ -105,22 +105,11 @@ struct AWPlainIconButton: View {
                 .font(AyuWalkTypography.icon(size: 18))
                 .foregroundStyle(tint)
                 .frame(width: AyuWalkSize.iconButton, height: AyuWalkSize.iconButton)
-                .background {
-                    Circle()
-                        .fill(AyuWalkTheme.surface)
-
-                    Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
-                        .opacity(AyuWalkTexture.cardOpacity)
-                        .blendMode(.multiply)
-                        .clipShape(Circle())
-                }
-                .clipShape(Circle())
-                .overlay {
-                    Circle()
-                        .stroke(tint.opacity(0.14), lineWidth: 1)
-                }
+                .awPaperCircleBackground(
+                    fill: AyuWalkTheme.surface,
+                    borderTint: tint,
+                    borderOpacity: 0.14
+                )
                 .shadow(color: AyuWalkTheme.softShadow, radius: 10, y: 5)
         }
         .buttonStyle(.plain)

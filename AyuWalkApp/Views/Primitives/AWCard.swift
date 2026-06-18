@@ -10,22 +10,11 @@ struct AWIconBadge: View {
             .font(AyuWalkTypography.icon(size: size * 0.42))
             .foregroundStyle(tint)
             .frame(width: size, height: size)
-            .background {
-                Circle()
-                    .fill(AyuWalkTheme.chipSurface)
-
-                Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
-                    .opacity(AyuWalkTexture.cardOpacity)
-                    .blendMode(.multiply)
-                    .clipShape(Circle())
-            }
-            .clipShape(Circle())
-            .overlay {
-                Circle()
-                    .stroke(tint.opacity(0.18), lineWidth: 1)
-            }
+            .awPaperCircleBackground(
+                fill: AyuWalkTheme.chipSurface,
+                borderTint: tint,
+                borderOpacity: 0.18
+            )
             .shadow(color: tint.opacity(0.08), radius: 7, y: 3)
     }
 }
