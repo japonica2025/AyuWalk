@@ -389,12 +389,16 @@ struct CreateTripView: View {
             }
         } label: {
             Text(title)
-                .font(.caption.weight(.bold))
+                .font(AyuWalkTypography.captionStrong)
                 .foregroundStyle(durationMode == item ? .white : AyuWalkTheme.secondaryAccent)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .background(durationMode == item ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.pageBackground)
-                .clipShape(Capsule())
+                .awPaperCapsuleBackground(
+                    fill: durationMode == item ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.pageBackground,
+                    borderTint: AyuWalkTheme.secondaryAccent,
+                    borderOpacity: durationMode == item ? 0 : 0.12,
+                    textureOpacity: durationMode == item ? 0 : AyuWalkTexture.cardOpacity
+                )
         }
     }
 
@@ -408,12 +412,16 @@ struct CreateTripView: View {
                         purpose = item
                     } label: {
                         Text(item.displayName)
-                            .font(.subheadline.weight(.semibold))
+                            .font(AyuWalkTypography.captionStrong)
                             .foregroundStyle(purpose == item ? .white : AyuWalkTheme.ink)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
-                            .background(purpose == item ? AyuWalkTheme.accent : AyuWalkTheme.pageBackground)
-                            .clipShape(Capsule())
+                            .awPaperCapsuleBackground(
+                                fill: purpose == item ? AyuWalkTheme.accent : AyuWalkTheme.pageBackground,
+                                borderTint: purpose == item ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent,
+                                borderOpacity: purpose == item ? 0 : 0.10,
+                                textureOpacity: purpose == item ? 0 : AyuWalkTexture.cardOpacity
+                            )
                     }
                 }
             }
@@ -446,12 +454,15 @@ struct CreateTripView: View {
                 sectionTitle("导入资料")
                 Spacer()
                 Text("AI 辅助")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(.white)
+                    .font(AyuWalkTypography.microStrong)
+                    .foregroundStyle(AyuWalkTheme.secondaryAccent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(AyuWalkTheme.secondaryAccent)
-                    .clipShape(Capsule())
+                    .awPaperCapsuleBackground(
+                        fill: AyuWalkTheme.pageBackground,
+                        borderTint: AyuWalkTheme.secondaryAccent,
+                        borderOpacity: 0.12
+                    )
             }
 
             Text("先支持粘贴攻略、订单、酒店或航程文本；截图和链接识别会继续接入多模态流程。")
@@ -482,18 +493,14 @@ struct CreateTripView: View {
 
 
     private var generateButton: some View {
-        Button {
-            submit()
-        } label: {
-            Text("生成行程")
-                .font(.headline.weight(.bold))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(normalizedDestination.isEmpty ? AyuWalkTheme.mutedInk.opacity(0.35) : AyuWalkTheme.accent)
-                .clipShape(Capsule())
-                .shadow(color: AyuWalkTheme.accent.opacity(normalizedDestination.isEmpty ? 0 : 0.18), radius: 16, y: 8)
-        }
+        AWActionCapsuleButton(
+            title: "生成行程",
+            systemImage: "sparkles",
+            tint: normalizedDestination.isEmpty ? AyuWalkTheme.mutedInk.opacity(0.35) : AyuWalkTheme.accent,
+            isProminent: true,
+            fillsWidth: true,
+            action: submit
+        )
         .disabled(normalizedDestination.isEmpty)
         .accessibilityLabel("生成行程")
     }

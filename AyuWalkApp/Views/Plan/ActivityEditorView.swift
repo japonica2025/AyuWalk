@@ -107,17 +107,15 @@ struct ActivityEditorView: View {
             .navigationTitle(isCreating ? "新增日程" : "编辑日程")
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
-                Button {
+                AWActionCapsuleButton(
+                    title: isCreating ? "添加日程" : "保存修改",
+                    systemImage: isCreating ? "plus.circle.fill" : "checkmark.circle.fill",
+                    tint: draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AyuWalkTheme.mutedInk.opacity(0.35) : AyuWalkTheme.accent,
+                    isProminent: true,
+                    fillsWidth: true
+                ) {
                     onSave(draft)
                     dismiss()
-                } label: {
-                    Text(isCreating ? "添加日程" : "保存修改")
-                        .font(.headline.weight(.bold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AyuWalkTheme.mutedInk.opacity(0.35) : AyuWalkTheme.accent)
-                        .clipShape(Capsule())
                 }
                 .disabled(draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .padding(.horizontal, 20)
