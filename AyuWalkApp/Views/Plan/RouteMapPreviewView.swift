@@ -92,6 +92,28 @@ struct RouteMapPreviewView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(AyuWalkTheme.elevated)
+                    .overlay {
+                        Image.awPaperCardSurface
+                            .resizable()
+                            .scaledToFill()
+                            .opacity(AyuWalkTexture.cardOpacity)
+                            .blendMode(.multiply)
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    }
+                    .overlay(alignment: .topLeading) {
+                        Image.awWashiTapeCream
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 58, height: 20)
+                            .rotationEffect(.degrees(-7))
+                            .opacity(0.42)
+                            .offset(x: 18, y: -8)
+                            .allowsHitTesting(false)
+                    }
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(AyuWalkTheme.border, lineWidth: 1)
+                    }
 
                 Path { path in
                     guard let first = points.first else { return }

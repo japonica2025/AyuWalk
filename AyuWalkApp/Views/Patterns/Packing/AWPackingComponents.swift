@@ -244,11 +244,23 @@ private struct AWPackingTemplateTile: View {
         }
         .frame(maxWidth: .infinity, minHeight: 138, alignment: .topLeading)
         .padding(AyuWalkSpacing.md)
-        .background(isSelected ? AyuWalkTheme.elevated : AyuWalkTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous)
-                .stroke(isSelected ? AyuWalkTheme.secondaryAccent.opacity(0.35) : AyuWalkTheme.border, lineWidth: 1)
+        .awPaperInsetBackground(
+            cornerRadius: AyuWalkRadii.card,
+            fill: isSelected ? AyuWalkTheme.elevated : AyuWalkTheme.surface,
+            borderTint: isSelected ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.accent,
+            borderOpacity: isSelected ? 0.35 : 0.10
+        )
+        .overlay(alignment: .topTrailing) {
+            if recommendation != nil && !isSelected {
+                Image.awWashiTapeSage
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 46, height: 18)
+                    .rotationEffect(.degrees(7))
+                    .opacity(0.36)
+                    .offset(x: -8, y: -8)
+                    .allowsHitTesting(false)
+            }
         }
     }
 }
@@ -420,8 +432,22 @@ private struct AWPackingItemRow: View {
                         .font(AyuWalkTypography.icon(size: 15, weight: .bold))
                         .foregroundStyle(AyuWalkTheme.accent)
                         .frame(width: AyuWalkSize.compactIconButton, height: AyuWalkSize.compactIconButton)
-                        .background(AyuWalkTheme.surface)
+                        .background {
+                            Circle()
+                                .fill(AyuWalkTheme.surface)
+
+                            Image.awPaperCardSurface
+                                .resizable()
+                                .scaledToFill()
+                                .opacity(AyuWalkTexture.cardOpacity)
+                                .blendMode(.multiply)
+                                .clipShape(Circle())
+                        }
                         .clipShape(Circle())
+                        .overlay {
+                            Circle()
+                                .stroke(AyuWalkTheme.accent.opacity(0.12), lineWidth: 1)
+                        }
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("删除\(item.title)")

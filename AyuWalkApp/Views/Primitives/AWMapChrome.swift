@@ -35,7 +35,17 @@ struct AWMapFloatingLabel: View {
             .lineLimit(1)
             .padding(.horizontal, AyuWalkSpacing.xs)
             .padding(.vertical, AyuWalkSpacing.xxs)
-            .background(AyuWalkTheme.surface.opacity(0.92))
+            .background {
+                Capsule()
+                    .fill(AyuWalkTheme.surface.opacity(0.92))
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.cardOpacity)
+                    .blendMode(.multiply)
+                    .clipShape(Capsule())
+            }
             .clipShape(Capsule())
             .overlay {
                 Capsule()
