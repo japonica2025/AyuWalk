@@ -134,12 +134,16 @@ struct RouteMapDetailView: View {
                         cameraPosition = .region(Self.region(for: routeItems.filter { $0.dayNumber == dayNumber }))
                     } label: {
                         Text("Day \(dayNumber)")
-                            .font(.caption.weight(.bold))
+                            .font(AyuWalkTypography.captionStrong)
                             .foregroundStyle(selectedDayNumber == dayNumber ? .white : AyuWalkTheme.secondaryAccent)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(selectedDayNumber == dayNumber ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent.opacity(0.10))
-                            .clipShape(Capsule())
+                            .awPaperCapsuleBackground(
+                                fill: selectedDayNumber == dayNumber ? AyuWalkTheme.accent : AyuWalkTheme.pageBackground,
+                                borderTint: selectedDayNumber == dayNumber ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent,
+                                borderOpacity: selectedDayNumber == dayNumber ? 0 : 0.12,
+                                textureOpacity: selectedDayNumber == dayNumber ? 0 : AyuWalkTexture.cardOpacity
+                            )
                     }
                 }
             }
@@ -180,8 +184,12 @@ struct RouteMapDetailView: View {
             }
         }
         .padding(12)
-        .background(item.isLocked ? AyuWalkTheme.accent.opacity(0.08) : AyuWalkTheme.elevated)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .awPaperInsetBackground(
+            cornerRadius: AyuWalkRadii.smallCard,
+            fill: item.isLocked ? AyuWalkTheme.accent.opacity(0.08) : AyuWalkTheme.elevated,
+            borderTint: item.isLocked ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent,
+            borderOpacity: item.isLocked ? 0.10 : 0.08
+        )
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 3, style: .continuous)
                 .fill(item.isLocked ? AyuWalkTheme.accent : AyuWalkTheme.secondaryAccent)
