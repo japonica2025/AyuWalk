@@ -15,7 +15,10 @@ struct AWTextField: View {
             .foregroundStyle(AyuWalkTheme.ink)
             .padding(.horizontal, AyuWalkSpacing.md)
             .frame(height: AyuWalkSize.formControlHeight)
-            .background(AyuWalkTheme.surface)
-            .clipShape(Capsule())
+            .awPaperInsetBackground(
+                cornerRadius: AyuWalkSize.formControlHeight / 2,
+                fill: AyuWalkTheme.surface,
+                borderTint: AyuWalkTheme.secondaryAccent
+            )
     }
 }

@@ -219,8 +219,11 @@ struct CreateTripView: View {
                 }
                 .padding(.vertical, 12)
                 .padding(.horizontal, 14)
-                .background(AyuWalkTheme.pageBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .awPaperInsetBackground(
+                    cornerRadius: 14,
+                    fill: AyuWalkTheme.pageBackground,
+                    borderTint: AyuWalkTheme.secondaryAccent
+                )
 
                 HStack(spacing: 8) {
                     destinationButton(label: "大阪", value: "Osaka, Japan")
@@ -303,8 +306,12 @@ struct CreateTripView: View {
             .foregroundStyle(AyuWalkTheme.secondaryAccent)
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
-            .background(AyuWalkTheme.pageBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .awPaperInsetBackground(
+                cornerRadius: 12,
+                fill: AyuWalkTheme.pageBackground,
+                borderTint: AyuWalkTheme.secondaryAccent,
+                borderOpacity: 0.06
+            )
         }
     }
 
@@ -406,8 +413,11 @@ struct CreateTripView: View {
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 128)
                 .padding(10)
-                .background(AyuWalkTheme.pageBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .awPaperInsetBackground(
+                    cornerRadius: 14,
+                    fill: AyuWalkTheme.pageBackground,
+                    borderTint: AyuWalkTheme.secondaryAccent
+                )
         }
         .cardStyle()
     }
@@ -436,8 +446,11 @@ struct CreateTripView: View {
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 150)
                 .padding(10)
-                .background(AyuWalkTheme.pageBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .awPaperInsetBackground(
+                    cornerRadius: 14,
+                    fill: AyuWalkTheme.pageBackground,
+                    borderTint: AyuWalkTheme.secondaryAccent
+                )
 
             HStack(spacing: 8) {
                 Label("文本攻略", systemImage: "text.alignleft")
@@ -692,7 +705,15 @@ private extension View {
     func cardStyle() -> some View {
         padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AyuWalkTheme.paper)
+            .background {
+                AyuWalkTheme.paper
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.cardOpacity)
+                    .blendMode(.multiply)
+            }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)

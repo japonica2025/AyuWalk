@@ -31,8 +31,11 @@ private struct BudgetCurrencyMenu: View {
             .foregroundStyle(AyuWalkTheme.secondaryAccent)
             .padding(.horizontal, AyuWalkSpacing.sm)
             .frame(height: AyuWalkSize.formControlHeight)
-            .background(AyuWalkTheme.surface)
-            .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+            .awPaperInsetBackground(
+                cornerRadius: AyuWalkRadii.card,
+                fill: AyuWalkTheme.surface,
+                borderTint: AyuWalkTheme.secondaryAccent
+            )
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
@@ -94,8 +97,11 @@ struct AWBudgetTotalCard: View {
                         .focused($isBudgetFieldFocused)
                         .padding(.horizontal, AyuWalkSpacing.sm)
                         .frame(maxWidth: .infinity, minHeight: AyuWalkSize.formControlHeight)
-                        .background(AyuWalkTheme.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+                        .awPaperInsetBackground(
+                            cornerRadius: AyuWalkRadii.card,
+                            fill: AyuWalkTheme.surface,
+                            borderTint: AyuWalkTheme.secondaryAccent
+                        )
                         .contentShape(Rectangle())
                         .onTapGesture {
                             isBudgetFieldFocused = true
@@ -254,8 +260,12 @@ struct AWBudgetExchangeRateCard: View {
                     }
                 }
                 .padding(AyuWalkSpacing.sm)
-                .background(AyuWalkTheme.surface)
-                .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+                .awPaperInsetBackground(
+                    cornerRadius: AyuWalkRadii.card,
+                    fill: AyuWalkTheme.surface,
+                    borderTint: AyuWalkTheme.secondaryAccent,
+                    borderOpacity: 0.06
+                )
 
                 if foreignCurrencyCodes.isEmpty {
                     Text("当前没有外币支出，暂时不需要设置汇率。")
@@ -303,8 +313,11 @@ struct AWBudgetExchangeRateCard: View {
             .foregroundStyle(AyuWalkTheme.ink)
             .padding(.horizontal, AyuWalkSpacing.sm)
             .frame(height: AyuWalkSize.formControlHeight)
-            .background(AyuWalkTheme.surface)
-            .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+            .awPaperInsetBackground(
+                cornerRadius: AyuWalkRadii.card,
+                fill: AyuWalkTheme.surface,
+                borderTint: AyuWalkTheme.secondaryAccent
+            )
             .accessibilityLabel("\(currencyCode) 汇率")
 
             Text(normalizedDefaultCurrencyCode)

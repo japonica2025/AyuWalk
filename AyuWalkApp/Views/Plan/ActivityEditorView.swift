@@ -170,8 +170,11 @@ struct ActivityEditorView: View {
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 120)
                     .padding(10)
-                    .background(AyuWalkTheme.pageBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .awPaperInsetBackground(
+                        cornerRadius: 14,
+                        fill: AyuWalkTheme.pageBackground,
+                        borderTint: AyuWalkTheme.secondaryAccent
+                    )
             }
         }
         .card()
@@ -199,8 +202,11 @@ struct ActivityEditorView: View {
                     .textInputAutocapitalization(.never)
                     .padding(.vertical, 11)
                     .padding(.horizontal, 12)
-                    .background(AyuWalkTheme.pageBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+                    .awPaperInsetBackground(
+                        cornerRadius: AyuWalkRadii.card,
+                        fill: AyuWalkTheme.pageBackground,
+                        borderTint: AyuWalkTheme.secondaryAccent
+                    )
 
                 Button {
                     Task {
@@ -312,8 +318,12 @@ struct ActivityEditorView: View {
                     .foregroundStyle(AyuWalkTheme.secondaryAccent)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
-                    .background(AyuWalkTheme.pageBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .awPaperInsetBackground(
+                        cornerRadius: 12,
+                        fill: AyuWalkTheme.pageBackground,
+                        borderTint: AyuWalkTheme.secondaryAccent,
+                        borderOpacity: 0.06
+                    )
             }
         }
         .card()
@@ -337,8 +347,11 @@ struct ActivityEditorView: View {
                 .textInputAutocapitalization(.never)
                 .padding(.vertical, 12)
                 .padding(.horizontal, 14)
-                .background(AyuWalkTheme.pageBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .awPaperInsetBackground(
+                    cornerRadius: 14,
+                    fill: AyuWalkTheme.pageBackground,
+                    borderTint: AyuWalkTheme.secondaryAccent
+                )
         }
     }
 }
@@ -347,7 +360,15 @@ private extension View {
     func card() -> some View {
         padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AyuWalkTheme.paper)
+            .background {
+                AyuWalkTheme.paper
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.cardOpacity)
+                    .blendMode(.multiply)
+            }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)

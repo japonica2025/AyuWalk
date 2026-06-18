@@ -49,6 +49,52 @@ struct AWPaperSection<Content: View>: View {
     }
 }
 
+private struct AWPaperInsetBackground: ViewModifier {
+    var cornerRadius: CGFloat
+    var fill: Color
+    var borderTint: Color
+    var borderOpacity: Double
+    var textureOpacity: Double
+
+    func body(content: Content) -> some View {
+        content
+            .background {
+                fill
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(textureOpacity)
+                    .blendMode(.multiply)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(borderTint.opacity(borderOpacity), lineWidth: 1)
+            }
+    }
+}
+
+extension View {
+    func awPaperInsetBackground(
+        cornerRadius: CGFloat,
+        fill: Color = AyuWalkTheme.surface,
+        borderTint: Color = AyuWalkTheme.accent,
+        borderOpacity: Double = 0.08,
+        textureOpacity: Double = AyuWalkTexture.cardOpacity
+    ) -> some View {
+        modifier(
+            AWPaperInsetBackground(
+                cornerRadius: cornerRadius,
+                fill: fill,
+                borderTint: borderTint,
+                borderOpacity: borderOpacity,
+                textureOpacity: textureOpacity
+            )
+        )
+    }
+}
+
 struct AWDecorDivider: View {
     var tint: Color = AyuWalkTheme.accent
     var style: Style = .dots
