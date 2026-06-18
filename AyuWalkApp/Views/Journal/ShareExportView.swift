@@ -508,7 +508,7 @@ private struct ExportImageDocumentView: View {
             }
         }
         .frame(width: style.canvasWidth, height: renderHeight, alignment: .topLeading)
-        .background(ExportImagePalette.paper)
+        .background(exportPaperBackground)
     }
 
     private var summaryCardContent: some View {
@@ -541,7 +541,7 @@ private struct ExportImageDocumentView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(ExportImagePalette.surface)
+            .background(exportSurfaceBackground(cornerRadius: 22))
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
 
             Spacer(minLength: 0)
@@ -560,10 +560,7 @@ private struct ExportImageDocumentView: View {
         }
         .padding(34)
         .frame(width: 540, height: 675, alignment: .topLeading)
-        .background {
-            RoundedRectangle(cornerRadius: 34, style: .continuous)
-                .fill(ExportImagePalette.paper)
-        }
+        .background(exportSurfaceBackground(cornerRadius: 34, fill: ExportImagePalette.paper))
     }
 
     private var longDocumentContent: some View {
@@ -584,7 +581,34 @@ private struct ExportImageDocumentView: View {
         }
         .padding(28)
         .frame(width: 540, alignment: .topLeading)
-        .background(ExportImagePalette.paper)
+        .background(exportPaperBackground)
+    }
+
+    private var exportPaperBackground: some View {
+        ZStack {
+            ExportImagePalette.paper
+
+            Image.awPaperTexture
+                .resizable(resizingMode: .tile)
+                .opacity(AyuWalkTexture.pageOpacity)
+                .blendMode(.multiply)
+        }
+    }
+
+    private func exportSurfaceBackground(
+        cornerRadius: CGFloat,
+        fill: Color = ExportImagePalette.surface
+    ) -> some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(fill)
+            .overlay {
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.cardOpacity)
+                    .blendMode(.multiply)
+                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            }
     }
 
     private var primaryTitle: String {
