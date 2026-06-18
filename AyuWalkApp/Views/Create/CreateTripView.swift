@@ -591,27 +591,12 @@ struct CreateTripView: View {
             .foregroundStyle(mode == item ? .white : AyuWalkTheme.ink)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background {
-                if mode == item {
-                    Capsule()
-                        .fill(AyuWalkTheme.accent)
-                } else {
-                    Capsule()
-                        .fill(AyuWalkTheme.pageBackground)
-
-                    Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
-                        .opacity(AyuWalkTexture.cardOpacity)
-                        .blendMode(.multiply)
-                        .clipShape(Capsule())
-                }
-            }
-            .clipShape(Capsule())
-            .overlay {
-                Capsule()
-                    .stroke(mode == item ? Color.clear : AyuWalkTheme.accent.opacity(0.10), lineWidth: 1)
-            }
+            .awPaperCapsuleBackground(
+                fill: mode == item ? AyuWalkTheme.accent : AyuWalkTheme.pageBackground,
+                borderTint: AyuWalkTheme.accent,
+                borderOpacity: mode == item ? 0 : 0.10,
+                textureOpacity: mode == item ? 0 : AyuWalkTexture.cardOpacity
+            )
         }
     }
 
@@ -654,27 +639,12 @@ struct CreateTripView: View {
                 .foregroundStyle(destination == value ? .white : AyuWalkTheme.secondaryAccent)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 7)
-                .background {
-                    if destination == value {
-                        Capsule()
-                            .fill(AyuWalkTheme.secondaryAccent)
-                    } else {
-                        Capsule()
-                            .fill(AyuWalkTheme.pageBackground)
-
-                        Image.awPaperCardSurface
-                            .resizable()
-                            .scaledToFill()
-                            .opacity(AyuWalkTexture.cardOpacity)
-                            .blendMode(.multiply)
-                            .clipShape(Capsule())
-                    }
-                }
-                .clipShape(Capsule())
-                .overlay {
-                    Capsule()
-                        .stroke(destination == value ? Color.clear : AyuWalkTheme.secondaryAccent.opacity(0.10), lineWidth: 1)
-                }
+                .awPaperCapsuleBackground(
+                    fill: destination == value ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.pageBackground,
+                    borderTint: AyuWalkTheme.secondaryAccent,
+                    borderOpacity: destination == value ? 0 : 0.10,
+                    textureOpacity: destination == value ? 0 : AyuWalkTexture.cardOpacity
+                )
         }
     }
 }

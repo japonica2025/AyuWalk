@@ -287,7 +287,17 @@ struct AWStickerLayer: View {
                     .font(.system(size: 8, weight: .black))
                     .foregroundStyle(.white)
                     .frame(width: 18, height: 18)
-                    .background(Color.red)
+                    .background {
+                        Circle()
+                            .fill(AyuWalkTheme.accent)
+
+                        Image.awPaperCardSurface
+                            .resizable()
+                            .scaledToFill()
+                            .opacity(AyuWalkTexture.cardOpacity * 0.6)
+                            .blendMode(.softLight)
+                            .clipShape(Circle())
+                    }
                     .clipShape(Circle())
                     .overlay {
                         Circle()
