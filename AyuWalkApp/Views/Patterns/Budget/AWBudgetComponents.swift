@@ -445,8 +445,11 @@ struct AWBudgetCategoryProgressCard: View {
                 .foregroundStyle(AyuWalkTheme.ink)
                 .padding(.horizontal, AyuWalkSpacing.sm)
                 .frame(height: AyuWalkSize.formControlHeight)
-                .background(AyuWalkTheme.surface)
-                .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+                .awPaperInsetBackground(
+                    cornerRadius: AyuWalkRadii.card,
+                    fill: AyuWalkTheme.surface,
+                    borderTint: AyuWalkTheme.secondaryAccent
+                )
                 .accessibilityLabel("\(category.displayName)分类预算")
 
                 Button {
@@ -568,8 +571,11 @@ struct AWBudgetExpenseEntryCard: View {
                         .textFieldStyle(.plain)
                         .padding(.horizontal, AyuWalkSpacing.md)
                         .frame(height: AyuWalkSize.formControlHeight)
-                        .background(AyuWalkTheme.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+                        .awPaperInsetBackground(
+                            cornerRadius: AyuWalkRadii.card,
+                            fill: AyuWalkTheme.surface,
+                            borderTint: AyuWalkTheme.secondaryAccent
+                        )
                 }
 
                 payerPicker
@@ -615,8 +621,11 @@ struct AWBudgetExpenseEntryCard: View {
                     .foregroundStyle(AyuWalkTheme.secondaryAccent)
                     .padding(.horizontal, AyuWalkSpacing.sm)
                     .padding(.vertical, AyuWalkSpacing.xs)
-                    .background(AyuWalkTheme.surface)
-                    .clipShape(Capsule())
+                    .awPaperCapsuleBackground(
+                        fill: AyuWalkTheme.surface,
+                        borderTint: AyuWalkTheme.secondaryAccent,
+                        borderOpacity: 0.12
+                    )
             }
             .buttonStyle(.plain)
             .accessibilityLabel("选择付款人")
@@ -704,8 +713,12 @@ struct AWBudgetExpenseListCard: View {
             }
         }
         .padding(AyuWalkSpacing.sm)
-        .background(AyuWalkTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+        .awPaperInsetBackground(
+            cornerRadius: AyuWalkRadii.card,
+            fill: AyuWalkTheme.surface,
+            borderTint: AyuWalkTheme.secondaryAccent,
+            borderOpacity: 0.08
+        )
     }
 
     private func format(amount: Decimal, currencyCode: String) -> String {
@@ -746,8 +759,12 @@ struct AWBudgetExpenseListCard: View {
             }
         }
         .padding(AyuWalkSpacing.sm)
-        .background(AyuWalkTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
+        .awPaperInsetBackground(
+            cornerRadius: AyuWalkRadii.card,
+            fill: AyuWalkTheme.surface,
+            borderTint: AyuWalkTheme.accent,
+            borderOpacity: 0.08
+        )
     }
 
     private func settlementText(for transfer: BudgetSettlementTransfer) -> String {
@@ -847,8 +864,22 @@ private struct AWBudgetExpenseRow: View {
                     .font(AyuWalkTypography.icon(size: 15, weight: .bold))
                     .foregroundStyle(AyuWalkTheme.secondaryAccent)
                     .frame(width: AyuWalkSize.compactIconButton, height: AyuWalkSize.compactIconButton)
-                    .background(AyuWalkTheme.surface)
+                    .background {
+                        Circle()
+                            .fill(AyuWalkTheme.surface)
+
+                        Image.awPaperCardSurface
+                            .resizable()
+                            .scaledToFill()
+                            .opacity(AyuWalkTexture.cardOpacity)
+                            .blendMode(.multiply)
+                            .clipShape(Circle())
+                    }
                     .clipShape(Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(AyuWalkTheme.secondaryAccent.opacity(0.12), lineWidth: 1)
+                    }
             }
             .buttonStyle(.plain)
             .accessibilityLabel(isEditing ? "完成编辑支出" : "编辑支出")
@@ -860,8 +891,22 @@ private struct AWBudgetExpenseRow: View {
                     .font(AyuWalkTypography.icon(size: 15, weight: .bold))
                     .foregroundStyle(AyuWalkTheme.accent)
                     .frame(width: AyuWalkSize.compactIconButton, height: AyuWalkSize.compactIconButton)
-                    .background(AyuWalkTheme.surface)
+                    .background {
+                        Circle()
+                            .fill(AyuWalkTheme.surface)
+
+                        Image.awPaperCardSurface
+                            .resizable()
+                            .scaledToFill()
+                            .opacity(AyuWalkTexture.cardOpacity)
+                            .blendMode(.multiply)
+                            .clipShape(Circle())
+                    }
                     .clipShape(Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(AyuWalkTheme.accent.opacity(0.12), lineWidth: 1)
+                    }
             }
             .buttonStyle(.plain)
             .accessibilityLabel("删除支出")
@@ -956,8 +1001,11 @@ private struct AWBudgetExpenseRow: View {
                     .foregroundStyle(AyuWalkTheme.secondaryAccent)
                     .padding(.horizontal, AyuWalkSpacing.sm)
                     .padding(.vertical, AyuWalkSpacing.xs)
-                    .background(AyuWalkTheme.surface)
-                    .clipShape(Capsule())
+                    .awPaperCapsuleBackground(
+                        fill: AyuWalkTheme.surface,
+                        borderTint: AyuWalkTheme.secondaryAccent,
+                        borderOpacity: 0.12
+                    )
             }
             .buttonStyle(.plain)
         }
@@ -980,8 +1028,11 @@ private struct AWBudgetExpenseRow: View {
                             .foregroundStyle(isIncluded ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.mutedInk)
                             .padding(.horizontal, AyuWalkSpacing.sm)
                             .padding(.vertical, AyuWalkSpacing.xs)
-                            .background(isIncluded ? AyuWalkTheme.secondaryAccent.opacity(0.12) : AyuWalkTheme.surface)
-                            .clipShape(Capsule())
+                            .awPaperCapsuleBackground(
+                                fill: isIncluded ? AyuWalkTheme.secondaryAccent.opacity(0.12) : AyuWalkTheme.surface,
+                                borderTint: isIncluded ? AyuWalkTheme.secondaryAccent : AyuWalkTheme.accent,
+                                borderOpacity: isIncluded ? 0.18 : 0.08
+                            )
                     }
                     .buttonStyle(.plain)
 
@@ -1005,8 +1056,11 @@ private struct AWBudgetExpenseRow: View {
                         .foregroundStyle(AyuWalkTheme.ink)
                         .padding(.horizontal, AyuWalkSpacing.sm)
                         .padding(.vertical, AyuWalkSpacing.xs)
-                        .background(AyuWalkTheme.surface)
-                        .clipShape(Capsule())
+                        .awPaperCapsuleBackground(
+                            fill: AyuWalkTheme.surface,
+                            borderTint: AyuWalkTheme.secondaryAccent,
+                            borderOpacity: 0.10
+                        )
                     }
                 }
             }
@@ -1110,8 +1164,22 @@ private struct AWParticipantEditorRow: View {
                     .font(AyuWalkTypography.icon(size: 15, weight: .bold))
                     .foregroundStyle(AyuWalkTheme.accent)
                     .frame(width: AyuWalkSize.compactIconButton, height: AyuWalkSize.compactIconButton)
-                    .background(AyuWalkTheme.surface)
+                    .background {
+                        Circle()
+                            .fill(AyuWalkTheme.surface)
+
+                        Image.awPaperCardSurface
+                            .resizable()
+                            .scaledToFill()
+                            .opacity(AyuWalkTexture.cardOpacity)
+                            .blendMode(.multiply)
+                            .clipShape(Circle())
+                    }
                     .clipShape(Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(AyuWalkTheme.accent.opacity(0.12), lineWidth: 1)
+                    }
             }
             .buttonStyle(.plain)
             .accessibilityLabel("删除参与人")

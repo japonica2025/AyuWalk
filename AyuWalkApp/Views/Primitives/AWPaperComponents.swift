@@ -75,6 +75,33 @@ private struct AWPaperInsetBackground: ViewModifier {
     }
 }
 
+private struct AWPaperCapsuleBackground: ViewModifier {
+    var fill: Color
+    var borderTint: Color
+    var borderOpacity: Double
+    var textureOpacity: Double
+
+    func body(content: Content) -> some View {
+        content
+            .background {
+                Capsule()
+                    .fill(fill)
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(textureOpacity)
+                    .blendMode(.multiply)
+                    .clipShape(Capsule())
+            }
+            .clipShape(Capsule())
+            .overlay {
+                Capsule()
+                    .stroke(borderTint.opacity(borderOpacity), lineWidth: 1)
+            }
+    }
+}
+
 extension View {
     func awPaperInsetBackground(
         cornerRadius: CGFloat,
@@ -86,6 +113,22 @@ extension View {
         modifier(
             AWPaperInsetBackground(
                 cornerRadius: cornerRadius,
+                fill: fill,
+                borderTint: borderTint,
+                borderOpacity: borderOpacity,
+                textureOpacity: textureOpacity
+            )
+        )
+    }
+
+    func awPaperCapsuleBackground(
+        fill: Color = AyuWalkTheme.chipSurface,
+        borderTint: Color = AyuWalkTheme.accent,
+        borderOpacity: Double = 0.10,
+        textureOpacity: Double = AyuWalkTexture.cardOpacity
+    ) -> some View {
+        modifier(
+            AWPaperCapsuleBackground(
                 fill: fill,
                 borderTint: borderTint,
                 borderOpacity: borderOpacity,

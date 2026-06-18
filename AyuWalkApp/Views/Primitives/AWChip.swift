@@ -21,7 +21,22 @@ struct AWStatusPill: View {
         .foregroundStyle(isFilled ? .white : tint)
         .padding(.horizontal, AyuWalkSpacing.sm)
         .padding(.vertical, AyuWalkSpacing.xs - 1)
-        .background(isFilled ? tint : AyuWalkTheme.chipSurface)
+        .background {
+            if isFilled {
+                Capsule()
+                    .fill(tint)
+            } else {
+                Capsule()
+                    .fill(AyuWalkTheme.chipSurface)
+
+                Image.awPaperCardSurface
+                    .resizable()
+                    .scaledToFill()
+                    .opacity(AyuWalkTexture.cardOpacity)
+                    .blendMode(.multiply)
+                    .clipShape(Capsule())
+            }
+        }
         .clipShape(Capsule())
         .overlay {
             Capsule()
@@ -51,7 +66,22 @@ struct AWSelectableChip: View {
             .foregroundStyle(isSelected ? .white : AyuWalkTheme.ink)
             .padding(.horizontal, AyuWalkSpacing.sm + 1)
             .padding(.vertical, AyuWalkSpacing.xs)
-            .background(isSelected ? tint : AyuWalkTheme.chipSurface)
+            .background {
+                if isSelected {
+                    Capsule()
+                        .fill(tint)
+                } else {
+                    Capsule()
+                        .fill(AyuWalkTheme.chipSurface)
+
+                    Image.awPaperCardSurface
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(AyuWalkTexture.cardOpacity)
+                        .blendMode(.multiply)
+                        .clipShape(Capsule())
+                }
+            }
             .clipShape(Capsule())
             .overlay {
                 Capsule()
@@ -85,11 +115,17 @@ struct AWMetricTile: View {
         .background {
             AyuWalkTheme.surface
             tint.opacity(0.045)
+
+            Image.awPaperCardSurface
+                .resizable()
+                .scaledToFill()
+                .opacity(AyuWalkTexture.cardOpacity)
+                .blendMode(.multiply)
         }
         .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous)
-                .stroke(AyuWalkTheme.hairline, lineWidth: 1)
+                .stroke(tint.opacity(0.10), lineWidth: 1)
         }
         .contentShape(RoundedRectangle(cornerRadius: AyuWalkRadii.smallCard, style: .continuous))
     }
