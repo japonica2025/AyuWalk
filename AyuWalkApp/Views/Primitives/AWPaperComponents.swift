@@ -20,8 +20,7 @@ struct AWPaperSurface<Content: View>: View {
 
                 if showsPaperTexture {
                     Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
+                        .resizable(resizingMode: .tile)
                         .opacity(AyuWalkTexture.cardOpacity)
                         .blendMode(.multiply)
                 }
@@ -62,8 +61,7 @@ private struct AWPaperInsetBackground: ViewModifier {
                 fill
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(textureOpacity)
                     .blendMode(.multiply)
             }
@@ -88,8 +86,7 @@ private struct AWPaperCapsuleBackground: ViewModifier {
                     .fill(fill)
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(textureOpacity)
                     .blendMode(.multiply)
                     .clipShape(Capsule())
@@ -115,8 +112,7 @@ private struct AWPaperCircleBackground: ViewModifier {
                     .fill(fill)
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(textureOpacity)
                     .blendMode(.multiply)
                     .clipShape(Circle())
