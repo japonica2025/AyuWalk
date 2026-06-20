@@ -35,8 +35,7 @@ struct AWFloatingTabBar<Selection: Hashable>: View {
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
                 .overlay {
                     Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
+                        .resizable(resizingMode: .tile)
                         .opacity(AyuWalkTexture.cardOpacity)
                         .blendMode(.multiply)
                         .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
@@ -80,8 +79,7 @@ struct AWFloatingTabBar<Selection: Hashable>: View {
                         .fill(AyuWalkTheme.accent)
 
                     Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
+                        .resizable(resizingMode: .tile)
                         .opacity(AyuWalkTexture.cardOpacity * 0.6)
                         .blendMode(.softLight)
                         .clipShape(Circle())

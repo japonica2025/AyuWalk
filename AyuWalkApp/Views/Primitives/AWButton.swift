@@ -30,8 +30,7 @@ struct AWPrimaryButton: View {
                     .fill(tint)
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(AyuWalkTexture.cardOpacity * 0.6)
                     .blendMode(.softLight)
                     .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
@@ -68,16 +67,14 @@ struct AWActionCapsuleButton: View {
                     tint
 
                     Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
+                        .resizable(resizingMode: .tile)
                         .opacity(AyuWalkTexture.cardOpacity * 0.6)
                         .blendMode(.softLight)
                 } else {
                     AyuWalkTheme.chipSurface
 
                     Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
+                        .resizable(resizingMode: .tile)
                         .opacity(AyuWalkTexture.cardOpacity)
                         .blendMode(.multiply)
                 }

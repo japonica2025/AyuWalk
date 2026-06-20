@@ -27,8 +27,7 @@ struct AWStatusPill: View {
                     .fill(tint)
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(AyuWalkTexture.cardOpacity * 0.6)
                     .blendMode(.softLight)
                     .clipShape(Capsule())
@@ -37,8 +36,7 @@ struct AWStatusPill: View {
                     .fill(AyuWalkTheme.chipSurface)
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(AyuWalkTexture.cardOpacity)
                     .blendMode(.multiply)
                     .clipShape(Capsule())
@@ -79,8 +77,7 @@ struct AWSelectableChip: View {
                         .fill(tint)
 
                     Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
+                        .resizable(resizingMode: .tile)
                         .opacity(AyuWalkTexture.cardOpacity * 0.6)
                         .blendMode(.softLight)
                         .clipShape(Capsule())
@@ -89,8 +86,7 @@ struct AWSelectableChip: View {
                         .fill(AyuWalkTheme.chipSurface)
 
                     Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
+                        .resizable(resizingMode: .tile)
                         .opacity(AyuWalkTexture.cardOpacity)
                         .blendMode(.multiply)
                         .clipShape(Capsule())
@@ -131,8 +127,7 @@ struct AWMetricTile: View {
             tint.opacity(0.045)
 
             Image.awPaperCardSurface
-                .resizable()
-                .scaledToFill()
+                .resizable(resizingMode: .tile)
                 .opacity(AyuWalkTexture.cardOpacity)
                 .blendMode(.multiply)
         }
