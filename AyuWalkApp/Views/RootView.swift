@@ -108,7 +108,14 @@ struct RootView: View {
         .padding(.horizontal, 22)
         .padding(.vertical, 20)
         .frame(maxWidth: 300)
-        .background(.ultraThinMaterial)
+        .background {
+            AyuWalkTheme.surface.opacity(0.96)
+
+            Image.awPaperCardSurface
+                .resizable(resizingMode: .tile)
+                .opacity(AyuWalkTexture.cardOpacity)
+                .blendMode(.multiply)
+        }
         .clipShape(RoundedRectangle(cornerRadius: AyuWalkTheme.panelRadius, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: AyuWalkTheme.panelRadius, style: .continuous)
