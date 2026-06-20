@@ -47,9 +47,9 @@ enum AyuWalkShadow {
 }
 
 enum AyuWalkTexture {
-    static let pageOpacity: Double = 0.10
-    static let sheetOpacity: Double = 0.07
-    static let cardOpacity: Double = 0.055
+    static let pageOpacity: Double = 0.025
+    static let sheetOpacity: Double = 0.022
+    static let cardOpacity: Double = 0.024
 }
 
 enum AyuWalkSize {
