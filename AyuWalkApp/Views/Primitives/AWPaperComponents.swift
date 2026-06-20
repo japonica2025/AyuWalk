@@ -396,8 +396,7 @@ struct AWCalloutNote: View {
             AyuWalkTheme.chipSurface.opacity(0.72)
 
             Image.awPaperCardSurface
-                .resizable()
-                .scaledToFill()
+                .resizable(resizingMode: .tile)
                 .opacity(AyuWalkTexture.cardOpacity)
                 .blendMode(.multiply)
         }
@@ -497,22 +496,11 @@ struct AWCornerSticker: View {
             .font(AyuWalkTypography.icon(size: 12, weight: .bold))
             .foregroundStyle(tint)
             .padding(AyuWalkSpacing.xs)
-            .background {
-                Circle()
-                    .fill(AyuWalkTheme.chipSurface)
-
-                Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
-                    .opacity(AyuWalkTexture.cardOpacity)
-                    .blendMode(.multiply)
-                    .clipShape(Circle())
-            }
-            .clipShape(Circle())
-            .overlay {
-                Circle()
-                    .stroke(tint.opacity(0.12), lineWidth: 1)
-            }
+            .awPaperCircleBackground(
+                fill: AyuWalkTheme.chipSurface,
+                borderTint: tint,
+                borderOpacity: 0.12
+            )
             .shadow(color: tint.opacity(0.08), radius: 6, y: 3)
             .rotationEffect(.degrees(-4))
             .allowsHitTesting(false)
