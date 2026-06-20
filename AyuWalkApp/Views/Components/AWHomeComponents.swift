@@ -31,8 +31,7 @@ struct AWScrapbookMetricTile: View {
             tint.opacity(0.035)
 
             Image.awPaperCardSurface
-                .resizable()
-                .scaledToFill()
+                .resizable(resizingMode: .tile)
                 .opacity(AyuWalkTexture.cardOpacity)
                 .blendMode(.multiply)
         }

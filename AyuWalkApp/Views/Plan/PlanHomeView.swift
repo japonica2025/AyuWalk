@@ -627,8 +627,7 @@ private struct AIAdjustmentSheetView: View {
                             AyuWalkTheme.paper
 
                             Image.awPaperCardSurface
-                                .resizable()
-                                .scaledToFill()
+                                .resizable(resizingMode: .tile)
                                 .opacity(AyuWalkTexture.cardOpacity)
                                 .blendMode(.multiply)
                         }

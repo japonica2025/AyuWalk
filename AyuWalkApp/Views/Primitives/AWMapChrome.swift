@@ -23,8 +23,7 @@ struct AWMapMarkerBadge: View {
                 .fill(tint)
 
             Image.awPaperCardSurface
-                .resizable()
-                .scaledToFill()
+                .resizable(resizingMode: .tile)
                 .opacity(AyuWalkTexture.cardOpacity * 0.6)
                 .blendMode(.softLight)
                 .clipShape(Circle())
@@ -50,8 +49,7 @@ struct AWMapFloatingLabel: View {
                     .fill(AyuWalkTheme.surface.opacity(0.92))
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(AyuWalkTexture.cardOpacity)
                     .blendMode(.multiply)
                     .clipShape(Capsule())
@@ -75,8 +73,7 @@ struct AWRouteDrawerSurface<Content: View>: View {
                 AyuWalkTheme.surface.opacity(0.98)
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(AyuWalkTexture.cardOpacity)
                     .blendMode(.multiply)
             }

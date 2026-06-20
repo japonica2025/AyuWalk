@@ -373,8 +373,7 @@ struct ItineraryTimelineView: View {
                 )
 
             Image.awPaperCardSurface
-                .resizable()
-                .scaledToFill()
+                .resizable(resizingMode: .tile)
                 .opacity(AyuWalkTexture.cardOpacity * 0.75)
                 .blendMode(.multiply)
                 .clipShape(RoundedRectangle(cornerRadius: AyuWalkRadii.card, style: .continuous))
