@@ -309,6 +309,7 @@ struct AWPhotoFrame<Content: View>: View {
         case rose
         case sage
         case cream
+        case strips
     }
 
     var body: some View {
@@ -348,6 +349,8 @@ private extension AWPhotoFrame.Tape {
             return .awWashiTapeSage
         case .cream:
             return .awWashiTapeCream
+        case .strips:
+            return .awWashiTapeStrips
         }
     }
 
@@ -359,6 +362,8 @@ private extension AWPhotoFrame.Tape {
             return .degrees(2)
         case .cream:
             return .degrees(-1)
+        case .strips:
+            return .degrees(-2)
         }
     }
 
@@ -370,6 +375,8 @@ private extension AWPhotoFrame.Tape {
             return 0.40
         case .cream:
             return 0.50
+        case .strips:
+            return 0.44
         }
     }
 }

@@ -183,7 +183,7 @@ struct AWTripCoverCard<RoutePreview: View>: View {
             }
         }
         .overlay(alignment: .topLeading) {
-            AWWashiTape()
+            AWWashiTape(image: .awWashiTapeStrips, width: 136, rotation: .degrees(-2))
                 .offset(x: 30, y: -20)
         }
         .overlay(alignment: .bottomTrailing) {
