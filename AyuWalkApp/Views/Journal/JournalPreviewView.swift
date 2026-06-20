@@ -298,8 +298,7 @@ struct JournalPreviewView: View {
                                             .fill(AyuWalkTheme.pageBackground)
 
                                         Image.awPaperCardSurface
-                                            .resizable()
-                                            .scaledToFill()
+                                            .resizable(resizingMode: .tile)
                                             .opacity(AyuWalkTexture.cardOpacity)
                                             .blendMode(.multiply)
                                             .clipShape(Capsule())
@@ -424,8 +423,7 @@ struct JournalPreviewView: View {
                 AyuWalkTheme.pageBackground.opacity(0.8)
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(AyuWalkTexture.cardOpacity)
                     .blendMode(.multiply)
             }
