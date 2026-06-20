@@ -1,7 +1,8 @@
 import SwiftUI
 
 enum AyuWalkDecorAssets {
-    static let paperTexture = "AWReferencePaperTexture"
+    static let paperTexture = "AWPaperTexture"
+    static let referencePaperTexture = "AWReferencePaperTexture"
     static let paperCardSurface = "AWPaperCardSurface"
     static let washiTapeStrips = "AWWashiTapeStrips"
     static let washiTapeRose = "AWWashiTapeRose"
@@ -12,6 +13,10 @@ enum AyuWalkDecorAssets {
 extension Image {
     static var awPaperTexture: Image {
         Image(AyuWalkDecorAssets.paperTexture)
+    }
+
+    static var awReferencePaperTexture: Image {
+        Image(AyuWalkDecorAssets.referencePaperTexture)
     }
 
     static var awPaperCardSurface: Image {
