@@ -145,22 +145,11 @@ struct CreateTripView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(AyuWalkTheme.ink)
                     .frame(width: 36, height: 36)
-                    .background {
-                        Circle()
-                            .fill(AyuWalkTheme.paper)
-
-                        Image.awPaperCardSurface
-                            .resizable()
-                            .scaledToFill()
-                            .opacity(AyuWalkTexture.cardOpacity)
-                            .blendMode(.multiply)
-                            .clipShape(Circle())
-                    }
-                    .clipShape(Circle())
-                    .overlay {
-                        Circle()
-                            .stroke(AyuWalkTheme.border, lineWidth: 1)
-                    }
+                    .awPaperCircleBackground(
+                        fill: AyuWalkTheme.paper,
+                        borderTint: AyuWalkTheme.accent,
+                        borderOpacity: 0.13
+                    )
             }
             .accessibilityLabel("取消")
         }
@@ -188,8 +177,7 @@ struct CreateTripView: View {
             AyuWalkTheme.paper
 
             Image.awPaperCardSurface
-                .resizable()
-                .scaledToFill()
+                .resizable(resizingMode: .tile)
                 .opacity(AyuWalkTexture.cardOpacity)
                 .blendMode(.multiply)
         }
@@ -719,8 +707,7 @@ private struct CreateTripPlanningReviewView: View {
                 AyuWalkTheme.canvas
 
                 Image.awPaperTexture
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(AyuWalkTexture.pageOpacity)
                     .blendMode(.multiply)
             }
@@ -753,8 +740,7 @@ private extension View {
                 AyuWalkTheme.paper
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(AyuWalkTexture.cardOpacity)
                     .blendMode(.multiply)
             }

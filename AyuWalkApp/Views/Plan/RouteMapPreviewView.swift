@@ -94,8 +94,7 @@ struct RouteMapPreviewView: View {
                     .fill(AyuWalkTheme.elevated)
                     .overlay {
                         Image.awPaperCardSurface
-                            .resizable()
-                            .scaledToFill()
+                            .resizable(resizingMode: .tile)
                             .opacity(AyuWalkTexture.cardOpacity)
                             .blendMode(.multiply)
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))

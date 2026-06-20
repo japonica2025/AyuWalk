@@ -124,8 +124,7 @@ struct ActivityEditorView: View {
                     AyuWalkTheme.pageBackground
 
                     Image.awPaperTexture
-                        .resizable()
-                        .scaledToFill()
+                        .resizable(resizingMode: .tile)
                         .opacity(AyuWalkTexture.pageOpacity)
                         .blendMode(.multiply)
                 }
@@ -290,22 +289,11 @@ struct ActivityEditorView: View {
                     .font(.title3.weight(.bold))
                     .foregroundStyle(AyuWalkTheme.secondaryAccent)
                     .frame(width: 32, height: 32)
-                    .background {
-                        Circle()
-                            .fill(AyuWalkTheme.pageBackground)
-
-                        Image.awPaperCardSurface
-                            .resizable()
-                            .scaledToFill()
-                            .opacity(AyuWalkTexture.cardOpacity)
-                            .blendMode(.multiply)
-                            .clipShape(Circle())
-                    }
-                    .clipShape(Circle())
-                    .overlay {
-                        Circle()
-                            .stroke(AyuWalkTheme.secondaryAccent.opacity(0.10), lineWidth: 1)
-                    }
+                    .awPaperCircleBackground(
+                        fill: AyuWalkTheme.pageBackground,
+                        borderTint: AyuWalkTheme.secondaryAccent,
+                        borderOpacity: 0.10
+                    )
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("固定时间提醒")
@@ -384,8 +372,7 @@ private extension View {
                 AyuWalkTheme.paper
 
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(AyuWalkTexture.cardOpacity)
                     .blendMode(.multiply)
             }
