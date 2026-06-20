@@ -66,7 +66,14 @@ struct CreateTripView: View {
                     .padding(.top, 12)
                     .padding(.bottom, 10)
             }
-            .background(.ultraThinMaterial)
+            .background {
+                AyuWalkTheme.surface.opacity(0.96)
+
+                Image.awPaperCardSurface
+                    .resizable(resizingMode: .tile)
+                    .opacity(AyuWalkTexture.cardOpacity)
+                    .blendMode(.multiply)
+            }
         }
         .confirmationDialog("请选择目的地", isPresented: ambiguousDestinationBinding, titleVisibility: .visible) {
             ForEach(ambiguousDestinations, id: \.displayName) { option in
