@@ -14,8 +14,7 @@ struct AWJournalBookFrame<Content: View>: View {
                     .fill(AyuWalkTheme.surface)
                     .overlay {
                         Image.awPaperCardSurface
-                            .resizable()
-                            .scaledToFill()
+                            .resizable(resizingMode: .tile)
                             .opacity(AyuWalkTexture.cardOpacity)
                             .blendMode(.multiply)
                             .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
@@ -61,8 +60,7 @@ struct AWJournalPageSurface<Content: View>: View {
             AyuWalkTheme.paper
 
             Image.awPaperCardSurface
-                .resizable()
-                .scaledToFill()
+                .resizable(resizingMode: .tile)
                 .opacity(AyuWalkTexture.cardOpacity)
                 .blendMode(.multiply)
 
@@ -287,22 +285,12 @@ struct AWStickerLayer: View {
                     .font(.system(size: 8, weight: .black))
                     .foregroundStyle(.white)
                     .frame(width: 18, height: 18)
-                    .background {
-                        Circle()
-                            .fill(AyuWalkTheme.accent)
-
-                        Image.awPaperCardSurface
-                            .resizable()
-                            .scaledToFill()
-                            .opacity(AyuWalkTexture.cardOpacity * 0.6)
-                            .blendMode(.softLight)
-                            .clipShape(Circle())
-                    }
-                    .clipShape(Circle())
-                    .overlay {
-                        Circle()
-                            .stroke(.white.opacity(0.9), lineWidth: 1.5)
-                    }
+                    .awPaperCircleBackground(
+                        fill: AyuWalkTheme.accent,
+                        borderTint: .white,
+                        borderOpacity: 0.9,
+                        textureOpacity: AyuWalkTexture.cardOpacity * 0.6
+                    )
             }
             .buttonStyle(.plain)
             .accessibilityLabel("删除\(placedSticker.sticker.title)")
@@ -374,22 +362,11 @@ struct AWStickerLayer: View {
             .font(.system(size: 9, weight: .bold))
             .foregroundStyle(AyuWalkTheme.secondaryAccent)
             .frame(width: 22, height: 22)
-            .background {
-                Circle()
-                    .fill(AyuWalkTheme.surface)
-
-                Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
-                    .opacity(AyuWalkTexture.cardOpacity)
-                    .blendMode(.multiply)
-                    .clipShape(Circle())
-            }
-            .clipShape(Circle())
-            .overlay {
-                Circle()
-                    .stroke(AyuWalkTheme.secondaryAccent.opacity(0.42), lineWidth: 1)
-            }
+            .awPaperCircleBackground(
+                fill: AyuWalkTheme.surface,
+                borderTint: AyuWalkTheme.secondaryAccent,
+                borderOpacity: 0.42
+            )
             .shadow(color: AyuWalkShadow.journal, radius: 6, x: 0, y: 3)
     }
 }

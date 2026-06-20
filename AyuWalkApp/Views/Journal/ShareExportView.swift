@@ -233,8 +233,7 @@ struct ShareExportView: View {
             AyuWalkTheme.paper
 
             Image.awPaperCardSurface
-                .resizable()
-                .scaledToFill()
+                .resizable(resizingMode: .tile)
                 .opacity(AyuWalkTexture.cardOpacity)
                 .blendMode(.multiply)
         }
@@ -569,8 +568,7 @@ private struct ExportImageDocumentView: View {
             .fill(fill)
             .overlay {
                 Image.awPaperCardSurface
-                    .resizable()
-                    .scaledToFill()
+                    .resizable(resizingMode: .tile)
                     .opacity(AyuWalkTexture.cardOpacity)
                     .blendMode(.multiply)
                     .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
