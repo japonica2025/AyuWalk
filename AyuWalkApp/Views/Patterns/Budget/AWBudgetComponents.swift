@@ -82,31 +82,9 @@ struct AWBudgetTotalCard: View {
                     .accessibilityLabel("管理参与人")
                 }
 
-                HStack(alignment: .firstTextBaseline, spacing: AyuWalkSpacing.sm) {
-                    BudgetCurrencyMenu(
-                        currencyCode: currencyCode,
-                        label: "总预算货币",
-                        onSelect: onCurrencyChange
-                    )
-
-                    TextField("填写总预算", text: $budgetText)
-                        .keyboardType(.decimalPad)
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
-                        .foregroundStyle(AyuWalkTheme.ink)
-                        .textFieldStyle(.plain)
-                        .focused($isBudgetFieldFocused)
-                        .padding(.horizontal, AyuWalkSpacing.sm)
-                        .frame(maxWidth: .infinity, minHeight: AyuWalkSize.formControlHeight)
-                        .awPaperInsetBackground(
-                            cornerRadius: AyuWalkRadii.card,
-                            fill: AyuWalkTheme.surface,
-                            borderTint: AyuWalkTheme.secondaryAccent
-                        )
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            isBudgetFieldFocused = true
-                        }
-                        .accessibilityLabel("总预算")
+                VStack(alignment: .leading, spacing: AyuWalkSpacing.sm) {
+                    budgetCurrencyMenu
+                    budgetAmountField
                 }
                 .padding(.vertical, AyuWalkSpacing.xxs - 1)
 
@@ -162,6 +140,35 @@ struct AWBudgetTotalCard: View {
                 }
             }
         }
+    }
+
+    private var budgetCurrencyMenu: some View {
+        BudgetCurrencyMenu(
+            currencyCode: currencyCode,
+            label: "总预算货币",
+            onSelect: onCurrencyChange
+        )
+    }
+
+    private var budgetAmountField: some View {
+        TextField("填写总预算", text: $budgetText)
+            .keyboardType(.decimalPad)
+            .font(.system(size: 34, weight: .bold, design: .rounded))
+            .foregroundStyle(AyuWalkTheme.ink)
+            .textFieldStyle(.plain)
+            .focused($isBudgetFieldFocused)
+            .padding(.horizontal, AyuWalkSpacing.sm)
+            .frame(maxWidth: .infinity, minHeight: AyuWalkSize.formControlHeight)
+            .awPaperInsetBackground(
+                cornerRadius: AyuWalkRadii.card,
+                fill: AyuWalkTheme.surface,
+                borderTint: AyuWalkTheme.secondaryAccent
+            )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                isBudgetFieldFocused = true
+            }
+            .accessibilityLabel("总预算")
     }
 }
 
