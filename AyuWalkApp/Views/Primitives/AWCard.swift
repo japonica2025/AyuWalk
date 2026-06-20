@@ -96,8 +96,7 @@ struct AWPanel<Content: View>: View {
                 background
                 if showsPaperTexture {
                     Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
+                        .resizable(resizingMode: .tile)
                         .opacity(AyuWalkTexture.cardOpacity)
                         .blendMode(.multiply)
                 }
@@ -154,8 +153,7 @@ struct AWEmptyState: View {
         .background {
             AyuWalkTheme.surface
             Image.awPaperCardSurface
-                .resizable()
-                .scaledToFill()
+                .resizable(resizingMode: .tile)
                 .opacity(AyuWalkTexture.cardOpacity)
                 .blendMode(.multiply)
         }
@@ -185,8 +183,7 @@ struct AWCardChrome<Content: View>: View {
                 background
                 if showsPaperTexture {
                     Image.awPaperCardSurface
-                        .resizable()
-                        .scaledToFill()
+                        .resizable(resizingMode: .tile)
                         .opacity(AyuWalkTexture.cardOpacity)
                         .blendMode(.multiply)
                 }
