@@ -29,6 +29,28 @@ final class PersistenceCodingTests: XCTestCase {
         XCTAssertEqual(decodedSticker[pageID], stickerSelection)
     }
 
+    func testWorkspaceDecodesLegacyJSONWithoutJournalTemplateID() throws {
+        let trip = SampleTripFactory.tokyoFiveDayTrip()
+        let workspace = TripWorkspace(
+            trip: trip,
+            journalPages: trip.journalPages,
+            journalSelections: [:],
+            stickerSelections: [:],
+            customStickers: [],
+            completedActivityIDs: []
+        )
+        var json = try JSONSerialization.jsonObject(
+            with: JSONEncoder().encode(workspace),
+            options: []
+        ) as! [String: Any]
+        json.removeValue(forKey: "journalTemplateID")
+        let legacyData = try JSONSerialization.data(withJSONObject: json, options: [])
+
+        let decoded = try JSONDecoder().decode(TripWorkspace.self, from: legacyData)
+
+        XCTAssertEqual(decoded.journalTemplateID, .minimalJournal)
+    }
+
     func testBudgetPlanDecodesLegacyJSONWithoutExpenses() throws {
         let json = #"{"total":12000,"currencyCode":"JPY"}"#
         let data = try XCTUnwrap(json.data(using: .utf8))

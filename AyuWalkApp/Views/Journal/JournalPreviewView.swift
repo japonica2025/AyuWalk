@@ -204,9 +204,29 @@ struct JournalPreviewView: View {
                     .accessibilityLabel("选择模块")
                 }
             }
+
+            templateSelector
         }
         .padding(.horizontal, 18)
         .padding(.top, 8)
+    }
+
+    private var templateSelector: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(JournalTemplateLibrary.default) { template in
+                    AWSelectableChip(
+                        title: template.name,
+                        isSelected: appState.journalTemplateID == template.id,
+                        tint: AyuWalkTheme.accent
+                    ) {
+                        appState.applyJournalTemplate(id: template.id)
+                    }
+                    .accessibilityLabel("手帐模板 \(template.name)")
+                    .accessibilityHint(template.description)
+                }
+            }
+        }
     }
 
     private var pageSelector: some View {
@@ -334,7 +354,14 @@ struct JournalPreviewView: View {
         .padding(14)
         .frame(height: height, alignment: .top)
         .frame(maxWidth: .infinity)
-        .background(.ultraThinMaterial)
+        .background {
+            AyuWalkTheme.surface.opacity(0.96)
+
+            Image.awPaperCardSurface
+                .resizable(resizingMode: .tile)
+                .opacity(AyuWalkTexture.cardOpacity)
+                .blendMode(.multiply)
+        }
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 24, style: .continuous)

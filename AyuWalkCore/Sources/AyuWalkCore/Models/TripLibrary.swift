@@ -5,6 +5,7 @@ public struct TripWorkspace: Codable, Equatable, Identifiable, Sendable {
 
     public var trip: Trip
     public var journalPages: [JournalPage]
+    public var journalTemplateID: JournalTemplateID
     public var journalSelections: [UUID: JournalModuleSelection]
     public var stickerSelections: [UUID: StickerSelection]
     public var customStickers: [Sticker]
@@ -18,6 +19,7 @@ public struct TripWorkspace: Codable, Equatable, Identifiable, Sendable {
     public init(
         trip: Trip,
         journalPages: [JournalPage],
+        journalTemplateID: JournalTemplateID = JournalTemplateLibrary.defaultTemplateID,
         journalSelections: [UUID: JournalModuleSelection],
         stickerSelections: [UUID: StickerSelection],
         customStickers: [Sticker],
@@ -30,6 +32,7 @@ public struct TripWorkspace: Codable, Equatable, Identifiable, Sendable {
     ) {
         self.trip = trip
         self.journalPages = journalPages
+        self.journalTemplateID = journalTemplateID
         self.journalSelections = journalSelections
         self.stickerSelections = stickerSelections
         self.customStickers = customStickers
@@ -44,6 +47,7 @@ public struct TripWorkspace: Codable, Equatable, Identifiable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case trip
         case journalPages
+        case journalTemplateID
         case journalSelections
         case stickerSelections
         case customStickers
@@ -59,6 +63,8 @@ public struct TripWorkspace: Codable, Equatable, Identifiable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         trip = try container.decode(Trip.self, forKey: .trip)
         journalPages = try container.decodeIfPresent([JournalPage].self, forKey: .journalPages) ?? trip.journalPages
+        journalTemplateID = try container.decodeIfPresent(JournalTemplateID.self, forKey: .journalTemplateID)
+            ?? JournalTemplateLibrary.defaultTemplateID
         journalSelections = try container.decodeIfPresent([UUID: JournalModuleSelection].self, forKey: .journalSelections) ?? [:]
         stickerSelections = try container.decodeIfPresent([UUID: StickerSelection].self, forKey: .stickerSelections) ?? [:]
         customStickers = try container.decodeIfPresent([Sticker].self, forKey: .customStickers) ?? []
@@ -199,6 +205,7 @@ private struct TripWorkspaceDuplicator {
         return TripWorkspace(
             trip: trip,
             journalPages: journalPages,
+            journalTemplateID: source.journalTemplateID,
             journalSelections: duplicateJournalSelections(source.journalSelections),
             stickerSelections: duplicateStickerSelections(source.stickerSelections),
             customStickers: customStickers,

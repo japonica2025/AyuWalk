@@ -9,6 +9,7 @@ final class AppState {
     var tripLibrary: TripLibrary
     var trip: Trip
     var journalPages: [JournalPage]
+    var journalTemplateID: JournalTemplateID
     var journalSelections: [UUID: JournalModuleSelection]
     var stickerSelections: [UUID: StickerSelection]
     var customStickers: [Sticker]
@@ -80,7 +81,11 @@ final class AppState {
                     TripWorkspace(
                         trip: repairedTrip,
                         journalPages: pages,
-                        journalSelections: Self.defaultSelections(for: pages),
+                        journalTemplateID: JournalTemplateLibrary.defaultTemplateID,
+                        journalSelections: Self.defaultSelections(
+                            for: pages,
+                            templateID: JournalTemplateLibrary.defaultTemplateID
+                        ),
                         stickerSelections: [:],
                         customStickers: [],
                         completedActivityIDs: []
@@ -90,6 +95,7 @@ final class AppState {
                 self.tripLibrary = library
                 self.trip = repairedWorkspace.trip
                 self.journalPages = repairedWorkspace.journalPages
+                self.journalTemplateID = repairedWorkspace.journalTemplateID
                 self.journalSelections = repairedWorkspace.journalSelections
                 self.stickerSelections = repairedWorkspace.stickerSelections
                 self.customStickers = repairedWorkspace.customStickers
@@ -102,6 +108,7 @@ final class AppState {
                 self.tripLibrary = library
                 self.trip = activeWorkspace.trip
                 self.journalPages = activeWorkspace.journalPages
+                self.journalTemplateID = activeWorkspace.journalTemplateID
                 self.journalSelections = activeWorkspace.journalSelections
                 self.stickerSelections = activeWorkspace.stickerSelections
                 self.customStickers = activeWorkspace.customStickers
@@ -120,8 +127,10 @@ final class AppState {
         )
         self.trip = trip
         let pages = journalEngine.generatePages(for: trip)
-        let selections = Self.defaultSelections(for: pages)
+        let journalTemplateID = JournalTemplateLibrary.defaultTemplateID
+        let selections = Self.defaultSelections(for: pages, templateID: journalTemplateID)
         self.journalPages = pages
+        self.journalTemplateID = journalTemplateID
         self.journalSelections = selections
         self.stickerSelections = [:]
         self.customStickers = []
@@ -129,6 +138,7 @@ final class AppState {
         let workspace = TripWorkspace(
             trip: trip,
             journalPages: pages,
+            journalTemplateID: journalTemplateID,
             journalSelections: selections,
             stickerSelections: [:],
             customStickers: [],
@@ -276,11 +286,13 @@ final class AppState {
         let generatedTravelMinutes = await travelMinutesBeforeActivityID(for: Array(scheduledTrip.days.prefix(1)))
 
         let pages = journalEngine.generatePages(for: scheduledTrip)
+        let journalTemplateID = JournalTemplateLibrary.defaultTemplateID
         syncActiveWorkspace()
         let workspace = TripWorkspace(
             trip: scheduledTrip,
             journalPages: pages,
-            journalSelections: Self.defaultSelections(for: pages),
+            journalTemplateID: journalTemplateID,
+            journalSelections: Self.defaultSelections(for: pages, templateID: journalTemplateID),
             stickerSelections: [:],
             customStickers: [],
             completedActivityIDs: [],
@@ -1000,6 +1012,18 @@ final class AppState {
         return (journalSelections[pageID] ?? .defaults(for: page)).contains(blockID)
     }
 
+    func applyJournalTemplate(id: JournalTemplateID) {
+        guard let template = JournalTemplateLibrary.template(id: id) else {
+            return
+        }
+
+        journalTemplateID = id
+        journalSelections = Dictionary(uniqueKeysWithValues: journalPages.map { page in
+            (page.id, JournalTemplateLibrary.selection(for: page, using: template))
+        })
+        persist()
+    }
+
     func selectedStickers(for page: JournalPage) -> [Sticker] {
         let selection = stickerSelections[page.id] ?? StickerSelection(selectedStickerIDs: [])
         return availableStickers
@@ -1148,9 +1172,16 @@ final class AppState {
         return places.isEmpty ? "当天还没有可放入手帐的已完成地点。" : places.joined(separator: " → ")
     }
 
-    private static func defaultSelections(for pages: [JournalPage]) -> [UUID: JournalModuleSelection] {
-        Dictionary(uniqueKeysWithValues: pages.map { page in
-            (page.id, JournalModuleSelection.defaults(for: page))
+    private static func defaultSelections(
+        for pages: [JournalPage],
+        templateID: JournalTemplateID = JournalTemplateLibrary.defaultTemplateID
+    ) -> [UUID: JournalModuleSelection] {
+        let template = JournalTemplateLibrary.template(id: templateID)
+        return Dictionary(uniqueKeysWithValues: pages.map { page in
+            let selection = template.map {
+                JournalTemplateLibrary.selection(for: page, using: $0)
+            } ?? JournalModuleSelection.defaults(for: page)
+            return (page.id, selection)
         })
     }
 
@@ -1442,6 +1473,7 @@ final class AppState {
     private func load(_ workspace: TripWorkspace) {
         trip = workspace.trip
         journalPages = workspace.journalPages
+        journalTemplateID = workspace.journalTemplateID
         journalSelections = workspace.journalSelections
         stickerSelections = workspace.stickerSelections
         customStickers = workspace.customStickers
@@ -1604,6 +1636,7 @@ final class AppState {
         tripLibrary.updateActiveWorkspace { workspace in
             workspace.trip = trip
             workspace.journalPages = journalPages
+            workspace.journalTemplateID = journalTemplateID
             workspace.journalSelections = journalSelections
             workspace.stickerSelections = stickerSelections
             workspace.customStickers = customStickers
